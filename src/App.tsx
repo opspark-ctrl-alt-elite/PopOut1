@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { Routes, Route, Link } from "react-router-dom";
+import Map from "./components/Map";
+// import { MapRounded } from "@mui/icons-material";
 
 type User = {
   id: string;
@@ -26,12 +29,13 @@ const App: React.FC = () => {
         }
       })
       .catch((err) => {
+        // console.error(err);
       });
   }, []);
 
   return (
     <div>
-      <h1> PopOut </h1>
+      <h1>PopOut</h1>
       {user ? (
         <div>
           <p>Welcome, {user.name}</p>
@@ -40,10 +44,16 @@ const App: React.FC = () => {
           )}
           <br />
           <a href="/auth/logout">Logout</a>
+          <br />
+          <Link to="/map">View Map</Link>
         </div>
       ) : (
         <a href="/auth/google">Login with Google</a>
       )}
+
+      <Routes>
+        <Route path="/map" element={<Map />} />
+      </Routes>
     </div>
   );
 };
