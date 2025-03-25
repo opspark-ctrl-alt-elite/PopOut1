@@ -4,6 +4,8 @@ import path from "path";
 import dotenv from "dotenv";
 import passport from "./auth";
 import session from "express-session";
+import authRoutes from './routes/authRoutes';
+
 
 dotenv.config();
 const app = express();
@@ -28,24 +30,8 @@ app.use(passport.session());
 app.use(express.static(path.join(__dirname, "..", "dist")));
 
 //routes
-app.get(
-  "/auth/google",
-  passport.authenticate("google", { scope: ["profile", "email"] })
-);
+app.use(authRoutes);
 
-app.get(
-  "/auth/google/callback",
-  passport.authenticate("google", {
-    failureRedirect: "/login",
-    successRedirect: "/",
-  })
-);
-
-app.get("/auth/logout", (req, res) => {
-  req.logout(() => {
-    res.redirect("/");
-  });
-});
 
 app.get("*", (req, res) => {
   res.sendFile("index.html", { root: path.join(__dirname, "..", "dist") });
