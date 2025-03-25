@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(
   session({
-    secret: process.env.SESSION_SECRET!,
+    secret: process.env.SESSION_SECRET! || "srumbags",
     resave: false,
     saveUninitialized: false,
   })
