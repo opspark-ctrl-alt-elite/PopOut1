@@ -38,21 +38,18 @@ Vendor.init(
     website: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
     },
     instagram: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
     },
     facebook: {
       type: DataTypes.STRING,
       allowNull: true,
-      unique: true,
     },
     // establish foreign key
     userId: {
-      type: DataTypes.INTEGER,
+      type: DataTypes.UUID,
       unique: true,
       references: {
         model: "users",
@@ -73,5 +70,6 @@ Vendor.init(
 
 // create a one-to-one relationship between User and Vendor
 User.hasOne(Vendor);
+Vendor.belongsTo(User);
 
 export default Vendor;
