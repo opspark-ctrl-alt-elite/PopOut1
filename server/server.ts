@@ -3,6 +3,7 @@ import cors from "cors";
 import path from "path";
 import dotenv from "dotenv"
 import passport from "./auth";
+import session from "express-session";
 
 dotenv.config()
 const app = express();
@@ -13,13 +14,19 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+app.use(session({
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false
+}));
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 // Serve static files from frontend
 app.use(express.static(path.join(__dirname, '..', "dist")));
 
 
-app.get('*', (req, res) => {
-  res.sendFile('index.html', { root: path.join(__dirname, '..', 'dist') });
-});
 
 //routes
 app.get('/auth/google', passport.authenticate('google', { scope: ['profile', 'email'] }));
@@ -38,6 +45,11 @@ app.get('/auth/logout', (req, res) => {
     res.redirect('/');
   });
 });
+
+app.get('*', (req, res) => {
+  res.sendFile('index.html', { root: path.join(__dirname, '..', 'dist') });
+});
+
 
 // Start Server
 app.listen(PORT, () => {
