@@ -5,6 +5,7 @@ import dotenv from "dotenv";
 import passport from "./auth";
 import session from "express-session";
 import authRoutes from './routes/authRoutes';
+import mapRoutes from "./routes/mapRoutes";
 
 
 dotenv.config();
@@ -35,6 +36,7 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 
 //routes
 app.use(authRoutes);
+app.use(mapRoutes);
 
 
 app.get("*", (req, res) => {
