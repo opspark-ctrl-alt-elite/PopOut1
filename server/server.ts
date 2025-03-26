@@ -4,9 +4,12 @@ import path from "path";
 import dotenv from "dotenv";
 import passport from "./auth";
 import session from "express-session";
+
+// router imports
 import authRoutes from './routes/authRoutes';
 import mapRoutes from "./routes/mapRoutes";
-
+import userRoutes from './routes/userRoutes'
+import vendorRouter from "./routes/vendorRoutes";
 
 dotenv.config();
 const app = express();
@@ -37,7 +40,8 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 //routes
 app.use(authRoutes);
 app.use(mapRoutes);
-
+app.use("/vendor", vendorRouter);
+app.use('/user', userRoutes);
 
 app.get("*", (req, res) => {
   res.sendFile("index.html", { root: path.join(__dirname, "..", "dist") });
