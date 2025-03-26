@@ -19,12 +19,15 @@ passport.use(
       try {
         let user = await User.findOne({ where: { google_id: profile.id } });
         if (!user) {
+          const email = profile.emails?.[0]?.value ?? '';
+          const profile_picture = profile.photos?.[0]?.value ?? '';
+        
           user = await User.create({
             google_id: profile.id,
             name: profile.displayName,
-            email: profile.emails?.[0].value,
-            profile_picture: profile.photos?.[0].value,
-          });
+            email: email,
+            profile_picture: profile_picture,
+          } as any);
         }
         return done(null, user);
       } catch (err) {
