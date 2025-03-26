@@ -7,6 +7,7 @@ import session from "express-session";
 import authRoutes from './routes/authRoutes';
 
 // router imports
+import userRoutes from './routes/userRoutes'
 import vendorRouter from "./routes/vendorRoutes";
 
 dotenv.config();
@@ -38,10 +39,11 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 //routes
 app.use(authRoutes);
 app.use("/vendor", vendorRouter);
+app.use('/user', userRoutes);
 
-app.get("*", (req, res) => {
-  res.sendFile("index.html", { root: path.join(__dirname, "..", "dist") });
-});
+// app.get("*", (req, res) => {
+//   res.sendFile("index.html", { root: path.join(__dirname, "..", "dist") });
+// });
 
 // start server
 app.listen(PORT, () => {

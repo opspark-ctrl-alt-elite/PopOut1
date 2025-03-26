@@ -7,7 +7,7 @@ const sequelize = new Sequelize('popout', 'root', '', {
 });
 
 sequelize.sync({ alter: true })
-  .then(() => console.log('Synced'))
+  .then(() => console.log('synced'))
   .catch((err) => console.error('Error syncing', err));
 
 export default sequelize;
