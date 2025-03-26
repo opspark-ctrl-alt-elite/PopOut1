@@ -1,17 +1,22 @@
-import sequelize from "./index";
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
+import sequelize from './index';
 
-export class User extends Model {
-  // id!: string;
-  // google_id!: string;
-  // email!: string;
-  // name!: string;
-  // profile_picture?: string;
-  // categories?: string;
-  // location?: string;
-  // is_vendor!: boolean;
-  // created_at!: Date;
+// Define the shape of the User model using Sequelize's utility types
+export class User extends Model<
+  InferAttributes<User>,
+  InferCreationAttributes<User>
+> {
+  declare id: CreationOptional<string>;
+  declare google_id: string;
+  declare email: string;
+  declare name: string;
+  declare profile_picture: string | null;
+  declare categories: 'Food & Drink' | 'Art' | 'Music' | 'Sports & Fitness' | 'Hobbies' | null;
+  declare location: string | null;
+  declare is_vendor: boolean;
+  declare created_at: CreationOptional<Date>;
 }
+
 User.init(
   {
     id: {
@@ -41,13 +46,7 @@ User.init(
       allowNull: true,
     },
     categories: {
-      type: DataTypes.ENUM(
-        "Food & Drink",
-        "Art",
-        "Music",
-        "Sports & Fitness",
-        "Hobbies"
-      ),
+      type: DataTypes.ENUM('Food & Drink', 'Art', 'Music', 'Sports & Fitness', 'Hobbies'),
       allowNull: true,
     },
     location: {
@@ -65,8 +64,8 @@ User.init(
   },
   {
     sequelize,
-    modelName: "User",
-    tableName: "users",
+    modelName: 'User',
+    tableName: 'users',
     timestamps: false,
   }
 );

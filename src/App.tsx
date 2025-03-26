@@ -8,6 +8,7 @@ type User = {
   name: string;
   email: string;
   profile_picture?: string;
+  
 };
 
 const App: React.FC = () => {
