@@ -3,10 +3,10 @@ import Vendor from "../models/Vendor";
 import User from "../models/User";
 
 // create router
-const router = Router();
+const vendorRouter = Router();
 
 // handle GET requests by finding and returning the vendor record associated with the given userId
-router.get("/:userId", async (req, res) => {
+vendorRouter.get("/:userId", async (req, res) => {
   // extract userId from the request parameters
   const { userId } = req.params;
 
@@ -31,7 +31,7 @@ router.get("/:userId", async (req, res) => {
 });
 
 // handle POST requests by using the given vendor object to create a new vendor record
-router.post("/:userId", async (req, res) => {
+vendorRouter.post("/:userId", async (req, res) => {
   // extract userId from the request parameters
   const { userId } = req.params;
   // extract the vendor object from the request body
@@ -61,7 +61,7 @@ router.post("/:userId", async (req, res) => {
 });
 
 // handle PATCH requests by finding and altering the vendor record associated with the given userId
-router.patch("/:userId", async (req, res) => {
+vendorRouter.patch("/:userId", async (req, res) => {
   // extract userId from the request parameters
   const { userId } = req.params;
   // extract the object containing the fields to change and their new values from the request body
@@ -88,7 +88,7 @@ router.patch("/:userId", async (req, res) => {
 });
 
 // handle DELETE requests by finding and deleting the vendor record associated with the given userId
-router.delete("/:userId", async (req, res) => {
+vendorRouter.delete("/:userId", async (req, res) => {
   // extract userId from the request parameters
   const { userId } = req.params;
 
@@ -112,4 +112,4 @@ router.delete("/:userId", async (req, res) => {
   }
 });
 
-export default router;
+export default vendorRouter;
