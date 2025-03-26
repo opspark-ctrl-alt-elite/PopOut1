@@ -27,6 +27,16 @@ const Home: React.FC<Props> = ({ user }) => {
           <a href="/auth/logout">Logout</a>
           <br />
           <Link to="/map">View Map</Link>
+          <br />
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSeA1PcGaTWNTv-KYlQ_ZcYTqKbmbyNeSUi8Fp56-SQ6N5QEzA/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <button style={{ marginTop: "1rem", padding: "0.5rem 1rem", fontSize: "1rem" }}>
+              Become A Vendor
+            </button>
+          </a>
         </div>
       ) : (
         <a href="/auth/google">Login with Google</a>
