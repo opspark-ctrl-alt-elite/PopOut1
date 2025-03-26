@@ -6,6 +6,8 @@ import passport from "./auth";
 import session from "express-session";
 import authRoutes from './routes/authRoutes';
 
+// router imports
+import vendorRouter from "./routes/vendorRoutes";
 
 dotenv.config();
 const app = express();
@@ -35,7 +37,7 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 
 //routes
 app.use(authRoutes);
-
+app.use("/vendor", vendorRouter);
 
 app.get("*", (req, res) => {
   res.sendFile("index.html", { root: path.join(__dirname, "..", "dist") });
