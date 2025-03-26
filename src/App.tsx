@@ -1,4 +1,7 @@
 import React, { useEffect, useState } from "react";
+import { Routes, Route } from "react-router-dom";
+import Map from "./components/Map";
+import Home from "./components/Home";
 
 type User = {
   id: string;
@@ -26,25 +29,15 @@ const App: React.FC = () => {
         }
       })
       .catch((err) => {
+        // console.error( err);
       });
   }, []);
 
   return (
-    <div>
-      <h1> PopOut </h1>
-      {user ? (
-        <div>
-          <p>Welcome, {user.name}</p>
-          {user.profile_picture && (
-            <img src={user.profile_picture} alt="Profile" width={50} />
-          )}
-          <br />
-          <a href="/auth/logout">Logout</a>
-        </div>
-      ) : (
-        <a href="/auth/google">Login with Google</a>
-      )}
-    </div>
+    <Routes>
+      <Route path="/" element={<Home user={user} />} />
+      <Route path="/map" element={<Map />} />
+    </Routes>
   );
 };
 
