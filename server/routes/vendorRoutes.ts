@@ -38,17 +38,25 @@ vendorRouter.post("/:userId", async (req, res) => {
   const vendorObj = req.body;
 
   try {
-    // check if the user exists
+    // check if the user exists (and if the user is NOT already a vendor)
     const user = await User.findOne({ where: { id: userId } });
     if (user === null) {
       // send back 404 error if the user cannot be found
       console.error("Could not find vendor record for given user");
       res.sendStatus(404);
+    }
+    /* While this "else if" block is technically unneeded, it does allow the sending back of the 403 status code */
+    else if (user.is_vendor === true) {
+      // send back 403 error if the user already has a vendor
+      console.error("Given user already has an associated vendor record");
+      res.sendStatus(403);
     } else {
       // otherwise, add userId to the vendorObj
       vendorObj.userId = userId;
       // create a new vendor record using the Vendor model
       const vendor = await Vendor.create(vendorObj);
+      // set the user's "is_vendor" status to true
+      await User.update({ is_vendor: true }, { where: { id: userId } });
       // send back new vendor record with status code of 201
       res.status(201).send(vendor);
     }
@@ -69,16 +77,20 @@ vendorRouter.patch("/:userId", async (req, res) => {
 
   try {
     // find and update the vendor associated with userId
-    const vendor = await Vendor.update( changes, { where: { userId }});
-    if (vendor === null) {
+    /*
+      The update method is odd in that instead of returning a record, it simply returns an array
+      containing the number of records found and modified.
+    */
+    const modifiedRecords = await Vendor.update( changes, { where: { userId }});
+    if (modifiedRecords[0] === 0) {
       // if a vendor wasn't found, set the status code to 404
       res.status(404);
     } else {
       // otherwise, set the status code to 200
       res.status(200);
     }
-    // send back the old vendor record (object) returned from the update method
-    res.send(vendor);
+    // send back the number of modified vendor records (should always be either 0 or 1 in an array) returned from the update method
+    res.send(modifiedRecords);
 
   } catch (err) {
     // generic error handling
@@ -94,17 +106,21 @@ vendorRouter.delete("/:userId", async (req, res) => {
 
   try {
     // find the vendor associated with userId
-    const vendor = await Vendor.destroy({ where: { userId }});
-    if (vendor === null) {
-      // if a vendor wasn't found, set the status code to 404
-      res.status(404);
+    /*
+      The destroy method is odd in that instead of returning a record, it simply returns a
+      number of records found and deleted.
+    */
+    const deletedRecords = await Vendor.destroy({ where: { userId }});
+    if (deletedRecords === 0) {
+      // if a vendor wasn't found, send a status code of 404
+      res.sendStatus(404);
     } else {
-      // otherwise, set the status code to 200
-      res.status(200);
+      // otherwise, update the associated user record to make the user's "is_vendor" status false
+      await User.update({ is_vendor: false }, { where: { id: userId } });
+      // send a status code of 200
+      res.sendStatus(200);
     }
-    // send back the deleted vendor record (object)
-    res.send(vendor);
-    
+
   } catch (err) {
     // generic error handling
     console.error("Error DELETING vendor record", err);
