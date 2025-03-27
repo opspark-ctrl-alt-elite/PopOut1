@@ -20,7 +20,7 @@ router.get('/auth/logout', (req, res) => {
 });
 
 router.get('/auth/me', (req, res) => {
-  console.log('current user', req.user);
+  // console.log('current user', req.user);
   res.send(req.user || 'not logged in');
 });
 

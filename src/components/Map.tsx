@@ -1,4 +1,4 @@
-import React, { useRef, useState } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   GoogleMap,
   Marker,
@@ -55,7 +55,7 @@ const Map: React.FC = () => {
           }}
         />
       </Autocomplete>
-  
+
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={selected || center}
