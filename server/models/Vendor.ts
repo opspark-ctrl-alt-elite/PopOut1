@@ -1,11 +1,23 @@
 import sequelize from "./index";
-import { DataTypes, Model } from "sequelize";
+import { DataTypes, Model, CreationOptional } from "sequelize";
 import User from "./User";
 
-// define/create Vendor model
-export class Vendor extends Model {};
+// Define Vendor model
+export class Vendor extends Model {
+  declare id: CreationOptional<string>;
+  declare businessName: string;
+  declare email: string;
+  declare profilePicture: string | null;
+  declare description: string;
+  declare website: string | null;
+  declare instagram: string | null;
+  declare facebook: string | null;
+  declare userId: string; // Foreign key
+  declare createdAt: CreationOptional<Date>;
+  declare updatedAt: CreationOptional<Date>;
+}
 
-// initialize Vendor model
+// Initialize Vendor model
 Vendor.init(
   {
     id: {
@@ -47,10 +59,10 @@ Vendor.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    // establish foreign key
+    // Establish foreign key
     userId: {
       type: DataTypes.UUID,
-      unique: true,
+      allowNull: false,
       references: {
         model: "users",
         key: "id",
@@ -59,17 +71,14 @@ Vendor.init(
   },
   {
     sequelize,
-    // manually create model name
     modelName: "Vendor",
-    // manually create table name
     tableName: "vendors",
-    // auto-make timestamps
     timestamps: true,
   }
 );
 
-// create a one-to-one relationship between User and Vendor
+// Create a one-to-one relationship between User and Vendor
 User.hasOne(Vendor, { foreignKey: "userId", onDelete: "CASCADE" });
-Vendor.belongsTo(User, { foreignKey: "userId"});
+Vendor.belongsTo(User, { foreignKey: "userId" });
 
 export default Vendor;
