@@ -5,7 +5,29 @@ import User from "../models/User";
 // create router
 const vendorRouter = Router();
 
-// handle GET requests by finding and returning the vendor record associated with the given userId
+// handle GET requests for all vendors by returning all vendor records
+vendorRouter.get("/all", async (req, res) => {
+  try {
+    // retrieve all vendor records from the vendors table
+    const vendors = await Vendor.findAll({});
+    if (vendors === null) {
+      // if no vendors were found, set the status code to 404
+      res.status(404);
+    } else {
+      // otherwise, set the status code to 200
+      res.status(200);
+    }
+    // send back the found vendor records (array of objects)
+    res.send(vendors);
+
+  } catch (err) {
+    // generic error handling
+    console.error("Error GETTING all vendor records", err);
+    res.sendStatus(500);
+  }
+});
+
+// handle GET requests for a single vendor by finding and returning the vendor record associated with the given userId
 vendorRouter.get("/:userId", async (req, res) => {
   // extract userId from the request parameters
   const { userId } = req.params;

@@ -9,11 +9,26 @@ type User = {
   profile_picture?: string;
 };
 
+type Vendors = {
+  id: string;
+  businessName: string;
+  email: string;
+  profilePicture?: string;
+  description: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  userId: string;
+  createdAt: any;
+  updatedAt: any;
+}[];
+
 type Props = {
   user: User | null;
+  vendors: Vendors | null;
 };
 
-const Home: React.FC<Props> = ({ user }) => {
+const Home: React.FC<Props> = ({ user, vendors }) => {
   return (
     <div>
       <h1>PopOut</h1>
@@ -27,6 +42,10 @@ const Home: React.FC<Props> = ({ user }) => {
           <a href="/auth/logout">Logout</a>
           <br />
           <Link to="/map">View Map</Link>
+          <br />
+          <Link to="/userprofile">View User Profile</Link>
+          <br />
+          <Link to="/vendorprofile">View Vendor Profile</Link>
         </div>
       ) : (
         <a href="/auth/google">Login with Google</a>
