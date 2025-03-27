@@ -19,9 +19,9 @@ passport.use(
       try {
         let user = await User.findOne({ where: { google_id: profile.id } });
         if (!user) {
-          const email = profile.emails?.[0]?.value ?? '';
-          const profile_picture = profile.photos?.[0]?.value ?? '';
-        
+          const email = profile.emails?.[0]?.value ?? "";
+          const profile_picture = profile.photos?.[0]?.value ?? "";
+
           user = await User.create({
             google_id: profile.id,
             name: profile.displayName,
@@ -38,8 +38,8 @@ passport.use(
 );
 
 passport.serializeUser((user: any, done) => {
-  console.log("serializing user", user);
-  console.log("user id", user.id);
+  // console.log("serializing user", user);
+  // console.log("user id", user.id);
   done(null, user.id);
 });
 
