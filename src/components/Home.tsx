@@ -28,6 +28,8 @@ type Props = {
 };
 
 const Home: React.FC<Props> = ({ user, vendors }) => {
+  console.log(user);
+  console.log(vendors);
   return (
     <div>
       <h1>PopOut</h1>

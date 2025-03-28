@@ -33,6 +33,7 @@ const App: React.FC = () => {
   const [vendors, setVendors] = useState<Vendor[] | null>(null);
 
   useEffect(() => {
+    // get the user record associated with the current user
     fetch("/auth/me", {
       credentials: "include",
     })
@@ -50,6 +51,23 @@ const App: React.FC = () => {
       .catch((err) => {
         // console.error( err);
       });
+
+      // get all vendor records
+      fetch("/vendor/all")
+        .then((res) => {
+          if (!res.ok) {
+            throw new Error("err fetching vendors");
+          }
+          return res.json();
+        })
+        .then((data) => {
+          if (data) {
+            setVendors(data);
+          }
+        })
+        .catch((err) => {
+          // console.error( err);
+        });
   }, []);
 
   return (

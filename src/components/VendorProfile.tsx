@@ -36,6 +36,17 @@ type Vendor = {
   updatedAt: any;
 };
 
+type Fields = {
+  businessName?: string;
+  email?: string;
+  profilePicture?: string;
+  description?: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  userId?: string;
+};
+
 type User = {
   id: string;
   name: string;
@@ -54,11 +65,16 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     getVendor();
   }, []);
 
+  // gets the vendor record associated with the current user and uses said record to update the vendor in state
   const getVendor = async () => {
-    setVendor( await axios.get(`/vendor/${user.id}`));
+    const vendorObj = await axios.get(`/vendor/${user.id}`);
+    console.log("retrieved vendor object for current user:");
+    console.log(vendorObj);
+    setVendor( vendorObj.data );
   }
 
   // const [fields, setFields] = useState(null);
+  console.log(vendor);
   return (
     <div>
       <Container sx={{ display:"flex", justifyContent: 'center', height: '100vh' }}>
@@ -72,20 +88,25 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
               )}
               <br />
               <Card sx={{ display:"flex", justifyContent: 'center', height: '75vh', width: '60vh' }}>
-              <Stack spacing={1} sx={{ display:"flex", justifyContent: 'center', height: '100vh' }}>
-                <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
-                  Active Events
-                </Button>
-                <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
-                  Create New Event
-                </Button>
-                <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
-                  Reviews
-                </Button>
-                <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
-                  View User Profile
-                </Button>
-              </Stack>
+                <Stack spacing={1} sx={{ display:"flex", justifyContent: 'center', height: '100vh' }}>
+                  <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
+                    Active Events
+                  </Button>
+                  <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
+                    Create New Event
+                  </Button>
+                  <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
+                    Reviews
+                  </Button>
+                  <Link to="/">
+                    <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
+                      View User Profile
+                    </Button>
+                  </Link>
+                  <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh', color: 'red', outlineColor: 'red' }}>
+                    Delete
+                  </Button>
+                </Stack>
               </Card>
               <a href="/auth/logout">Logout</a>
               <br />
