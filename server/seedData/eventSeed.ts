@@ -4,7 +4,7 @@ import { v4 as uuidv4 } from "uuid";
 
 const seedEvents = async () => {
   try {
-    // Fetch vendors first
+    // fetch vendors
     const vendors = await Vendor.findAll();
     if (vendors.length === 0) {
       console.log("No vendors found. Seed vendors first.");

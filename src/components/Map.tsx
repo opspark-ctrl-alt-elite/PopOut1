@@ -4,7 +4,7 @@ import {
   Marker,
   useLoadScript,
   Autocomplete,
-  InfoWindow
+  InfoWindow,
 } from "@react-google-maps/api";
 
 const containerStyle = {
@@ -17,7 +17,7 @@ const center = {
   lng: -90.0715,
 };
 
-const libraries: ("places")[] = ["places"];
+const libraries: "places"[] = ["places"];
 
 const Map: React.FC = () => {
   const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
@@ -29,6 +29,20 @@ const Map: React.FC = () => {
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
     libraries,
   });
+
+  useEffect(() => {
+    if (!selected) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          setSelected({ lat: latitude, lng: longitude });
+        },
+        (error) => {
+          console.warn(error);
+        }
+      );
+    }
+  }, []);
 
   // nearby events
   useEffect(() => {
@@ -45,7 +59,6 @@ const Map: React.FC = () => {
         console.error("err fetching nearby events", err);
       }
     };
-
     fetchEvents();
   }, [selected]);
 
@@ -77,36 +90,51 @@ const Map: React.FC = () => {
       </Autocomplete>
 
       <GoogleMap
-  mapContainerStyle={containerStyle}
-  center={selected || center}
-  zoom={12}
->
-  {events.map((event, i) => (
-    <Marker
-      key={i}
-      position={{ lat: event.latitude, lng: event.longitude }}
-      title={event.title}
-      onClick={() => setActiveEvent(event)}
-    />
-  ))}
-  {activeEvent && (
-    <InfoWindow
-      position={{
-        lat: activeEvent.latitude,
-        lng: activeEvent.longitude,
-      }}
-      onCloseClick={() => setActiveEvent(null)}
-    >
-      <div style={{ maxWidth: "200px" }}>
-        <h4 style={{ margin: "0 0 4px" }}>{activeEvent.title}</h4>
-        <p style={{ margin: 0 }}>{activeEvent.venue_name}</p>
-        <p style={{ margin: "4px 0 0", fontSize: "0.85rem", color: "#666" }}>
-          Category: {activeEvent.category}
-        </p>
-      </div>
-    </InfoWindow>
-  )}
-</GoogleMap>
+        mapContainerStyle={containerStyle}
+        center={selected || center}
+        zoom={12}
+      >
+        {events.map((event, i) => (
+          <Marker
+            key={i}
+            position={{ lat: event.latitude, lng: event.longitude }}
+            title={event.title}
+            onClick={() => setActiveEvent(event)}
+          />
+        ))}
+        {activeEvent && (
+          <InfoWindow
+            position={{
+              lat: activeEvent.latitude,
+              lng: activeEvent.longitude,
+            }}
+            onCloseClick={() => setActiveEvent(null)}
+          >
+            <div style={{ maxWidth: "200px" }}>
+              <h4 style={{ margin: "0 0 4px" }}>{activeEvent.title}</h4>
+              <p style={{ margin: 0 }}>{activeEvent.venue_name}</p>
+              <p style={{ margin: 0 }}>{activeEvent.description}</p>
+              <p
+                style={{
+                  margin: "4px 0 0",
+                  fontSize: "0.85rem",
+                  color: "#666",
+                }}
+              >
+                Category: {activeEvent.category}
+              </p>
+            </div>
+          </InfoWindow>
+        )}
+        {selected && (
+          <Marker
+            position={selected}
+            icon={{
+              url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+            }}
+          />
+        )}
+      </GoogleMap>
     </div>
   );
 };

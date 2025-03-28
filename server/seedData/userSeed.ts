@@ -1,4 +1,4 @@
-import User from '../models/User'; // Adjust the path according to your folder structure
+import User from '../models/User';
 
 const users = [
   {
@@ -6,7 +6,7 @@ const users = [
     email: 'user1@example.com',
     name: 'John Doe',
     profile_picture: 'https://example.com/profile1.jpg',
-    categories: 'Food & Drink' as 'Food & Drink', // Type assertion
+    categories: 'Food & Drink' as 'Food & Drink',
     location: 'New York',
     is_vendor: false,
   },
@@ -15,7 +15,7 @@ const users = [
     email: 'user2@example.com',
     name: 'Jane Smith',
     profile_picture: 'https://example.com/profile2.jpg',
-    categories: 'Art' as 'Art', // Type assertion
+    categories: 'Art' as 'Art',
     location: 'San Francisco',
     is_vendor: true,
   },
@@ -24,7 +24,7 @@ const users = [
     email: 'user3@example.com',
     name: 'Michael Johnson',
     profile_picture: 'https://example.com/profile3.jpg',
-    categories: 'Sports & Fitness' as 'Sports & Fitness', // Type assertion
+    categories: 'Sports & Fitness' as 'Sports & Fitness',
     location: 'Los Angeles',
     is_vendor: false,
   },
@@ -33,7 +33,7 @@ const users = [
     email: 'user4@example.com',
     name: 'Emily Davis',
     profile_picture: 'https://example.com/profile4.jpg',
-    categories: 'Music' as 'Music', // Type assertion
+    categories: 'Music' as 'Music',
     location: 'Chicago',
     is_vendor: false,
   },
@@ -42,7 +42,7 @@ const users = [
 async function seedUsers() {
   try {
     for (const user of users) {
-      await User.create(user); // No need to manually pass the `id`; Sequelize will handle it
+      await User.create(user);
     }
     console.log('User seed data inserted successfully!');
   } catch (error) {
@@ -50,5 +50,4 @@ async function seedUsers() {
   }
 }
 
-// Call the seed function
 seedUsers();
