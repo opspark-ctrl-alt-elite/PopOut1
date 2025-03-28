@@ -3,15 +3,21 @@
     "target": "ESNext",
     "module": "CommonJS",
     "moduleResolution": "node",
-    "rootDir": "./src",
+    "rootDir": ".",
     "outDir": "./dist",
     "strict": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
-    "jsx": "react-jsx"
+    "jsx": "react-jsx",
+    "lib": ["es6"],
+    "typeRoots": ["./node_modules/@types", "./types"],
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
-  "include": ["src"],
+  "include": ["src/**/*", "server/**/*", "types/**/*"],
   "exclude": ["node_modules", "dist"]
 }
