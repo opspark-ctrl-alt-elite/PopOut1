@@ -1,8 +1,7 @@
 import { v4 as uuidv4 } from "uuid";
-import Vendor from "../models/Vendor";  // Correct import for Vendor model
-import User from "../models/User";  // Correct import for User model
+import Vendor from "../models/Vendor";
+import User from "../models/User";
 
-// Define some example vendor data
 const vendorData = [
   {
     businessName: 'Café Delight',
@@ -12,7 +11,7 @@ const vendorData = [
     website: 'https://cafedelight.com',
     instagram: '@cafedelight',
     facebook: 'cafedelight',
-    userId: null as string | null, // Explicitly declare userId as string | null
+    userId: null as string | null,
   },
   {
     businessName: 'Gourmet Grill',
@@ -22,7 +21,7 @@ const vendorData = [
     website: 'https://gourmetgrill.com',
     instagram: '@gourmetgrill',
     facebook: 'gourmetgrill',
-    userId: null as string | null, // Explicitly declare userId as string | null
+    userId: null as string | null,
   },
   {
     businessName: 'Artisan Craftworks',
@@ -32,26 +31,24 @@ const vendorData = [
     website: 'https://artisancraftworks.com',
     instagram: '@artisancraftworks',
     facebook: 'artisancraftworks',
-    userId: null as string | null, // Explicitly declare userId as string | null
+    userId: null as string | null,
   }
 ];
 
-// Seed function to insert vendors
+
 const seedVendors = async () => {
   try {
-    const users = await User.findAll(); // Find all users to assign to vendors
+    const users = await User.findAll();
 
     if (users.length === 0) {
       console.log('No users found. Please seed users first.');
       return;
     }
 
-    // Assign users to the vendors
     vendorData.forEach((vendor, index) => {
-      vendor.userId = users[index]?.id || users[0]?.id; // Assign user to vendor
+      vendor.userId = users[index]?.id || users[0]?.id;
     });
 
-    // Bulk create vendors
     await Vendor.bulkCreate(vendorData);
     console.log('Vendors seeded successfully.');
   } catch (error) {
