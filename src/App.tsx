@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Map from "./components/Map";
 import Home from "./components/Home";
+import VendorSignupForm from "./components/VendorSignupForm";
 
 type User = {
   id: string;
@@ -38,6 +39,7 @@ const App: React.FC = () => {
     <Routes>
       <Route path="/" element={<Home user={user} />} />
       <Route path="/map" element={<Map />} />
+      <Route path="/vendor-signup" element={<VendorSignupForm />} />
     </Routes>
   );
 };
