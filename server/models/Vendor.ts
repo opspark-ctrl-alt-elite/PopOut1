@@ -35,6 +35,7 @@ Vendor.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
+      // // check if email is real email
       // validate: {
       //   isEmail: true,
       // },

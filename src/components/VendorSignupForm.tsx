@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+// import axios from "axios";
+
 import {
   Box,
   TextField,
@@ -7,7 +9,18 @@ import {
   Paper,
 } from "@mui/material";
 
-const VendorSignupForm: React.FC = () => {
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  profile_picture?: string;
+};
+
+type Props = {
+  user: User | null;
+};
+
+const VendorSignupForm: React.FC<Props> = ({ user }) => {
   const [formData, setFormData] = useState({
     businessName: "",
     description: "",
@@ -29,7 +42,7 @@ const VendorSignupForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch("/vendor-signup", {
+      const res = await fetch(`/vendor/${user.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
