@@ -1,6 +1,7 @@
 // src/components/Home.tsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 
 import {
   Box,
@@ -12,6 +13,7 @@ import {
   IconButton,
   Stack,
   Typography,
+  Card,
 
 
 } from "@mui/material";
@@ -34,8 +36,28 @@ type Vendor = {
   updatedAt: any;
 };
 
-const VendorProfile: React.FC = () => {
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  profile_picture?: string;
+};
+
+type Props = {
+  user: User | null;
+};
+
+const VendorProfile: React.FC<Props> = ({ user }) => {
   const [vendor, setVendor] = useState<Vendor | null>(null);
+
+  useEffect(() => {
+    getVendor();
+  }, []);
+
+  const getVendor = async () => {
+    setVendor( await axios.get(`/vendor/${user.id}`));
+  }
+
   // const [fields, setFields] = useState(null);
   return (
     <div>
@@ -44,11 +66,27 @@ const VendorProfile: React.FC = () => {
           <h1>PopOut</h1>
           {vendor ? (
             <div>
-              <p>Welcome, {vendor.businessName}</p>
+              <Typography variant="h3">{vendor.businessName}</Typography>
               {vendor.profilePicture && (
                 <img src={vendor.profilePicture} alt="Profile" width={50} />
               )}
               <br />
+              <Card sx={{ display:"flex", justifyContent: 'center', height: '75vh', width: '60vh' }}>
+              <Stack spacing={1} sx={{ display:"flex", justifyContent: 'center', height: '100vh' }}>
+                <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
+                  Active Events
+                </Button>
+                <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
+                  Create New Event
+                </Button>
+                <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
+                  Reviews
+                </Button>
+                <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
+                  View User Profile
+                </Button>
+              </Stack>
+              </Card>
               <a href="/auth/logout">Logout</a>
               <br />
               <Link to="/">Home</Link>
