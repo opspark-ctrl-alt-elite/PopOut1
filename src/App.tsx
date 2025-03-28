@@ -61,7 +61,6 @@ const App: React.FC = () => {
       <Route path="/vendorprofile" element={<VendorProfile />} />
       <Route path="/vendor-signup" element={<VendorSignupForm />} />
       <Route path="/edit-profile" element={<EditProfile user={user} />} />
-
     </Routes>
   );
 };
