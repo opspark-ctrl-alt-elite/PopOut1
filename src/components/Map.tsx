@@ -18,6 +18,18 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  profile_picture?: string;
+};
+
+type Props = {
+  // user: User
+  user: User | null;
+};
+
 const containerStyle = {
   width: "100%",
   height: "calc(100vh - 64px)",
@@ -30,7 +42,7 @@ const center = {
 
 const libraries: ("places")[] = ["places"];
 
-const Map: React.FC = () => {
+const Map: React.FC<Props> = ({ user }) => {
   const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
   const [activeEvent, setActiveEvent] = useState<any | null>(null);
   const [events, setEvents] = useState<any[]>([]);
@@ -75,7 +87,7 @@ const Map: React.FC = () => {
 
   return (
     <Box>
-      {/* HOME HEADER */}
+      {/* HEADER */}
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar
           sx={{
@@ -88,11 +100,16 @@ const Map: React.FC = () => {
         >
           {/* LOGO */}
           <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-            <Typography variant="h5" fontWeight="bold">
+            <Typography
+              component={Link}
+              to="/"
+              variant="h5"
+              fontWeight="bold"
+              sx={{ textDecoration: "none", color: "inherit" }}
+            >
               PopOut
             </Typography>
 
-            {/* SEARCH */}
             <Autocomplete
               onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
               onPlaceChanged={() => {
@@ -115,13 +132,19 @@ const Map: React.FC = () => {
               />
             </Autocomplete>
           </Stack>
+
+          {/* PROFILE PIC */}
           <Stack direction="row" spacing={2} alignItems="center">
             <IconButton component={Link} to="/userprofile">
-              <Avatar src="/default-profile.png" alt="User" />
+              <Avatar
+                src={user?.profile_picture || "/default-profile.png"}
+                alt={user?.name || "User"}
+              />
             </IconButton>
           </Stack>
         </Toolbar>
       </AppBar>
+
       {/* MAP */}
       <GoogleMap
         mapContainerStyle={containerStyle}
