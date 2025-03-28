@@ -9,6 +9,7 @@ import {
   Avatar,
   Stack,
   Container,
+  IconButton,
 } from "@mui/material";
 
 type User = {
@@ -41,16 +42,37 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
   return (
     <Box>
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
-        <Toolbar sx={{ justifyContent: "space-between" }}>
-          <Typography variant="h5" fontWeight="bold">
-            PopOut
-          </Typography>
+        <Toolbar
+          sx={{
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            gap: 2,
+            px: 2,
+            py: 1,
+          }}
+        >
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Typography variant="h5" fontWeight="bold">
+              PopOut
+            </Typography>
+
+            {user && (
+              <Button
+                component={Link}
+                to="/map"
+                variant="outlined"
+                size="small"
+              >
+                View Map
+              </Button>
+            )}
+          </Stack>
 
           {user ? (
             <Stack direction="row" spacing={2} alignItems="center">
-              {user.profile_picture && (
+              <IconButton component={Link} to="/userprofile">
                 <Avatar src={user.profile_picture} alt={user.name} />
-              )}
+              </IconButton>
               <Button variant="outlined" href="/auth/logout" color="error">
                 Logout
               </Button>
@@ -62,12 +84,10 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
           )}
         </Toolbar>
       </AppBar>
+
       <Container sx={{ mt: 4 }}>
         {user && (
           <Stack spacing={2}>
-            <Button component={Link} to="/map" variant="contained">
-              View Map
-            </Button>
             <Button component={Link} to="/userprofile" variant="outlined">
               View User Profile
             </Button>
