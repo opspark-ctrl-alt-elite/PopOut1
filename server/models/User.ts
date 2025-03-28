@@ -1,7 +1,6 @@
 import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
 import sequelize from './index';
 
-// Define the shape of the User model using Sequelize's utility types
 export class User extends Model<
   InferAttributes<User>,
   InferCreationAttributes<User>
@@ -15,8 +14,12 @@ export class User extends Model<
   declare location: string | null;
   declare is_vendor: boolean;
   declare created_at: CreationOptional<Date>;
-}
 
+  // Add this to expose all attributes in type checking
+  public toJSON(): InferAttributes<User> {
+    return super.toJSON();
+  }
+}
 User.init(
   {
     id: {
@@ -69,5 +72,8 @@ User.init(
     timestamps: false,
   }
 );
+
+// Add this to ensure proper typing when using with Express
+export type UserType = InstanceType<typeof User>;
 
 export default User;
