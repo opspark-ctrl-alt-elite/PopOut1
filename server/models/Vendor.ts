@@ -35,9 +35,10 @@ Vendor.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      validate: {
-        isEmail: true,
-      },
+      // // check if email is real email
+      // validate: {
+      //   isEmail: true,
+      // },
     },
     profilePicture: {
       type: DataTypes.STRING,
