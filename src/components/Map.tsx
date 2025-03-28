@@ -16,18 +16,36 @@ const center = {
   lng: -90.0715,
 };
 
-const libraries: "places"[] = ["places"];
+const libraries: ("places")[] = ["places"];
 
 const Map: React.FC = () => {
-  const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(
-    null
-  );
+  const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
+  const [events, setEvents] = useState<any[]>([]);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
     libraries,
   });
+
+  // nearby events
+  useEffect(() => {
+    if (!selected) return;
+
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch(
+          `/map/events/nearby?lat=${selected.lat}&lng=${selected.lng}`
+        );
+        const data = await res.json();
+        setEvents(data);
+      } catch (err) {
+        console.error("err fetching nearby events", err);
+      }
+    };
+
+    fetchEvents();
+  }, [selected]);
 
   if (!isLoaded) return <div>Loading...</div>;
 
@@ -61,7 +79,13 @@ const Map: React.FC = () => {
         center={selected || center}
         zoom={12}
       >
-        {selected && <Marker position={center} />}
+        {events.map((event, i) => (
+          <Marker
+            key={i}
+            position={{ lat: event.latitude, lng: event.longitude }}
+            title={event.title}
+          />
+        ))}
       </GoogleMap>
     </div>
   );
