@@ -1,4 +1,3 @@
-// src/components/Home.tsx
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -46,6 +45,8 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
           <Link to="/userprofile">View User Profile</Link>
           <br />
           <Link to="/vendorprofile">View Vendor Profile</Link>
+          <br />
+          <Link to="/vendor-signup">Become A Vendor</Link>
         </div>
       ) : (
         <a href="/auth/google">Login with Google</a>
