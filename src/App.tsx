@@ -5,6 +5,7 @@ import Home from "./components/Home";
 import VendorSignupForm from "./components/VendorSignupForm";
 import UserProfile from "./components/UserProfile";
 import VendorProfile from "./components/VendorProfile";
+import EditProfile from "./components/EditProfile";
 
 type User = {
   id: string;
@@ -59,6 +60,8 @@ const App: React.FC = () => {
       <Route path="/userprofile" element={<UserProfile user={user} />} />
       <Route path="/vendorprofile" element={<VendorProfile />} />
       <Route path="/vendor-signup" element={<VendorSignupForm />} />
+      <Route path="/edit-profile" element={<EditProfile user={user} />} />
+
     </Routes>
   );
 };

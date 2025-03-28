@@ -41,7 +41,7 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 app.use(authRoutes);
 app.use(mapRoutes);
 app.use("/vendor", vendorRouter);
-app.use('/user', userRoutes);
+app.use('/users', userRoutes);
 
 app.get("*", (req, res) => {
   res.sendFile("index.html", { root: path.join(__dirname, "..", "dist") });

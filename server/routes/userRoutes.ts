@@ -26,6 +26,30 @@ router.get('/user/me', (req, res) => {
     );
 });
 
+// PATCH /users/:userId - update name and profile picture
+router.patch("/:userId", (req, res) => {
+    const { userId } = req.params;
+    const { name, profile_picture } = req.body;
+  
+    User.update(
+      { name, profile_picture },
+      { where: { id: userId } }
+    )
+      .then(([updatedRows]) => {
+        if (updatedRows === 0) {
+          res.status(404).json({ message: "User not found or unchanged" });
+        } else {
+          res.status(200).json({ message: "User updated" });
+        }
+      })
+      .catch((err) => {
+        console.error("PATCH /users/:userId error:", err);
+        res.status(500).json({ message: "Server error" });
+      });
+  });
+
+
+
 // POST /user/me - create a user if it doesnt exist (uses req.user from Google)
 router.post('/user/me', (req, res) => {
   const user = req.user as User;
