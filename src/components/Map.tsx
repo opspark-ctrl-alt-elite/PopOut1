@@ -6,10 +6,21 @@ import {
   Autocomplete,
   InfoWindow,
 } from "@react-google-maps/api";
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Typography,
+  Avatar,
+  Stack,
+  IconButton,
+  InputBase,
+} from "@mui/material";
+import { Link } from "react-router-dom";
 
 const containerStyle = {
   width: "100%",
-  height: "400px",
+  height: "calc(100vh - 64px)",
 };
 
 const center = {
@@ -17,7 +28,7 @@ const center = {
   lng: -90.0715,
 };
 
-const libraries: "places"[] = ["places"];
+const libraries: ("places")[] = ["places"];
 
 const Map: React.FC = () => {
   const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
@@ -37,14 +48,11 @@ const Map: React.FC = () => {
           const { latitude, longitude } = position.coords;
           setSelected({ lat: latitude, lng: longitude });
         },
-        (error) => {
-          console.warn(error);
-        }
+        (error) => console.warn(error)
       );
     }
   }, []);
 
-  // nearby events
   useEffect(() => {
     if (!selected) return;
 
@@ -59,36 +67,62 @@ const Map: React.FC = () => {
         console.error("err fetching nearby events", err);
       }
     };
+
     fetchEvents();
   }, [selected]);
 
   if (!isLoaded) return <div>Loading...</div>;
 
   return (
-    <div>
-      <Autocomplete
-        onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-        onPlaceChanged={() => {
-          const place = autocompleteRef.current?.getPlace();
-          const location = place?.geometry?.location;
-          if (location) {
-            setSelected({ lat: location.lat(), lng: location.lng() });
-          }
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Search..."
-          style={{
-            width: "240px",
-            height: "32px",
-            padding: "0 12px",
-            borderRadius: "4px",
-            marginBottom: "10px",
+    <Box>
+      {/* HOME HEADER */}
+      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
+        <Toolbar
+          sx={{
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            gap: 2,
+            px: 2,
+            py: 1,
           }}
-        />
-      </Autocomplete>
+        >
+          {/* LOGO */}
+          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+            <Typography variant="h5" fontWeight="bold">
+              PopOut
+            </Typography>
 
+            {/* SEARCH */}
+            <Autocomplete
+              onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+              onPlaceChanged={() => {
+                const place = autocompleteRef.current?.getPlace();
+                const location = place?.geometry?.location;
+                if (location) {
+                  setSelected({ lat: location.lat(), lng: location.lng() });
+                }
+              }}
+            >
+              <InputBase
+                placeholder="Search by location..."
+                sx={{
+                  px: 2,
+                  py: 0.5,
+                  border: "1px solid #ccc",
+                  borderRadius: 2,
+                  width: 250,
+                }}
+              />
+            </Autocomplete>
+          </Stack>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <IconButton component={Link} to="/userprofile">
+              <Avatar src="/default-profile.png" alt="User" />
+            </IconButton>
+          </Stack>
+        </Toolbar>
+      </AppBar>
+      {/* MAP */}
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={selected || center}
@@ -135,7 +169,7 @@ const Map: React.FC = () => {
           />
         )}
       </GoogleMap>
-    </div>
+    </Box>
   );
 };
 
