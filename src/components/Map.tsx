@@ -4,6 +4,7 @@ import {
   Marker,
   useLoadScript,
   Autocomplete,
+  InfoWindow
 } from "@react-google-maps/api";
 
 const containerStyle = {
@@ -20,6 +21,7 @@ const libraries: ("places")[] = ["places"];
 
 const Map: React.FC = () => {
   const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
+  const [activeEvent, setActiveEvent] = useState<any | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
@@ -75,18 +77,36 @@ const Map: React.FC = () => {
       </Autocomplete>
 
       <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={selected || center}
-        zoom={12}
-      >
-        {events.map((event, i) => (
-          <Marker
-            key={i}
-            position={{ lat: event.latitude, lng: event.longitude }}
-            title={event.title}
-          />
-        ))}
-      </GoogleMap>
+  mapContainerStyle={containerStyle}
+  center={selected || center}
+  zoom={12}
+>
+  {events.map((event, i) => (
+    <Marker
+      key={i}
+      position={{ lat: event.latitude, lng: event.longitude }}
+      title={event.title}
+      onClick={() => setActiveEvent(event)}
+    />
+  ))}
+  {activeEvent && (
+    <InfoWindow
+      position={{
+        lat: activeEvent.latitude,
+        lng: activeEvent.longitude,
+      }}
+      onCloseClick={() => setActiveEvent(null)}
+    >
+      <div style={{ maxWidth: "200px" }}>
+        <h4 style={{ margin: "0 0 4px" }}>{activeEvent.title}</h4>
+        <p style={{ margin: 0 }}>{activeEvent.venue_name}</p>
+        <p style={{ margin: "4px 0 0", fontSize: "0.85rem", color: "#666" }}>
+          Category: {activeEvent.category}
+        </p>
+      </div>
+    </InfoWindow>
+  )}
+</GoogleMap>
     </div>
   );
 };
