@@ -61,6 +61,7 @@ const App: React.FC = () => {
           return res.json();
         })
         .then((data) => {
+          console.log("Client Side: getting all vendors: ", data);
           if (data) {
             setVendors(data);
           }
