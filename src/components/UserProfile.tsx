@@ -62,16 +62,18 @@ const UserProfile: React.FC<Props> = ({ user }) => {
         </Toolbar>
       </AppBar>
 
+      {/* BODY */}
       <Container maxWidth="md" sx={{ mt: 6 }}>
         {user ? (
           <Box>
-            {/* PROFILE */}
+            {/* Top Row: Name, Email, Avatar, Edit Profile */}
             <Stack
               direction="row"
               alignItems="center"
               justifyContent="space-between"
               spacing={4}
               sx={{ mb: 4 }}
+              flexWrap="wrap"
             >
               <Stack direction="row" spacing={2} alignItems="center">
                 <Avatar
@@ -89,18 +91,44 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                 </Box>
               </Stack>
 
-              <Button variant="outlined" size="small">
+              <Button
+                variant="outlined"
+                size="small"
+                component={Link}
+                to="/edit-profile"
+              >
                 Edit Profile
               </Button>
             </Stack>
+
+            {/* Profile Links */}
             <Stack spacing={2}>
-              <Button variant="contained" color="success" fullWidth>
+              <Button
+                variant="contained"
+                color="secondary"
+                fullWidth
+                component={Link}
+                to="/bookmarks"
+              >
                 Bookmarked / Upcoming Events
               </Button>
-              <Button variant="contained" color="info" fullWidth>
+
+              <Button
+                variant="contained"
+                color="info"
+                fullWidth
+                component={Link}
+                to="/followed-vendors"
+              >
                 Vendors You Follow
               </Button>
-              <Button variant="contained" fullWidth>
+
+              <Button
+                variant="contained"
+                fullWidth
+                component={Link}
+                to="/preferences"
+              >
                 User Preferences
               </Button>
 
@@ -113,6 +141,15 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                 fullWidth
               >
                 Become a Vendor
+              </Button>
+
+              <Button
+                component={Link}
+                to="/vendorprofile"
+                variant="text"
+                fullWidth
+              >
+                View Vendor Profile
               </Button>
             </Stack>
           </Box>
