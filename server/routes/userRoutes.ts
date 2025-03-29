@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import User from '../models/User';
+import { Category } from '../models/Category';
 import router from './authRoutes';
 
 const allowedCategories = [
@@ -51,28 +52,112 @@ router.patch("/:userId", (req, res) => {
 
 
 // POST /user/me - create a user if it doesnt exist (uses req.user from Google)
+// router.post('/user/me', (req, res) => {
+//   const user = req.user as User;
+//   if (!user) return res.status(401).send({ error: 'Not logged in' });
+
+//   const { categories, location, is_vendor } = req.body;
+
+//   // Validate categories and vendor type
+//   if (categories && !allowedCategories.includes(categories)) {
+//     return res.status(400).send({ error: 'Invalid category value.' });
+//   }
+
+//   if (is_vendor !== undefined && typeof is_vendor !== 'boolean') {
+//     return res.status(400).send({ error: '`is_vendor` must be a boolean.' });
+//   }
+
+//   // Find or create user
+//   User.findOne({ where: { email: user.email } })
+//     .then((existingUser: User | null) => {
+//       if (existingUser) {
+//         res
+//           .status(200)
+//           .send({ message: 'User already exists', user: existingUser });
+//         return;
+//       }
+
+//       return User.create({
+//         google_id: user.id,
+//         email: user.email,
+//         name: user.name,
+//         profile_picture: user.profile_picture ?? null,
+//         // categories,
+//         location,
+//         is_vendor: is_vendor ?? false
+//       }).then(newUser => {
+//         res.status(201).send({ message: 'User created', user: newUser });
+//       });
+//     })
+//     .catch(err => {
+//       res
+//         .status(500)
+//         .send({ error: 'Failed to create/find user', details: err });
+//     });
+// });
+
+// PATCH /user/me - update user preferences
+// router.patch('/user/me', (req, res) => {
+//   const user = req.user as User;
+//   if (!user) return res.status(401).send({ error: 'Not logged in' });
+
+//   const { categories, location, is_vendor } = req.body;
+
+//   if (categories && !allowedCategories.includes(categories)) {
+//     return res.status(400).send({ error: 'Invalid category value.' });
+//   }
+
+//   if (is_vendor !== undefined && typeof is_vendor !== 'boolean') {
+//     return res.status(400).send({ error: '`is_vendor` must be a boolean.' });
+//   }
+
+//   User.findOne({ where: { email: user.email } })
+//     .then((dbUser: any) => {
+//       if (!dbUser) {
+//         res.status(404).send({ error: 'User not found in DB' });
+//         return;
+//       }
+
+//       return dbUser.update({
+//         ...(categories !== undefined && { categories }),
+//         ...(location !== undefined && { location }),
+//         ...(is_vendor !== undefined && { is_vendor })
+//       });
+//     })
+//     .then(updatedUser => {
+//       if (!updatedUser) return;
+//       res.status(200).send({
+//         message: 'User preferences updated.',
+//         updated: {
+//           categories: updatedUser?.categories,
+//           location: updatedUser?.location,
+//           is_vendor: updatedUser?.is_vendor
+//         }
+//       });
+//     })
+//     .catch(err => {
+//       res.status(500).send({ error: 'Failed to update user', details: err });
+//     });
+// });
+
 router.post('/user/me', (req, res) => {
   const user = req.user as User;
   if (!user) return res.status(401).send({ error: 'Not logged in' });
 
   const { categories, location, is_vendor } = req.body;
 
-  // Validate categories and vendor type
-  if (categories && !allowedCategories.includes(categories)) {
-    return res.status(400).send({ error: 'Invalid category value.' });
+  if (categories && !Array.isArray(categories)) {
+    return res.status(400).send({ error: 'Categories must be an array.' });
   }
 
   if (is_vendor !== undefined && typeof is_vendor !== 'boolean') {
     return res.status(400).send({ error: '`is_vendor` must be a boolean.' });
   }
 
-  // Find or create user
   User.findOne({ where: { email: user.email } })
     .then((existingUser: User | null) => {
       if (existingUser) {
-        res
-          .status(200)
-          .send({ message: 'User already exists', user: existingUser });
+        res.status(200).send({ message: 'User already exists', user: existingUser });
         return;
       }
 
@@ -81,28 +166,41 @@ router.post('/user/me', (req, res) => {
         email: user.email,
         name: user.name,
         profile_picture: user.profile_picture ?? null,
-        categories,
         location,
         is_vendor: is_vendor ?? false
       }).then(newUser => {
-        res.status(201).send({ message: 'User created', user: newUser });
+        if (categories && categories.length > 0) {
+
+          Category.findAll({
+            where: {
+              name: categories
+            }
+          }).then((categoryInstances) => {
+            newUser.setCategories(categoryInstances);
+            res.status(201).send({ message: 'User created', user: newUser });
+          });
+        } else {
+          res.status(201).send({ message: 'User created', user: newUser });
+        }
       });
     })
     .catch(err => {
-      res
-        .status(500)
-        .send({ error: 'Failed to create/find user', details: err });
+      res.status(500).send({ error: 'Failed to create/find user', details: err });
     });
 });
 
-// PATCH /user/me - update user preferences
-router.patch('/user/me', (req, res) => {
+// PATCH
+router.patch('/user/me', async (req, res) => {
   const user = req.user as User;
   if (!user) return res.status(401).send({ error: 'Not logged in' });
 
   const { categories, location, is_vendor } = req.body;
 
-  if (categories && !allowedCategories.includes(categories)) {
+  if (categories && !Array.isArray(categories)) {
+    return res.status(400).send({ error: 'Categories must be an array.' });
+  }
+
+  if (categories && categories.some((category: string) => !allowedCategories.includes(category))) {
     return res.status(400).send({ error: 'Invalid category value.' });
   }
 
@@ -110,34 +208,56 @@ router.patch('/user/me', (req, res) => {
     return res.status(400).send({ error: '`is_vendor` must be a boolean.' });
   }
 
-  User.findOne({ where: { email: user.email } })
-    .then((dbUser: any) => {
-      if (!dbUser) {
-        res.status(404).send({ error: 'User not found in DB' });
-        return;
-      }
+  try {
+    const dbUser = await User.findOne({ where: { email: user.email } });
 
-      return dbUser.update({
-        ...(categories !== undefined && { categories }),
-        ...(location !== undefined && { location }),
-        ...(is_vendor !== undefined && { is_vendor })
+    if (!dbUser) {
+      return res.status(404).send({ error: 'User not found in DB' });
+    }
+
+    // location and is_vendor
+    await dbUser.update({
+      location,
+      is_vendor
+    });
+
+    // cats
+    if (categories) {
+      const categoryInstances = await Category.findAll({
+        where: {
+          name: categories
+        }
       });
-    })
-    .then(updatedUser => {
-      if (!updatedUser) return;
+
+      // setCat
+      await dbUser.setCategories(categoryInstances);
+
+      // fetch
+      const updatedCategories = await dbUser.getCategories();
+
       res.status(200).send({
         message: 'User preferences updated.',
         updated: {
-          categories: updatedUser?.categories,
-          location: updatedUser?.location,
-          is_vendor: updatedUser?.is_vendor
+          categories: updatedCategories,
+          location: dbUser.location,
+          is_vendor: dbUser.is_vendor,
         }
       });
-    })
-    .catch(err => {
-      res.status(500).send({ error: 'Failed to update user', details: err });
-    });
+    } else {
+      res.status(200).send({
+        message: 'User preferences updated.',
+        updated: {
+          location: dbUser.location,
+          is_vendor: dbUser.is_vendor,
+        }
+      });
+    }
+  } catch (err) {
+    res.status(500).send({ error: 'Failed to update user', details: err });
+  }
 });
+
+
 
 // DELETE /user/me - WILL DESTROY
 router.delete('/user/me', (req, res) => {
