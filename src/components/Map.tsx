@@ -18,6 +18,13 @@ import {
 } from "@mui/material";
 import { Link } from "react-router-dom";
 
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BrushIcon from "@mui/icons-material/Brush";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SportsHandballIcon from "@mui/icons-material/SportsHandball";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import PlaceIcon from "@mui/icons-material/Place";
+
 type User = {
   id: string;
   name: string;
@@ -26,7 +33,6 @@ type User = {
 };
 
 type Props = {
-  // user: User
   user: User | null;
 };
 
@@ -41,6 +47,38 @@ const center = {
 };
 
 const libraries: ("places")[] = ["places"];
+
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case "Food & Drink":
+      return <RestaurantIcon fontSize="small" />;
+    case "Art":
+      return <BrushIcon fontSize="small" />;
+    case "Music":
+      return <MusicNoteIcon fontSize="small" />;
+    case "Sports & Fitness":
+      return <SportsHandballIcon fontSize="small" />;
+    case "Hobbies":
+      return <EmojiEmotionsIcon fontSize="small" />;
+    default:
+      return <PlaceIcon fontSize="small" />;
+  }
+};
+
+const getMarkerIcon = (category: string) => {
+  switch (category) {
+    case "Food & Drink":
+      return "http://maps.google.com/mapfiles/ms/icons/orange-dot.png";
+    case "Art":
+      return "http://maps.google.com/mapfiles/ms/icons/purple-dot.png";
+    case "Music":
+      return "http://maps.google.com/mapfiles/ms/icons/red-dot.png";
+    case "Sports & Fitness":
+      return "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
+    case "Hobbies":
+      return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+  }
+};
 
 const Map: React.FC<Props> = ({ user }) => {
   const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
@@ -151,14 +189,17 @@ const Map: React.FC<Props> = ({ user }) => {
         center={selected || center}
         zoom={12}
       >
-        {events.map((event, i) => (
-          <Marker
-            key={i}
-            position={{ lat: event.latitude, lng: event.longitude }}
-            title={event.title}
-            onClick={() => setActiveEvent(event)}
-          />
-        ))}
+      {events.map((event, i) => (
+  <Marker
+    key={i}
+    position={{ lat: event.latitude, lng: event.longitude }}
+    title={event.title}
+    onClick={() => setActiveEvent(event)}
+    icon={{
+      url: getMarkerIcon(event.category),
+    }}
+  />
+))}
         {activeEvent && (
           <InfoWindow
             position={{
@@ -176,9 +217,12 @@ const Map: React.FC<Props> = ({ user }) => {
                   margin: "4px 0 0",
                   fontSize: "0.85rem",
                   color: "#666",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
                 }}
               >
-                Category: {activeEvent.category}
+                {getCategoryIcon(activeEvent.category)} {activeEvent.category}
               </p>
             </div>
           </InfoWindow>
