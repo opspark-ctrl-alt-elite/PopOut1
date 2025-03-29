@@ -9,7 +9,7 @@ import session from "express-session";
 import authRoutes from './routes/authRoutes';
 import mapRoutes from "./routes/mapRoutes";
 import userRoutes from './routes/userRoutes'
-import vendorRouter from "./routes/vendorRoutes";
+import vendorRoutes from "./routes/vendorRoutes";
 import eventRoutes from './routes/eventRoutes';
 
 
@@ -42,7 +42,7 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 //routes
 app.use(authRoutes);
 app.use(mapRoutes);
-app.use("/vendor", vendorRouter);
+app.use("/vendor", vendorRoutes);
 app.use('/user', userRoutes);
 app.use('/events', eventRoutes);
 

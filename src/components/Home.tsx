@@ -39,6 +39,8 @@ type Props = {
 };
 
 const Home: React.FC<Props> = ({ user, vendors }) => {
+  console.log(user);
+  console.log(vendors);
   return (
     <Box>
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
