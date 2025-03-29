@@ -16,12 +16,11 @@ import {
   Card,
   Chip,
   TextField,
-
+  AppBar,
+  Toolbar,
+  Avatar,
+  Divider,
 } from "@mui/material";
-
-import {
-  Circle
-} from "@mui/icons-material";
 
 type Vendor = {
   id: string;
@@ -62,13 +61,13 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
   // set default state values;
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [fields, setFields] = useState<Fields>({
-    businessName: '',
-    email: '',
-    profilePicture: '',
-    description: '',
-    website: '',
-    instagram: '',
-    facebook: ''
+    businessName: "",
+    email: "",
+    profilePicture: "",
+    description: "",
+    website: "",
+    instagram: "",
+    facebook: "",
   });
   // modal states
   const [openDelete, setOpenDelete] = React.useState(false);
@@ -86,7 +85,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       const vendorObj = await axios.get(`/vendor/${user.id}`);
       console.log("retrieved vendor object for current user:");
       console.log(vendorObj);
-      setVendor( vendorObj.data );
+      setVendor(vendorObj.data);
     } catch (err) {
       // error handling
       // set the vendor in state to null
@@ -94,7 +93,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       setVendor(null);
       console.error("Error retrieving vendor record: ", err);
     }
-  }
+  };
 
   // alters the current user's vendor record with changes from the fields in state
   const updateVendor = async () => {
@@ -103,7 +102,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       const trimmedFields = {};
       const keys: string[] = Object.keys(fields);
       for (let i = 0; i < keys.length; i++) {
-        if (fields[keys[i]] !== '') {
+        if (fields[keys[i]] !== "") {
           trimmedFields[keys[i]] = fields[keys[i]];
         }
       }
@@ -117,7 +116,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       // error handling
       console.error("Error updating vendor record: ", err);
     }
-  }
+  };
 
   // deletes the current user's vendor record from the state
   const deleteVendor = async () => {
@@ -131,7 +130,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       // error handling
       console.error("Error deleting vendor record: ", err);
     }
-  }
+  };
 
   const handleUpdateFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -141,41 +140,134 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     }));
   };
 
-
-
-
-
-
-
-
-
   console.log(vendor);
   const style = {
-    position: 'absolute',
-    top: '50%',
-    left: '50%',
-    transform: 'translate(-50%, -50%)',
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
     width: 400,
-    bgcolor: 'background.paper',
-    border: '2px solid #000',
+    bgcolor: "background.paper",
+    border: "2px solid #000",
     boxShadow: 24,
     p: 4,
   };
 
-
-
-
-
-  
-
-
   return (
     <div>
-      <Grid2 container spacing={2}>
-        <Grid2 size={3}>
-          <Button onClick={() => { setOpenEdit(true) }}>
-            Edit profile
-          </Button>
+      {/* HEADER */}
+      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
+        <Toolbar sx={{ justifyContent: "space-between", px: 2, py: 1 }}>
+          <Typography
+            component={Link}
+            to="/"
+            variant="h5"
+            fontWeight="bold"
+            sx={{ textDecoration: "none", color: "inherit" }}
+          >
+            PopOut
+          </Typography>
+          {user && (
+            <Stack direction="row" spacing={2} alignItems="center">
+              <IconButton component={Link} to="/userprofile">
+                <Avatar
+                  src={user.profile_picture}
+                  alt={user.name}
+                  sx={{ width: 40, height: 40 }}
+                />
+              </IconButton>
+              <Button variant="outlined" href="/auth/logout" color="error">
+                Logout
+              </Button>
+            </Stack>
+          )}
+        </Toolbar>
+      </AppBar>
+
+      <Container sx={{ mt: 4 }}>
+        {vendor ? (
+          <Box>
+            {/* Top Row: Name, Email, Avatar, Edit Profile */}
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              spacing={4}
+              sx={{ mb: 4 }}
+              flexWrap="wrap"
+            >
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Avatar
+                  src={vendor.profilePicture}
+                  alt={vendor.businessName}
+                  sx={{ width: 56, height: 56 }}
+                />
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    {vendor.businessName}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {vendor.email}
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setOpenEdit(true)}
+              >
+                Edit Profile
+              </Button>
+            </Stack>
+
+            {/* profile links */}
+            <Stack spacing={2}>
+              <Button
+                variant="contained"
+                color="secondary"
+                fullWidth
+                component={Link}
+                to="/active-events"
+              >
+                Active Events
+              </Button>
+              <Button
+                variant="contained"
+                fullWidth
+                component={Link}
+                to="/create-event"
+              >
+                Create New Event
+              </Button>
+              <Button
+                variant="contained"
+                fullWidth
+                component={Link}
+                to="/reviews"
+              >
+                Reviews
+              </Button>
+              <Divider />
+              <Button
+                variant="outlined"
+                fullWidth
+                component={Link}
+                to="/userprofile"
+              >
+                View User Profile
+              </Button>
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                onClick={() => setOpenDelete(true)}
+              >
+                Delete Vendor
+              </Button>
+            </Stack>
+
+            {/* edit vendor */}
             <Modal open={openEdit}>
               <Box sx={style}>
                 <Typography variant="h6" component="h2">
@@ -183,7 +275,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                 </Typography>
                 <TextField
                   name="businessName"
-                  label="Name of Business"
+                  label="Business Name"
                   fullWidth
                   margin="normal"
                   value={fields.businessName}
@@ -199,7 +291,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                 />
                 <TextField
                   name="profilePicture"
-                  label="Profile Picture link (will eventually be upload)"
+                  label="Profile Picture Link"
                   fullWidth
                   margin="normal"
                   value={fields.profilePicture}
@@ -215,7 +307,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                 />
                 <TextField
                   name="website"
-                  label="Website Link"
+                  label="Website"
                   fullWidth
                   margin="normal"
                   value={fields.website}
@@ -237,83 +329,58 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                   value={fields.facebook}
                   onChange={handleUpdateFieldChange}
                 />
-                <Button onClick={() => {updateVendor(); setOpenEdit(false) }} variant="outlined" sx={{ color: 'red', outlineColor: 'red' }}>
+                <Button
+                  onClick={() => {
+                    updateVendor();
+                    setOpenEdit(false);
+                  }}
+                  variant="outlined"
+                >
                   Confirm
                 </Button>
-                <Button onClick={() => { setOpenEdit(false) }} variant="outlined">
+                <Button
+                  onClick={() => {
+                    setOpenEdit(false);
+                  }}
+                  variant="outlined"
+                >
                   Cancel
                 </Button>
               </Box>
             </Modal>
-        </Grid2>
-        <Grid2 size={6}>
-          <Typography>
-            PUT MAIN DIV HERE EVeNTUALLY
+
+            {/* delete vendor */}
+            <Modal open={openDelete}>
+              <Box sx={style}>
+                <Typography variant="h6" component="h2">
+                  Are you sure?
+                </Typography>
+                <Button
+                  onClick={() => {
+                    deleteVendor();
+                    setOpenDelete(false);
+                  }}
+                  variant="outlined"
+                  color="error"
+                >
+                  Yes
+                </Button>
+                <Button
+                  onClick={() => {
+                    setOpenDelete(false);
+                  }}
+                  variant="outlined"
+                >
+                  No
+                </Button>
+              </Box>
+            </Modal>
+          </Box>
+        ) : (
+          <Typography variant="h4" textAlign="center" mt={4}>
+            No Vendor Found
           </Typography>
-        </Grid2>
-        <Grid2 size={3}>
-          <Button>
-            do nothing button hobo =)
-          </Button>
-        </Grid2>
-      </Grid2>
-      <Container sx={{ display:"flex", justifyContent: 'center', height: '100vh' }}>
-        <Stack spacing={2} sx={{ display:"flex", justifyContent: 'center', height: '100vh' }}>
-          <h1>PopOut</h1>
-          {vendor ? (
-            <div>
-              <Typography variant="h3">{vendor.businessName}</Typography>
-              {vendor.profilePicture && (
-                <img src={vendor.profilePicture} alt="Profile" width={50} />
-              )}
-              <br />
-              <Card sx={{ display:"flex", justifyContent: 'center', height: '75vh', width: '60vh' }}>
-                <Stack spacing={1} sx={{ display:"flex", justifyContent: 'center', height: '100vh' }}>
-                  <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
-                    Active Events
-                  </Button>
-                  <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
-                    Create New Event
-                  </Button>
-                  <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
-                    Reviews
-                  </Button>
-                  <Link to="/">
-                    <Button variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh'}}>
-                      View User Profile
-                    </Button>
-                  </Link>
-                  <Button onClick={() => { setOpenDelete(true) }} variant="outlined" sx={{ display:"flex", justifyContent: 'center', alignContent: 'center' , height: '10vh', width: '50vh', color: 'red', outlineColor: 'red' }}>
-                    Delete
-                  </Button>
-                  <Modal open={openDelete}>
-                    <Box sx={style}>
-                      <Typography variant="h6" component="h2">
-                        Are you sure?
-                      </Typography>
-                      <Button onClick={() => {deleteVendor(); setOpenDelete(false) }} variant="outlined" sx={{ color: 'red', outlineColor: 'red' }}>
-                        Yes
-                      </Button>
-                      <Button onClick={() => { setOpenDelete(false) }} variant="outlined">
-                        No
-                      </Button>
-                    </Box>
-                  </Modal>
-                </Stack>
-              </Card>
-              <a href="/auth/logout">Logout</a>
-              <br />
-              <Link to="/">Home</Link>
-              <br />
-              <Link to="/userprofile">View User Profile</Link>
-            </div>
-          ) : (
-            <Stack spacing={2} sx={{ display:"flex", justifyContent: 'center', height: '100vh' }}>
-              <Typography variant="h4">No Vendor Found</Typography>
-              <Link to="/">Home</Link>
-            </Stack>
-          )}
-        </Stack>
+        )}
       </Container>
     </div>
   );
