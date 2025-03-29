@@ -1,12 +1,12 @@
-// src/components/Home.tsx
 import React from "react";
 import { Link } from "react-router-dom";
-
 import {
   Box,
-  Modal,
   Button,
-  
+  Stack,
+  Typography,
+  Avatar,
+  Container,
 } from "@mui/material";
 
 type User = {
@@ -22,26 +22,103 @@ type Props = {
 
 const UserProfile: React.FC<Props> = ({ user }) => {
   return (
-    <div>
-      <h1>PopOut</h1>
+    <Container sx={{ py: 4 }}>
+      <Typography variant="h3" gutterBottom>PopOut</Typography>
+
       {user ? (
-        <div>
-          <p>Welcome, {user.name}</p>
+        <>
+          <Typography variant="h5" gutterBottom>
+            Welcome, {user.name}
+          </Typography>
+
           {user.profile_picture && (
-            <img src={user.profile_picture} alt="Profile" width={50} />
+            <Avatar
+              src={user.profile_picture}
+              alt="Profile"
+              sx={{ width: 64, height: 64, mb: 2 }}
+            />
           )}
-          <br />
-          <a href="/auth/logout">Logout</a>
-          <br />
-          <Link to="/">Home</Link>
-          <br />
-          <Link to="/vendorprofile">View Vendor Profile</Link>
-        </div>
+
+          <Stack spacing={1} direction="column" sx={{ maxWidth: 400, mb: 3 }}>
+            <Button
+              variant="contained"
+              size="small"
+              component={Link}
+              to="/edit-profile"
+              sx={{
+                textTransform: 'none',
+                '&:hover': {
+                  boxShadow: '0 0 10px rgba(0, 123, 255, 0.8)'
+                }
+              }}
+            >
+              Edit Profile
+            </Button>
+
+            <Button
+              variant="outlined"
+              size="small"
+              component={Link}
+              to="/preferences"
+              sx={{
+                textTransform: 'none',
+                '&:hover': {
+                  boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)'
+                }
+              }}
+            >
+              User Preferences
+            </Button>
+
+            <Button
+              variant="contained"
+              size="small"
+              color="secondary"
+              component={Link}
+              to="/bookmarks"
+              sx={{
+                textTransform: 'none',
+                '&:hover': {
+                  boxShadow: '0 0 10px rgba(156, 39, 176, 0.8)'
+                }
+              }}
+            >
+              Bookmarked / Upcoming Events
+            </Button>
+
+            <Button
+              variant="outlined"
+              size="small"
+              color="error"
+              component={Link}
+              to="/followed-vendors"
+              sx={{
+                textTransform: 'none',
+                '&:hover': {
+                  boxShadow: '0 0 10px rgba(244, 67, 54, 0.6)'
+                }
+              }}
+            >
+              Vendors You Follow
+            </Button>
+          </Stack>
+
+          <Box>
+            <Button component={Link} to="/auth/logout" color="secondary" size="small">
+              Logout
+            </Button>
+            <Button component={Link} to="/" color="secondary" size="small" sx={{ ml: 2 }}>
+              Home
+            </Button>
+            <Button component={Link} to="/vendorprofile" color="secondary" size="small" sx={{ ml: 2 }}>
+              View Vendor Profile
+            </Button>
+          </Box>
+        </>
       ) : (
-        // <a href="/auth/google">Login with Google</a>
-        <div>no user found</div>
+        <Typography variant="body1">No user found</Typography>
       )}
-    </div>
+    </Container>
   );
 };
 
