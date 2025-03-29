@@ -66,12 +66,16 @@ vendorRouter.post("/:userId", async (req, res) => {
       // send back 404 error if the user cannot be found
       console.error("Could not find vendor record for given user");
       res.sendStatus(404);
+      // ADVISE
+      // res.status(404).send("Could not find vendor record for given user");
     }
     /* While this "else if" block is technically unneeded, it does allow the sending back of the 403 status code */
     else if (user.is_vendor === true) {
       // send back 403 error if the user already has a vendor
       console.error("Given user already has an associated vendor record");
       res.sendStatus(403);
+      // ADVISE
+      // res.status(403).send("Given user already has an associated vendor record");
     } else {
       // otherwise, add userId to the vendorObj
       vendorObj.userId = userId;
@@ -118,6 +122,8 @@ vendorRouter.patch("/:userId", async (req, res) => {
     // generic error handling
     console.error("Error PATCHING vendor record", err);
     res.sendStatus(500);
+    // ADVISE: MAY SWITCH TO USING ERROR MESSAGES
+    // res.status(500).send("Error PATCHING vendor record");
   }
 });
 
