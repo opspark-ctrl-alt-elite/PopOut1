@@ -137,7 +137,7 @@ const Map: React.FC<Props> = ({ user }) => {
           <Stack direction="row" spacing={2} alignItems="center">
             <IconButton component={Link} to="/userprofile">
               <Avatar
-                src={user?.profile_picture || "/default-profile.png"}
+                src={user?.profile_picture}
                 alt={user?.name || "User"}
               />
             </IconButton>
