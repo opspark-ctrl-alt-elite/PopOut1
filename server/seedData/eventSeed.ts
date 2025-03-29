@@ -45,6 +45,60 @@ const seedEvents = async () => {
         isSober: false,
         image_url: "https://example.com/frenchmen.jpg",
       },
+
+      {
+        id: uuidv4(),
+        vendor_id: vendors[0].id,
+        title: "NOLA Vibe Yoga",
+        description: "The original social, pop-up yoga studio in New Orleans!",
+        category: "Sports & Fitness",
+        startDate: new Date("2025-05-08T08:00:00Z"),
+        endDate: new Date("2025-05-08T09:30:00Z"),
+        venue_name: "Hotel Peter & Paul",
+        latitude: 29.966907845551024,
+        longitude: -90.0551813502706,
+        isFree: true,
+        isKidFriendly: true,
+        isSober: true,
+        image_url: "https://example.com/yoga.jpg",
+      },
+
+      {
+        id: uuidv4(),
+        vendor_id: vendors[0].id,
+        title: "Jam NOLA",
+        description: "Enjoy 17 exhibits celebrating the iconic art, music, food and theatrics of New Orleans.",
+        category: "Music",
+        startDate: new Date("2025-05-14T19:00:00Z"),
+        endDate: new Date("2025-05-14T23:00:00Z"),
+        venue_name: "JAMNOLA",
+        latitude: 29.96426016552257,
+        longitude: -90.0490237588402,
+        isFree: false,
+        isKidFriendly: true,
+        isSober: false,
+        image_url: "https://example.com/jamnola.jpg",
+      },
+
+      {
+        id: uuidv4(),
+        vendor_id: vendors[0].id,
+        title: "King Katsu",
+        description: "Japanese inspired pop up.",
+        category: "Food & Drink",
+        startDate: new Date("2025-05-10T11:00:00Z"),
+        endDate: new Date("2025-05-10T17:00:00Z"),
+        venue_name: "Bar Redux",
+        latitude: 29.96186569999901,
+        longitude: -90.03218525705931,
+        isFree: false,
+        isKidFriendly: false,
+        isSober: false,
+        image_url: "https://example.com/kingkatsu.jpg",
+      },
+
+
+
     ];
 
     await Event.bulkCreate(events);
