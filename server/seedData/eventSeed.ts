@@ -1,5 +1,5 @@
-import Event from "../models/Event";
-import Vendor from "../models/Vendor";
+import Event from "../models/EventModel"; // Correct import
+import Vendor from "../models/Vendor"; // Correct import
 import { v4 as uuidv4 } from "uuid";
 
 const seedEvents = async () => {

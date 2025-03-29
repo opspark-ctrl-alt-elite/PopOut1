@@ -1,7 +1,7 @@
 import sequelize from "../models/index";
 import { QueryTypes } from "sequelize";
 import { Router } from "express";
-import Event from "../models/Event";
+import Event from "../models/EventModel";
 
 const router = Router();
 

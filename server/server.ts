@@ -10,6 +10,8 @@ import authRoutes from './routes/authRoutes';
 import mapRoutes from "./routes/mapRoutes";
 import userRoutes from './routes/userRoutes'
 import vendorRouter from "./routes/vendorRoutes";
+import eventRoutes from './routes/eventRoutes';
+
 
 dotenv.config();
 const app = express();
@@ -42,6 +44,12 @@ app.use(authRoutes);
 app.use(mapRoutes);
 app.use("/vendor", vendorRouter);
 app.use('/user', userRoutes);
+app.use('/events', eventRoutes);
+
+app.use((req, res, next) => {
+  console.log(`Incoming request: ${req.method} ${req.path}`);
+  next();
+});
 
 app.get("*", (req, res) => {
   res.sendFile("index.html", { root: path.join(__dirname, "..", "dist") });
