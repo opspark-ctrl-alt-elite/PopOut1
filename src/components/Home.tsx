@@ -1,5 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Typography,
+  Button,
+  Avatar,
+  Stack,
+  Container,
+  IconButton,
+} from "@mui/material";
 
 type User = {
   id: string;
@@ -29,29 +40,67 @@ type Props = {
 
 const Home: React.FC<Props> = ({ user, vendors }) => {
   return (
-    <div>
-      <h1>PopOut</h1>
-      {user ? (
-        <div>
-          <p>Welcome, {user.name}</p>
-          {user.profile_picture && (
-            <img src={user.profile_picture} alt="Profile" width={50} />
+    <Box>
+      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
+        <Toolbar
+          sx={{
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            gap: 2,
+            px: 2,
+            py: 1,
+          }}
+        >
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Typography variant="h5" fontWeight="bold">
+              PopOut
+            </Typography>
+
+            {user && (
+              <Button
+                component={Link}
+                to="/map"
+                variant="outlined"
+                size="small"
+              >
+                View Map
+              </Button>
+            )}
+          </Stack>
+
+          {user ? (
+            <Stack direction="row" spacing={2} alignItems="center">
+              <IconButton component={Link} to="/userprofile">
+                <Avatar src={user.profile_picture} alt={user.name} />
+              </IconButton>
+              <Button variant="outlined" href="/auth/logout" color="error">
+                Logout
+              </Button>
+            </Stack>
+          ) : (
+            <Button variant="contained" href="/auth/google">
+              Login with Google
+            </Button>
           )}
-          <br />
-          <a href="/auth/logout">Logout</a>
-          <br />
-          <Link to="/map">View Map</Link>
-          <br />
-          <Link to="/userprofile">View User Profile</Link>
-          <br />
-          <Link to="/vendorprofile">View Vendor Profile</Link>
-          <br />
-          <Link to="/vendor-signup">Become A Vendor</Link>
-        </div>
-      ) : (
-        <a href="/auth/google">Login with Google</a>
-      )}
-    </div>
+        </Toolbar>
+      </AppBar>
+
+      <Container sx={{ mt: 4 }}>
+        {user && (
+          <Stack spacing={2}>
+            <Button component={Link} to="/userprofile" variant="outlined">
+              View User Profile
+            </Button>
+            <Button component={Link} to="/vendorprofile" variant="outlined">
+              View Vendor Profile
+            </Button>
+            <Button component={Link} to="/vendor-signup" variant="outlined">
+              Become a Vendor
+            </Button>
+          </Stack>
+        )}
+      </Container>
+    </Box>
   );
 };
 

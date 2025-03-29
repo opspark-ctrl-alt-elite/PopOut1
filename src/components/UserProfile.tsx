@@ -1,12 +1,16 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import {
+  AppBar,
+  Toolbar,
   Box,
-  Button,
-  Stack,
   Typography,
   Avatar,
+  Stack,
+  IconButton,
   Container,
+  Button,
+  Divider,
 } from "@mui/material";
 
 type User = {
@@ -22,103 +26,140 @@ type Props = {
 
 const UserProfile: React.FC<Props> = ({ user }) => {
   return (
-    <Container sx={{ py: 4 }}>
-      <Typography variant="h3" gutterBottom>PopOut</Typography>
-
-      {user ? (
-        <>
-          <Typography variant="h5" gutterBottom>
-            Welcome, {user.name}
+    <Box>
+      {/* HEADER */}
+      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
+        <Toolbar
+          sx={{
+            justifyContent: "space-between",
+            px: 2,
+            py: 1,
+          }}
+        >
+          <Typography
+            component={Link}
+            to="/"
+            variant="h5"
+            fontWeight="bold"
+            sx={{ textDecoration: "none", color: "inherit" }}
+          >
+            PopOut
           </Typography>
-
-          {user.profile_picture && (
-            <Avatar
-              src={user.profile_picture}
-              alt="Profile"
-              sx={{ width: 64, height: 64, mb: 2 }}
-            />
+          {user && (
+            <Stack direction="row" spacing={2} alignItems="center">
+              <IconButton component={Link} to="/userprofile">
+                <Avatar
+                  src={user.profile_picture}
+                  alt={user.name}
+                  sx={{ width: 40, height: 40 }}
+                />
+              </IconButton>
+              <Button variant="outlined" href="/auth/logout" color="error">
+                Logout
+              </Button>
+            </Stack>
           )}
+        </Toolbar>
+      </AppBar>
 
-          <Stack spacing={1} direction="column" sx={{ maxWidth: 400, mb: 3 }}>
-            <Button
-              variant="contained"
-              size="small"
-              component={Link}
-              to="/edit-profile"
-              sx={{
-                textTransform: 'none',
-                '&:hover': {
-                  boxShadow: '0 0 10px rgba(0, 123, 255, 0.8)'
-                }
-              }}
-            >
-              Edit Profile
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="small"
-              component={Link}
-              to="/preferences"
-              sx={{
-                textTransform: 'none',
-                '&:hover': {
-                  boxShadow: '0 0 10px rgba(0, 0, 0, 0.2)'
-                }
-              }}
-            >
-              User Preferences
-            </Button>
-
-            <Button
-              variant="contained"
-              size="small"
-              color="secondary"
-              component={Link}
-              to="/bookmarks"
-              sx={{
-                textTransform: 'none',
-                '&:hover': {
-                  boxShadow: '0 0 10px rgba(156, 39, 176, 0.8)'
-                }
-              }}
-            >
-              Bookmarked / Upcoming Events
-            </Button>
-
-            <Button
-              variant="outlined"
-              size="small"
-              color="error"
-              component={Link}
-              to="/followed-vendors"
-              sx={{
-                textTransform: 'none',
-                '&:hover': {
-                  boxShadow: '0 0 10px rgba(244, 67, 54, 0.6)'
-                }
-              }}
-            >
-              Vendors You Follow
-            </Button>
-          </Stack>
-
+      {/* BODY */}
+      <Container maxWidth="md" sx={{ mt: 6 }}>
+        {user ? (
           <Box>
-            <Button component={Link} to="/auth/logout" color="secondary" size="small">
-              Logout
-            </Button>
-            <Button component={Link} to="/" color="secondary" size="small" sx={{ ml: 2 }}>
-              Home
-            </Button>
-            <Button component={Link} to="/vendorprofile" color="secondary" size="small" sx={{ ml: 2 }}>
-              View Vendor Profile
-            </Button>
+            {/* Top Row: Name, Email, Avatar, Edit Profile */}
+            <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              spacing={4}
+              sx={{ mb: 4 }}
+              flexWrap="wrap"
+            >
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Avatar
+                  src={user.profile_picture}
+                  alt={user.name}
+                  sx={{ width: 56, height: 56 }}
+                />
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    {user.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user.email}
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Button
+                variant="outlined"
+                size="small"
+                component={Link}
+                to="/edit-profile"
+              >
+                Edit Profile
+              </Button>
+            </Stack>
+
+            {/* Profile Links */}
+            <Stack spacing={2}>
+              <Button
+                variant="contained"
+                color="secondary"
+                fullWidth
+                component={Link}
+                to="/bookmarks"
+              >
+                Bookmarked / Upcoming Events
+              </Button>
+
+              <Button
+                variant="contained"
+                color="info"
+                fullWidth
+                component={Link}
+                to="/followed-vendors"
+              >
+                Vendors You Follow
+              </Button>
+
+              <Button
+                variant="contained"
+                fullWidth
+                component={Link}
+                to="/preferences"
+              >
+                User Preferences
+              </Button>
+
+              <Divider />
+
+              <Button
+                component={Link}
+                to="/vendor-signup"
+                variant="outlined"
+                fullWidth
+              >
+                Become a Vendor
+              </Button>
+
+              <Button
+                component={Link}
+                to="/vendorprofile"
+                variant="text"
+                fullWidth
+              >
+                View Vendor Profile
+              </Button>
+            </Stack>
           </Box>
-        </>
-      ) : (
-        <Typography variant="body1">No user found</Typography>
-      )}
-    </Container>
+        ) : (
+          <Typography textAlign="center" mt={4}>
+            No user found.
+          </Typography>
+        )}
+      </Container>
+    </Box>
   );
 };
 
