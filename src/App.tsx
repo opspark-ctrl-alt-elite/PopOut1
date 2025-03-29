@@ -5,6 +5,7 @@ import Home from "./components/Home";
 import VendorSignupForm from "./components/VendorSignupForm";
 import UserProfile from "./components/UserProfile";
 import VendorProfile from "./components/VendorProfile";
+import EditProfile from "./components/EditProfile";
 
 type User = {
   id: string;
@@ -74,8 +75,9 @@ const App: React.FC = () => {
   return (
     <Routes>
       <Route path="/" element={<Home user={user} vendors={vendors} />} />
-      <Route path="/map" element={<Map />} />
+      <Route path="/map" element={<Map user={user} />} />
       <Route path="/userprofile" element={<UserProfile user={user} />} />
+      <Route path="/edit-profile" element={<EditProfile user={user} />} />
       <Route path="/vendorprofile" element={<VendorProfile user={user} />} />
       <Route path="/vendor-signup" element={<VendorSignupForm user={user} />} />
     </Routes>

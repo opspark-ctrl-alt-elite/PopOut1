@@ -6,10 +6,33 @@ import {
   Autocomplete,
   InfoWindow,
 } from "@react-google-maps/api";
+import {
+  AppBar,
+  Toolbar,
+  Box,
+  Typography,
+  Avatar,
+  Stack,
+  IconButton,
+  InputBase,
+} from "@mui/material";
+import { Link } from "react-router-dom";
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  profile_picture?: string;
+};
+
+type Props = {
+  // user: User
+  user: User | null;
+};
 
 const containerStyle = {
   width: "100%",
-  height: "400px",
+  height: "calc(100vh - 64px)",
 };
 
 const center = {
@@ -17,9 +40,9 @@ const center = {
   lng: -90.0715,
 };
 
-const libraries: "places"[] = ["places"];
+const libraries: ("places")[] = ["places"];
 
-const Map: React.FC = () => {
+const Map: React.FC<Props> = ({ user }) => {
   const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
   const [activeEvent, setActiveEvent] = useState<any | null>(null);
   const [events, setEvents] = useState<any[]>([]);
@@ -37,14 +60,11 @@ const Map: React.FC = () => {
           const { latitude, longitude } = position.coords;
           setSelected({ lat: latitude, lng: longitude });
         },
-        (error) => {
-          console.warn(error);
-        }
+        (error) => console.warn(error)
       );
     }
   }, []);
 
-  // nearby events
   useEffect(() => {
     if (!selected) return;
 
@@ -59,36 +79,73 @@ const Map: React.FC = () => {
         console.error("err fetching nearby events", err);
       }
     };
+
     fetchEvents();
   }, [selected]);
 
   if (!isLoaded) return <div>Loading...</div>;
 
   return (
-    <div>
-      <Autocomplete
-        onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-        onPlaceChanged={() => {
-          const place = autocompleteRef.current?.getPlace();
-          const location = place?.geometry?.location;
-          if (location) {
-            setSelected({ lat: location.lat(), lng: location.lng() });
-          }
-        }}
-      >
-        <input
-          type="text"
-          placeholder="Search..."
-          style={{
-            width: "240px",
-            height: "32px",
-            padding: "0 12px",
-            borderRadius: "4px",
-            marginBottom: "10px",
+    <Box>
+      {/* HEADER */}
+      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
+        <Toolbar
+          sx={{
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            gap: 2,
+            px: 2,
+            py: 1,
           }}
-        />
-      </Autocomplete>
+        >
+          {/* LOGO */}
+          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+            <Typography
+              component={Link}
+              to="/"
+              variant="h5"
+              fontWeight="bold"
+              sx={{ textDecoration: "none", color: "inherit" }}
+            >
+              PopOut
+            </Typography>
 
+            <Autocomplete
+              onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+              onPlaceChanged={() => {
+                const place = autocompleteRef.current?.getPlace();
+                const location = place?.geometry?.location;
+                if (location) {
+                  setSelected({ lat: location.lat(), lng: location.lng() });
+                }
+              }}
+            >
+              <InputBase
+                placeholder="Search by location..."
+                sx={{
+                  px: 2,
+                  py: 0.5,
+                  border: "1px solid #ccc",
+                  borderRadius: 2,
+                  width: 250,
+                }}
+              />
+            </Autocomplete>
+          </Stack>
+
+          {/* PROFILE PIC */}
+          <Stack direction="row" spacing={2} alignItems="center">
+            <IconButton component={Link} to="/userprofile">
+              <Avatar
+                src={user?.profile_picture}
+                alt={user?.name || "User"}
+              />
+            </IconButton>
+          </Stack>
+        </Toolbar>
+      </AppBar>
+
+      {/* MAP */}
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={selected || center}
@@ -135,7 +192,7 @@ const Map: React.FC = () => {
           />
         )}
       </GoogleMap>
-    </div>
+    </Box>
   );
 };
 
