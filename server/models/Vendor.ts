@@ -79,7 +79,9 @@ Vendor.init(
 );
 
 // Create a one-to-one relationship between User and Vendor
-User.hasOne(Vendor, { foreignKey: "userId", onDelete: "CASCADE" });
-Vendor.belongsTo(User, { foreignKey: "userId" });
+// User.hasOne(Vendor, { foreignKey: "userId", onDelete: "CASCADE" });
+// Vendor.belongsTo(User, { foreignKey: "userId" });
+
+
 
 export default Vendor;

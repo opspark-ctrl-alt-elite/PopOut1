@@ -1,25 +1,28 @@
-import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional } from 'sequelize';
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional, HasManyGetAssociationsMixin, HasManySetAssociationsMixin } from 'sequelize';
 import sequelize from './index';
+import Category from './Category';
+import Vendor from './Vendor';
 
-export class User extends Model<
-  InferAttributes<User>,
-  InferCreationAttributes<User>
-> {
+export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   declare id: CreationOptional<string>;
   declare google_id: string;
   declare email: string;
   declare name: string;
   declare profile_picture: string | null;
-  declare categories: 'Food & Drink' | 'Art' | 'Music' | 'Sports & Fitness' | 'Hobbies' | null;
+  declare categories?: Category[];
   declare location: string | null;
   declare is_vendor: boolean;
   declare created_at: CreationOptional<Date>;
 
-  // Add this to expose all attributes in type checking
+  // mixins
+  declare getCategories: HasManyGetAssociationsMixin<Category>;
+  declare setCategories: HasManySetAssociationsMixin<Category, string>;
+
   public toJSON(): InferAttributes<User> {
     return super.toJSON();
   }
 }
+
 User.init(
   {
     id: {
@@ -48,10 +51,6 @@ User.init(
       type: DataTypes.STRING,
       allowNull: true,
     },
-    categories: {
-      type: DataTypes.ENUM('Food & Drink', 'Art', 'Music', 'Sports & Fitness', 'Hobbies'),
-      allowNull: true,
-    },
     location: {
       type: DataTypes.STRING,
       allowNull: true,
@@ -73,7 +72,12 @@ User.init(
   }
 );
 
-// Add this to ensure proper typing when using with Express
+User.hasOne(Vendor, { foreignKey: 'userId', onDelete: 'CASCADE' });
+Vendor.belongsTo(User, { foreignKey: 'userId' });
+
+User.belongsToMany(Category, { through: 'UserCategories', foreignKey: 'userId' });
+Category.belongsToMany(User, { through: 'UserCategories', foreignKey: 'categoryId' });
+
 export type UserType = InstanceType<typeof User>;
 
 export default User;
