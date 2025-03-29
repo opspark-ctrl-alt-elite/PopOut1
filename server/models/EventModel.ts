@@ -1,6 +1,7 @@
 import sequelize from "./index";
 import { DataTypes, Model } from "sequelize";
 import Vendor from "./Vendor";
+import Category from "./Category";
 
 export class Event extends Model {}
 
@@ -29,10 +30,10 @@ Event.init(
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    category: {
-      type: DataTypes.ENUM("Food & Drink", "Art", "Music", "Sports & Fitness", "Hobbies"),
-      allowNull: false,
-    },
+    // category: {
+    //   type: DataTypes.ENUM("Food & Drink", "Art", "Music", "Sports & Fitness", "Hobbies"),
+    //   allowNull: false,
+    // },
     startDate: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -79,7 +80,11 @@ Event.init(
 );
 
 // Event with Vendor
-Vendor.hasMany(Event, { foreignKey: "vendor_id", onDelete: "CASCADE" });
-Event.belongsTo(Vendor, { foreignKey: "vendor_id" });
+// Vendor.hasMany(Event, { foreignKey: "vendor_id", onDelete: "CASCADE" });
+// Event.belongsTo(Vendor, { foreignKey: "vendor_id" });
+
+// event with category
+// Event.belongsToMany(Category, { through: 'EventCategories', foreignKey: 'eventId' });
+// Category.belongsToMany(Event, { through: 'EventCategories', foreignKey: 'categoryId' });
 
 export default Event;
