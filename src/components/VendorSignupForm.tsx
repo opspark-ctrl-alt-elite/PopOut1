@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 
 import {
   Box,
@@ -7,6 +8,11 @@ import {
   Typography,
   Paper,
 } from "@mui/material";
+
+import {
+  ArrowUpward,
+  Block
+} from "@mui/icons-material";
 
 type User = {
   id: string;
@@ -30,6 +36,10 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
     profilePicture: "",
   });
 
+  // the navigate function can be called to redirect a user to a different react-router-dom path
+  // (as opposed to using a Link component);
+  const navigate = useNavigate();
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -51,8 +61,10 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
       const result = await res.json();
       console.log(result);
       alert("Vendor request submitted!");
+      navigate('/');
     } catch (err) {
       console.error("Error submitting vendor form", err);
+      alert("Error submitting vendor form (you may already be a vendor)");
     }
   };
 
@@ -162,8 +174,19 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
             fullWidth
             sx={{ mt: 3, backgroundColor: "#3f0071" }}
           >
+            <ArrowUpward />
             Submit
           </Button>
+          <Link to="/">
+            <Button
+              variant="contained"
+              fullWidth
+              sx={{ mt: 3, backgroundColor: "#BA2020" }}
+            >
+              <Block />
+              Cancel
+            </Button>
+          </Link>
         </Box>
       </Paper>
     </Box>
