@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import ImageUpload from "./ImageUpload";
 
 import {
   Box,
@@ -168,13 +169,14 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
             value={formData.profilePicture}
             onChange={handleChange}
           />
+          <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName={"profilePicture"}/>
           <Button
             type="submit"
             variant="contained"
             fullWidth
             sx={{ mt: 3, backgroundColor: "#3f0071" }}
+            startIcon={<ArrowUpward />}
           >
-            <ArrowUpward />
             Submit
           </Button>
           <Link to="/">
@@ -182,8 +184,8 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
               variant="contained"
               fullWidth
               sx={{ mt: 3, backgroundColor: "#BA2020" }}
+              startIcon={<Block />}
             >
-              <Block />
               Cancel
             </Button>
           </Link>
