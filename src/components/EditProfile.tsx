@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -19,6 +20,8 @@ type Props = {
 const EditProfile: React.FC<Props> = ({ user }) => {
   const [name, setName] = useState(user?.name || "");
   const [profilePicture, setProfilePicture] = useState(user?.profile_picture || "");
+
+const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,6 +48,7 @@ const EditProfile: React.FC<Props> = ({ user }) => {
       .then((data) => {
         console.log("Profile updated:", data);
         alert("Changes saved!");
+        navigate('/userprofile');
       })
       .catch((err) => {
         console.error("Error updating profile:", err);

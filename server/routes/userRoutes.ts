@@ -50,6 +50,69 @@ router.patch("/:userId", (req, res) => {
   });
 
 
+  // PATCH Preferences 
+  router.patch('/users/:userId/preferences', (req, res) => {
+    const { userId } = req.params;
+    const { categories, location, is_vendor } = req.body;
+  
+    // Validate inputs
+    if (categories && !Array.isArray(categories)) {
+      return res.status(400).json({ error: 'Categories must be an array.' });
+    }
+  
+    if (is_vendor !== undefined && typeof is_vendor !== 'boolean') {
+      return res.status(400).json({ error: '`is_vendor` must be a boolean.' });
+    }
+  
+    // Step 1: Find the user
+    User.findByPk(userId)
+      .then((user) => {
+        if (!user) {
+          res.status(404).json({ error: 'User not found' });
+          return; // stop here
+        }
+  
+        // Step 2: Update location and vendor status
+        return user.update({ location, is_vendor })
+          .then(() => {
+            // Step 3: If categories are provided, update them
+            if (categories && categories.length > 0) {
+              return Category.findAll({
+                where: {
+                  name: categories
+                }
+              }).then((categoryInstances) => {
+                return user.setCategories(categoryInstances)
+                  .then(() => user.getCategories())
+                  .then((updatedCategories) => {
+                    res.status(200).json({
+                      message: 'Preferences updated successfully.',
+                      updated: {
+                        location: user.location,
+                        is_vendor: user.is_vendor,
+                        categories: updatedCategories
+                      }
+                    });
+                  });
+              });
+            } else {
+              // No categories to update
+              res.status(200).json({
+                message: 'Preferences updated successfully.',
+                updated: {
+                  location: user.location,
+                  is_vendor: user.is_vendor
+                }
+              });
+            }
+          });
+      })
+      .catch((err) => {
+        console.error('Error updating preferences:', err);
+        res.status(500).json({ error: 'Failed to update preferences' });
+      });
+  });
+
 
 // POST /user/me - create a user if it doesnt exist (uses req.user from Google)
 // router.post('/user/me', (req, res) => {
