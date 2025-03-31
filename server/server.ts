@@ -45,7 +45,7 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 app.use(authRoutes);
 app.use(mapRoutes);
 app.use("/vendor", vendorRoutes);
-app.use('/user', userRoutes);
+app.use('/users', userRoutes);
 app.use('/events', eventRoutes);
 
 app.use((req, res, next) => {
