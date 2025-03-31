@@ -1,5 +1,5 @@
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import {
   AppBar,
   Toolbar,
@@ -25,6 +25,30 @@ type Props = {
 };
 
 const UserProfile: React.FC<Props> = ({ user }) => {
+  const navigate = useNavigate();
+
+  const handleDeleteUser = () => {
+    if (!user) return;
+  
+    const confirmed = window.confirm(
+      "Are you sure you want to delete your account? This action cannot be undone."
+    );
+    if (!confirmed) return;
+  
+    fetch(`/user/me`, {
+      method: "DELETE",
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to delete user");
+        navigate("/"); // redirect after deletion
+      })
+      .catch((err) => {
+        console.error("Error deleting user:", err);
+        alert("Failed to delete account.");
+      });
+  };
+
   return (
     <Box>
       {/* HEADER */}
@@ -150,6 +174,17 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                 fullWidth
               >
                 View Vendor Profile
+              </Button>
+
+              <Divider />
+
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                onClick={handleDeleteUser}
+              >
+                Delete My Account
               </Button>
             </Stack>
           </Box>

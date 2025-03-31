@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   Box,
   Button,
@@ -18,6 +19,8 @@ const categoriesList = [
 const Preferences: React.FC = () => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetch("/auth/me", { credentials: "include" })
@@ -60,6 +63,7 @@ const Preferences: React.FC = () => {
       .then((data) => {
         console.log("Preferences updated:", data);
         alert("Preferences saved!");
+        navigate('/userprofile');
       })
       .catch((err) => {
         console.error("Error updating preferences:", err);
