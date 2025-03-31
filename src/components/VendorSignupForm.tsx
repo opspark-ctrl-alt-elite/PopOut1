@@ -169,7 +169,7 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
             value={formData.profilePicture}
             onChange={handleChange}
           />
-          <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName={"profilePicture"}/>
+          {/* <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName={"profilePicture"}/> */}
           <Button
             type="submit"
             variant="contained"
