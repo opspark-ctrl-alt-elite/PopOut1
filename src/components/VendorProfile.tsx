@@ -221,6 +221,70 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
               </Button>
             </Stack>
 
+            <Grid2 container spacing={2} sx={{ mb: 4 }}>
+              <Grid2 size={8}>
+                <Typography variant="body2" fontWeight="bold">Description:</Typography>
+                <Typography variant="body2">{vendor.description}</Typography>
+              </Grid2>
+              <Grid2 container size={4} justifyContent="center">
+                {/* <Grid2 size={{ xs: 3, sm: 0 }}>
+                  filler grid that changes size to better fit elements on phone screen
+                </Grid2> */}
+                <Grid2 size={6}>
+                  <Typography>Facebook</Typography>
+                  <Avatar
+                    src={vendor.profilePicture}
+                    alt={vendor.facebook}
+                    sx={{ width: 40, height: 40 }}
+                  />
+                </Grid2>
+                <Grid2 size={6}>
+                  <Typography>Instagram</Typography>
+                  <Avatar
+                    src={vendor.profilePicture}
+                    alt={vendor.instagram}
+                    sx={{ width: 40, height: 40 }}
+                  />
+                </Grid2>
+                <Grid2 size={6}>
+                  <Typography>Website</Typography>
+                  <Avatar
+                    src={vendor.profilePicture}
+                    alt={vendor.website}
+                    sx={{ width: 40, height: 40 }}
+                  />
+                </Grid2>
+              </Grid2>
+            </Grid2>
+
+            {/* <Stack
+              direction="row"
+              alignItems="center"
+              justifyContent="space-between"
+              spacing={4}
+              sx={{ mb: 4 }}
+              flexWrap="wrap"
+            >
+              <Stack direction="row" spacing={2} alignItems="center">
+                <Box>
+                  <Typography variant="h6" fontWeight="bold">
+                    {vendor.businessName}
+                  </Typography>
+                  <Typography variant="body2" color="text.primary">
+                    {vendor.description}
+                  </Typography>
+                </Box>
+              </Stack>
+
+              <Button
+                variant="outlined"
+                size="small"
+                onClick={() => setOpenEdit(true)}
+              >
+                Edit Profile
+              </Button>
+            </Stack> */}
+
             {/* profile links */}
             <Stack spacing={2}>
               <Button
