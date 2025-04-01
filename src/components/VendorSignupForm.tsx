@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import ImageUpload from "./ImageUpload";
+// import ImageUpload from "./ImageUpload"; // optionally use later
 
 import {
   Box,
@@ -37,8 +37,6 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
     profilePicture: "",
   });
 
-  // the navigate function can be called to redirect a user to a different react-router-dom path
-  // (as opposed to using a Link component);
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -52,13 +50,19 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      const res = await fetch(`/vendor/${user.id}`, {
+      const res = await fetch(`/api/vendor/${user?.id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // ✅ Send cookies/session info
         body: JSON.stringify(formData),
       });
+
+      if (!res.ok) {
+        throw new Error("Failed to submit vendor signup.");
+      }
+
       const result = await res.json();
       console.log(result);
       alert("Vendor request submitted!");
@@ -169,7 +173,10 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
             value={formData.profilePicture}
             onChange={handleChange}
           />
-          {/* <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName={"profilePicture"}/> */}
+
+          {/* Optional ImageUpload logic could go here */}
+          {/* <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName="profilePicture" /> */}
+
           <Button
             type="submit"
             variant="contained"
