@@ -3,7 +3,10 @@ import { DataTypes, Model } from "sequelize";
 import Vendor from "./Vendor";
 import Category from "./Category";
 
-export class Event extends Model {}
+export class Event extends Model {
+  declare vendor_id: string;
+  declare setCategories: (categories: Category[]) => Promise<void>;
+}
 
 Event.init(
   {

@@ -13,7 +13,7 @@ import mapRoutes from "./routes/mapRoutes";
 import userRoutes from './routes/userRoutes'
 import vendorRoutes from "./routes/vendorRoutes";
 import eventRoutes from './routes/eventRoutes';
-
+import categoryRoutes from './routes/categoryRoutes';
 
 dotenv.config();
 const app = express();
@@ -44,9 +44,10 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 //routes
 app.use(authRoutes);
 app.use(mapRoutes);
-app.use("/vendor", vendorRoutes);
-app.use('/users', userRoutes);
-app.use('/events', eventRoutes);
+app.use("/api/vendor", vendorRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/events', eventRoutes);
+app.use('/api/categories', categoryRoutes); 
 
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);

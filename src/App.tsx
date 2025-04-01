@@ -7,7 +7,10 @@ import UserProfile from "./components/UserProfile";
 import VendorProfile from "./components/VendorProfile";
 import EditProfile from "./components/EditProfile";
 import Preferences from "./components/Preferences";
-
+import CreateEvent from "./components/CreateEvent"
+import EditEvent from "./components/EditEvent"
+import ActiveEvents from "./components/ActiveEvents"
+import EventsFeed from './components/EventsFeed';
 
 type User = {
   id: string;
@@ -83,6 +86,11 @@ const App: React.FC = () => {
       <Route path="/vendorprofile" element={<VendorProfile user={user} />} />
       <Route path="/vendor-signup" element={<VendorSignupForm user={user} />} />
       <Route path="/preferences" element={<Preferences user={user} />} />
+      <Route path="/create-event" element={<CreateEvent />} />
+<Route path="/edit-event/:id" element={<EditEvent />} />
+<Route path="/active-events" element={<ActiveEvents user={user} />} />
+<Route path="/events" element={<EventsFeed />} />
+
     </Routes>
   );
 };

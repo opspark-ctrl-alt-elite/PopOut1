@@ -1,4 +1,3 @@
-// src/components/Home.tsx
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
@@ -8,7 +7,6 @@ import {
   Modal,
   Button,
   Container,
-  Grid2,
   Tooltip,
   IconButton,
   Stack,
@@ -58,7 +56,6 @@ type Props = {
 };
 
 const VendorProfile: React.FC<Props> = ({ user }) => {
-  // set default state values;
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [fields, setFields] = useState<Fields>({
     businessName: "",
@@ -69,7 +66,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     instagram: "",
     facebook: "",
   });
-  // modal states
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
 
@@ -77,29 +73,21 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     getVendor();
   }, []);
 
-  // gets the vendor record associated with the current user and uses
-  // said record to update the vendor in state
   const getVendor = async () => {
     try {
-      // send the GET request
-      const vendorObj = await axios.get(`/vendor/${user.id}`);
-      console.log("retrieved vendor object for current user:");
-      console.log(vendorObj);
+      const vendorObj = await axios.get(`/api/vendor/${user?.id}`, {
+        withCredentials: true,
+      });
       setVendor(vendorObj.data);
     } catch (err) {
-      // error handling
-      // set the vendor in state to null
-      // ADVISE: MAY REPLACE WITH SIMPLY RETURNING NULL FROM HTTP HANDLER
       setVendor(null);
       console.error("Error retrieving vendor record: ", err);
     }
   };
 
-  // alters the current user's vendor record with changes from the fields in state
   const updateVendor = async () => {
     try {
-      // trim off any field values that are empty strings
-      const trimmedFields = {};
+      const trimmedFields: Record<string, any> = {};
       const keys: string[] = Object.keys(fields);
       for (let i = 0; i < keys.length; i++) {
         if (fields[keys[i]] !== "") {
@@ -107,27 +95,22 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
         }
       }
 
-      // send the PATCH request
-      const vendorObj = await axios.patch(`/vendor/${user.id}`, trimmedFields);
-      console.log("updated vendor object for current user:");
-      // update vendor state
+      await axios.patch(`/api/vendor/${user?.id}`, trimmedFields, {
+        withCredentials: true,
+      });
       getVendor();
     } catch (err) {
-      // error handling
       console.error("Error updating vendor record: ", err);
     }
   };
 
-  // deletes the current user's vendor record from the state
   const deleteVendor = async () => {
     try {
-      // send the DELETE request
-      const vendorObj = await axios.delete(`/vendor/${user.id}`);
-      console.log("deleted vendor object for current user:");
-      // update vendor state
+      await axios.delete(`/api/vendor/${user?.id}`, {
+        withCredentials: true,
+      });
       getVendor();
     } catch (err) {
-      // error handling
       console.error("Error deleting vendor record: ", err);
     }
   };
@@ -140,7 +123,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     }));
   };
 
-  console.log(vendor);
   const style = {
     position: "absolute",
     top: "50%",
@@ -155,7 +137,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
 
   return (
     <div>
-      {/* HEADER */}
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar sx={{ justifyContent: "space-between", px: 2, py: 1 }}>
           <Typography
@@ -187,7 +168,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       <Container sx={{ mt: 4 }}>
         {vendor ? (
           <Box>
-            {/* Top Row: Name, Email, Avatar, Edit Profile */}
             <Stack
               direction="row"
               alignItems="center"
@@ -221,7 +201,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
               </Button>
             </Stack>
 
-            {/* profile links */}
             <Stack spacing={2}>
               <Button
                 variant="contained"
@@ -267,7 +246,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
               </Button>
             </Stack>
 
-            {/* edit vendor */}
             <Modal open={openEdit}>
               <Box sx={style}>
                 <Typography variant="h6" component="h2">
@@ -349,7 +327,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
               </Box>
             </Modal>
 
-            {/* delete vendor */}
             <Modal open={openDelete}>
               <Box sx={style}>
                 <Typography variant="h6" component="h2">
