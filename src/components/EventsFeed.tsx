@@ -44,9 +44,10 @@ const EventsFeed: React.FC = () => {
   }, []);
 
   const fetchCategories = async () => {
-    const res = await axios.get('/categories');
+    const res = await axios.get('/api/categories');
     setCategories(res.data.map((cat: any) => cat.name));
   };
+
   const fetchEvents = async () => {
     try {
       const params: any = {};
@@ -54,10 +55,10 @@ const EventsFeed: React.FC = () => {
       if (filters.isFree) params.isFree = true;
       if (filters.isKidFriendly) params.isKidFriendly = true;
       if (filters.isSober) params.isSober = true;
-  
-      const res = await axios.get('/events', { params });
+
+      const res = await axios.get('/api/events', { params });
       const data = res.data;
-  
+
       if (Array.isArray(data)) {
         setEvents(data);
       } else if (Array.isArray(data.events)) {
