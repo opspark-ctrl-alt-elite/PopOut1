@@ -87,4 +87,7 @@ Event.init(
 // Event.belongsToMany(Category, { through: 'EventCategories', foreignKey: 'eventId' });
 // Category.belongsToMany(Event, { through: 'EventCategories', foreignKey: 'categoryId' });
 
+Event.belongsTo(Category, { foreignKey: "category_id" });
+Category.hasMany(Event, { foreignKey: "category_id" });
+
 export default Event;
