@@ -45,11 +45,11 @@ const CreateEvent = () => {
         longitude: parseFloat(form.longitude),
         categories: form.categories.split(',').map((cat) => cat.trim()),
       };
-      await axios.post('http://localhost:3000/events', payload);
+      await axios.post('/api/events', payload);
       navigate('/active-events');
     } catch (err) {
       console.error(err);
-      console.log(alert('Error creating event.'));
+      alert('Error creating event.');
     }
   };
 
@@ -76,7 +76,4 @@ const CreateEvent = () => {
 };
 
 export default CreateEvent;
-function alert(arg0: string): any {
-  throw new Error('Function not implemented.');
-}
 
