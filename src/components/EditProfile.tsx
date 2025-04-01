@@ -98,3 +98,7 @@ const navigate = useNavigate();
 };
 
 export default EditProfile;
+
+function alert(arg0: string) {
+  throw new Error("Function not implemented.");
+}
