@@ -13,7 +13,7 @@ import mapRoutes from "./routes/mapRoutes";
 import userRoutes from './routes/userRoutes'
 import vendorRoutes from "./routes/vendorRoutes";
 import eventRoutes from './routes/eventRoutes';
-
+import categoryRoutes from './routes/categoryRoutes';
 
 dotenv.config();
 const app = express();
@@ -47,6 +47,7 @@ app.use(mapRoutes);
 app.use("/vendor", vendorRoutes);
 app.use('/users', userRoutes);
 app.use('/events', eventRoutes);
+app.use('/categories', categoryRoutes);
 
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);
