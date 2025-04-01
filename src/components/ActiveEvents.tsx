@@ -29,7 +29,7 @@ const ActiveEvents: React.FC = () => {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get('/events/my-events'); // 👈 NEW route, no ID needed
+      const res = await axios.get('/api/events/my-events');
       setEvents(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error('Failed to fetch vendor events:', err);
@@ -39,7 +39,7 @@ const ActiveEvents: React.FC = () => {
 
   const deleteEvent = async (eventId: string) => {
     try {
-      await axios.delete(`/events/${eventId}`);
+      await axios.delete(`/api/events/${eventId}`);
       fetchEvents(); // refresh after deletion
     } catch (err) {
       console.error('Error deleting event:', err);
