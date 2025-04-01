@@ -1,53 +1,34 @@
-import User from '../models/User';
+import { User } from "../models/User";
+import Category from "../models/Category";
 
-const users = [
-  {
-    google_id: 'google_user_1',
-    email: 'user1@example.com',
-    name: 'John Doe',
-    profile_picture: 'https://example.com/profile1.jpg',
-    categories: 'Food & Drink' as 'Food & Drink',
-    location: 'New York',
-    is_vendor: false,
-  },
-  {
-    google_id: 'google_user_2',
-    email: 'user2@example.com',
-    name: 'Jane Smith',
-    profile_picture: 'https://example.com/profile2.jpg',
-    categories: 'Art' as 'Art',
-    location: 'San Francisco',
-    is_vendor: true,
-  },
-  {
-    google_id: 'google_user_3',
-    email: 'user3@example.com',
-    name: 'Michael Johnson',
-    profile_picture: 'https://example.com/profile3.jpg',
-    categories: 'Sports & Fitness' as 'Sports & Fitness',
-    location: 'Los Angeles',
-    is_vendor: false,
-  },
-  {
-    google_id: 'google_user_4',
-    email: 'user4@example.com',
-    name: 'Emily Davis',
-    profile_picture: 'https://example.com/profile4.jpg',
-    categories: 'Music' as 'Music',
-    location: 'Chicago',
-    is_vendor: false,
-  },
-];
-
-async function seedUsers() {
+const seedUser = async () => {
   try {
-    for (const user of users) {
-      await User.create(user);
-    }
-    console.log('User seed data inserted successfully!');
-  } catch (error) {
-    console.error('Error seeding users:', error);
-  }
-}
+    const categories = await Category.findAll();
 
-seedUsers();
+    if (categories.length === 0) {
+      console.log("seed categories");
+      return;
+    }
+   
+    const categoryMap: { [key: string]: Category } = categories.reduce((acc, category) => {
+      acc[category.name] = category;
+      return acc;
+    }, {} as { [key: string]: Category });
+
+    const user = await User.create({
+      google_id: "google-id-example",
+      email: "user@example.com",
+      name: "John Doe",
+      profile_picture: "https://example.com/profile.jpg",
+      location: "New Orleans",
+      is_vendor: false,
+      categories: [categoryMap["Food & Drink"]],
+    });
+
+    console.log("user seeded");
+  } catch (error) {
+    console.error("err seeding user", error);
+  }
+};
+
+seedUser();
