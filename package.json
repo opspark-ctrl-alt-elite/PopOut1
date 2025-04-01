@@ -12,7 +12,8 @@
     "server": "nodemon server.ts",
     "seedE": "ts-node server/seedData/eventSeed.ts",
     "seedV": "ts-node server/seedData/vendorSeed.ts",
-    "seedU": "ts-node server/seedData/userSeed.ts"
+    "seedU": "ts-node server/seedData/userSeed.ts",
+    "seedC": "ts-node server/seedData/categorySeed.ts"
 
   },
   "keywords": [],
