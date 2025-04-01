@@ -66,7 +66,11 @@ const getCategoryIcon = (category: string) => {
 };
 
 const getMarkerIcon = (category: string) => {
-  switch (category) {
+  if (!category) {
+    console.error("Missing category for event");
+    return "http://maps.google.com/mapfiles/ms/icons/gray-dot.png";
+  }
+  switch (category.trim()) {
     case "Food & Drink":
       return "http://maps.google.com/mapfiles/ms/icons/orange-dot.png";
     case "Art":
@@ -77,7 +81,17 @@ const getMarkerIcon = (category: string) => {
       return "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
     case "Hobbies":
       return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+    default:
+      return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
   }
+};
+
+const categoryLookup: { [key: number]: string } = {
+  1: "Food & Drink",
+  2: "Art",
+  3: "Music",
+  4: "Sports & Fitness",
+  5: "Hobbies",
 };
 
 const Map: React.FC<Props> = ({ user }) => {
@@ -93,13 +107,10 @@ const Map: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     if (!selected) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setSelected({ lat: latitude, lng: longitude });
-        },
-        (error) => console.warn(error)
-      );
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        setSelected({ lat: latitude, lng: longitude });
+      });
     }
   }, []);
 
@@ -136,7 +147,6 @@ const Map: React.FC<Props> = ({ user }) => {
             py: 1,
           }}
         >
-          {/* LOGO */}
           <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
             <Typography
               component={Link}
@@ -171,13 +181,9 @@ const Map: React.FC<Props> = ({ user }) => {
             </Autocomplete>
           </Stack>
 
-          {/* PROFILE PIC */}
           <Stack direction="row" spacing={2} alignItems="center">
             <IconButton component={Link} to="/userprofile">
-              <Avatar
-                src={user?.profile_picture}
-                alt={user?.name || "User"}
-              />
+              <Avatar src={user?.profile_picture} alt={user?.name || "User"} />
             </IconButton>
           </Stack>
         </Toolbar>
@@ -189,17 +195,21 @@ const Map: React.FC<Props> = ({ user }) => {
         center={selected || center}
         zoom={12}
       >
-      {events.map((event, i) => (
-  <Marker
-    key={i}
-    position={{ lat: event.latitude, lng: event.longitude }}
-    title={event.title}
-    onClick={() => setActiveEvent(event)}
-    icon={{
-      url: getMarkerIcon(event.category),
-    }}
-  />
-))}
+        {events.map((event, i) => {
+          const category = categoryLookup[event.category_id];
+          return (
+            <Marker
+              key={i}
+              position={{ lat: event.latitude, lng: event.longitude }}
+              title={event.title}
+              onClick={() => setActiveEvent(event)}
+              icon={{
+                url: getMarkerIcon(category),
+              }}
+            />
+          );
+        })}
+
         {activeEvent && (
           <InfoWindow
             position={{
@@ -222,11 +232,13 @@ const Map: React.FC<Props> = ({ user }) => {
                   gap: "4px",
                 }}
               >
-                {getCategoryIcon(activeEvent.category)} {activeEvent.category}
+                {getCategoryIcon(categoryLookup[activeEvent.category_id])}{" "}
+                {categoryLookup[activeEvent.category_id]}
               </p>
             </div>
           </InfoWindow>
         )}
+
         {selected && (
           <Marker
             position={selected}
@@ -239,5 +251,6 @@ const Map: React.FC<Props> = ({ user }) => {
     </Box>
   );
 };
+
 
 export default Map;
