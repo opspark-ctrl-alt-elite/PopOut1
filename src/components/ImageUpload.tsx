@@ -33,7 +33,7 @@ const ImageUpload: React.FC<Props> = ({ inputData, setInputData, imageKeyName })
       tabIndex={-1}
       startIcon={<CloudUpload />}
     >
-      Upload Files
+      Upload Image(s)
       {imageKeyName === "profilePicture" ? (
         <HiddenInput
           type="file"
