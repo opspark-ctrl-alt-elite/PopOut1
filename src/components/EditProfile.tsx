@@ -21,7 +21,7 @@ const EditProfile: React.FC<Props> = ({ user }) => {
   const [name, setName] = useState(user?.name || "");
   const [profilePicture, setProfilePicture] = useState(user?.profile_picture || "");
 
-const navigate = useNavigate();
+  const navigate = useNavigate();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,7 +31,7 @@ const navigate = useNavigate();
       return;
     }
 
-    fetch(`/users/${user.id}`, {
+    fetch(`/api/users/${user.id}`, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
@@ -98,7 +98,7 @@ const navigate = useNavigate();
 };
 
 export default EditProfile;
-
 function alert(arg0: string) {
   throw new Error("Function not implemented.");
 }
+
