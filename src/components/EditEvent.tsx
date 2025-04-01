@@ -19,7 +19,7 @@ const EditEvent = () => {
   useEffect(() => {
     const fetchEvent = async () => {
       try {
-        const res = await axios.get('/api/events');
+        const res = await axios.get('/api/events', { withCredentials: true });
         const event = res.data.find((e: any) => e.id === id);
         if (!event) {
           alert('Event not found');
@@ -27,7 +27,7 @@ const EditEvent = () => {
         }
         setForm({
           ...event,
-          categories: '', // optional; preload categories if you want
+          categories: '',
         });
       } catch (err) {
         console.error('Failed to fetch event:', err);
@@ -52,7 +52,8 @@ const EditEvent = () => {
           ? form.categories.split(',').map((cat: string) => cat.trim())
           : [],
       };
-      await axios.put(`/api/events/${id}`, payload);
+
+      await axios.put(`/api/events/${id}`, payload, { withCredentials: true });
       alert('Event updated!');
       navigate('/active-events');
     } catch (err) {
@@ -86,7 +87,3 @@ const EditEvent = () => {
 };
 
 export default EditEvent;
-function alert(arg0: string) {
-  throw new Error('Function not implemented.');
-}
-
