@@ -3,6 +3,11 @@ import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
 
+// img imports
+import facebookImg from "../../public/includedImages/facebook.png";
+import instagramImg from "../../public/includedImages/instagram.png";
+import websiteImg from "../../public/includedImages/website.png";
+
 import {
   Box,
   Modal,
@@ -132,6 +137,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     }
   };
 
+  // handle inputs to the fields by saving them to the state
   const handleUpdateFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFields((prev) => ({
@@ -140,7 +146,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     }));
   };
 
-  console.log(vendor);
+  // create a style for the modal
   const style = {
     position: "absolute",
     top: "50%",
@@ -233,7 +239,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                 <Grid2 size={6}>
                   <Typography>Facebook</Typography>
                   <Avatar
-                    src={vendor.profilePicture}
+                    src={facebookImg}
                     alt={vendor.facebook}
                     sx={{ width: 40, height: 40 }}
                   />
@@ -241,7 +247,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                 <Grid2 size={6}>
                   <Typography>Instagram</Typography>
                   <Avatar
-                    src={vendor.profilePicture}
+                    src={instagramImg}
                     alt={vendor.instagram}
                     sx={{ width: 40, height: 40 }}
                   />
@@ -249,7 +255,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                 <Grid2 size={6}>
                   <Typography>Website</Typography>
                   <Avatar
-                    src={vendor.profilePicture}
+                    src={websiteImg}
                     alt={vendor.website}
                     sx={{ width: 40, height: 40 }}
                   />
