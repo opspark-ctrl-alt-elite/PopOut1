@@ -2,28 +2,61 @@ import sequelize from "../models/index";
 import { QueryTypes } from "sequelize";
 import { Router } from "express";
 import Event from "../models/EventModel";
+import Category from "../models/Category";
+
 
 const router = Router();
 
 // get all events on map
+// router.get("/api/map/events", async (req, res) => {
+//   try {
+//     const events = await Event.findAll({
+//       attributes: [
+//         "id",
+//         "title",
+//         "latitude",
+//         "longitude",
+//         "venue_name",
+//       ],
+//     });
+//     res.json(events);
+//   } catch (err) {
+//     res.status(500).json({ error: "err fetching events" });
+//   }
+// });
+
 router.get("/api/map/events", async (req, res) => {
   try {
     const events = await Event.findAll({
       attributes: [
         "id",
         "title",
+        "description",
         "latitude",
         "longitude",
         "venue_name",
-        "category",
+        "startDate",
+        "endDate",
+        "isFree",
+        "isKidFriendly",
+        "isSober",
+      ],
+      include: [
+        {
+          model: Category,
+          attributes: ["name"],
+          through: { attributes: [] },
+          required: false,
+        },
       ],
     });
+
     res.json(events);
   } catch (err) {
-    res.status(500).json({ error: "err fetching events" });
+    console.error("error crating event", err);
+    res.status(500).json({ error: "load fail" });
   }
 });
-
 
 // get nearby events on map
 // router.get("/map/events/nearby", async (req, res) => {
@@ -66,7 +99,6 @@ router.get("/api/map/events", async (req, res) => {
 //   }
 // });
 
-
 // routes/mapRoutes.ts
 router.get("/map/events/nearby", async (req, res) => {
   const { lat, lng } = req.query;
@@ -99,8 +131,8 @@ router.get("/map/events/nearby", async (req, res) => {
           )
         ) AS distance
       FROM events AS e
-      JOIN EventCategories AS ec ON ec.eventId = e.id
-      JOIN categories AS c ON c.id = ec.categoryId
+      LEFT JOIN EventCategories AS ec ON ec.eventId = e.id
+      LEFT JOIN categories AS c ON c.id = ec.categoryId
       HAVING distance < :radius
       ORDER BY distance;
       `,
