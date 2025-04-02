@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-// import ImageUpload from "./ImageUpload"; // optionally use later
+import ImageUpload from "./ImageUpload";
 
 import {
   Box,
@@ -45,6 +45,7 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
       ...prev,
       [name]: value,
     }));
+    console.log(formData); //TODO: ADVISE: TEMP TESTING
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -165,17 +166,23 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
             value={formData.store}
             onChange={handleChange}
           />
-          <TextField
-            name="profilePicture"
-            label="Profile Picture URL (optional)"
-            fullWidth
-            margin="normal"
-            value={formData.profilePicture}
-            onChange={handleChange}
-          />
 
-          {/* Optional ImageUpload logic could go here */}
-          {/* <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName="profilePicture" /> */}
+          {/* Two different methods for adding a vendor profile */}
+          <Box sx={{ outline: 5 }}>
+            <Typography>
+              Add image url or upload image
+            </Typography>
+            <TextField
+              name="profilePicture"
+              label="Profile Picture URL (optional)"
+              fullWidth
+              margin="normal"
+              value={formData.profilePicture}
+              onChange={handleChange}
+            />
+            {/* <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName="profilePicture" multiple={false} /> */}
+            <ImageUpload setInputData={setFormData} imageKeyName="profilePicture" multiple={false} />
+          </Box>
 
           <Button
             type="submit"

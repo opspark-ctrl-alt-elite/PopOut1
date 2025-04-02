@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import ImageUpload from "./ImageUpload";
 
 // img imports
 import facebookImg from "../../public/includedImages/facebook.png";
@@ -43,7 +44,7 @@ type Vendor = {
 type Fields = {
   businessName?: string;
   email?: string;
-  profilePicture?: string;
+  profilePicture?: any;
   description?: string;
   website?: string;
   instagram?: string;
@@ -128,9 +129,10 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       ...prev,
       [name]: value,
     }));
+    console.log(fields);
   };
 
-  // create a style for the modal
+  // create a style for the box that the modal holds
   const style = {
     position: "absolute",
     top: "50%",
@@ -218,9 +220,9 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                 {/* <Grid2 size={{ xs: 3, sm: 0 }}>
                   filler grid that changes size to better fit elements on phone screen
                 </Grid2> */}
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                   <a href={vendor.facebook}>
-                    <Typography>Facebook</Typography>
+                    {/* <Typography>Facebook</Typography> */}
                     <Avatar
                       src={facebookImg}
                       alt={vendor.facebook}
@@ -228,9 +230,9 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     />
                   </a>
                 </Grid2>
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                   <a href={vendor.instagram}>
-                    <Typography>Instagram</Typography>
+                    {/* <Typography>Instagram</Typography> */}
                     <Avatar
                       src={instagramImg}
                       alt={vendor.instagram}
@@ -238,7 +240,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     />
                   </a>
                 </Grid2>
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                   <a href={vendor.website}>
                     <Typography>Website</Typography>
                     <Avatar
@@ -346,14 +348,30 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                   value={fields.email}
                   onChange={handleUpdateFieldChange}
                 />
-                <TextField
+                {/* Two different methods for adding a vendor profile */}
+                <Box sx={{ outline: 5 }}>
+                  <Typography>
+                    Add image url or upload image
+                  </Typography>
+                  <TextField
+                    name="profilePicture"
+                    label="Profile Picture Link"
+                    fullWidth
+                    margin="normal"
+                    value={fields.profilePicture}
+                    onChange={handleUpdateFieldChange}
+                  />
+                  {/* <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName="profilePicture" multiple={false} /> */}
+                  <ImageUpload setInputData={setFields} imageKeyName="profilePicture" multiple={false} />
+                </Box>
+                {/* <TextField
                   name="profilePicture"
                   label="Profile Picture Link"
                   fullWidth
                   margin="normal"
                   value={fields.profilePicture}
                   onChange={handleUpdateFieldChange}
-                />
+                /> */}
                 <TextField
                   name="description"
                   label="Description"
@@ -433,9 +451,27 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
             </Modal>
           </Box>
         ) : (
-          <Typography variant="h4" textAlign="center" mt={4}>
-            No Vendor Found
-          </Typography>
+          <Box>
+            <Typography variant="h4" textAlign="center" mt={4}>
+              No Vendor Found
+            </Typography>
+            <Button
+              variant="outlined"
+              fullWidth
+              component={Link}
+              to="/"
+            >
+              Home
+            </Button>
+            <Button
+              variant="outlined"
+              fullWidth
+              component={Link}
+              to="/vendor-signup"
+            >
+              Become a Vendor
+            </Button>
+          </Box>
         )}
       </Container>
     </div>

@@ -4,13 +4,14 @@ import { Button } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
 
 type Props = {
-  inputData: object;
+//  inputData: object;
   setInputData: Function;
   imageKeyName: string;
+  multiple: boolean;
 };
 
 // image upload component used for uploading images to the db
-const ImageUpload: React.FC<Props> = ({ inputData, setInputData, imageKeyName }) => {
+const ImageUpload: React.FC<Props> = ({ setInputData, imageKeyName, multiple }) => {
 
   // create a component for a hidden input field
   const HiddenInput = styled('input')({
@@ -34,18 +35,19 @@ const ImageUpload: React.FC<Props> = ({ inputData, setInputData, imageKeyName })
       startIcon={<CloudUpload />}
     >
       Upload Image(s)
-      {imageKeyName === "profilePicture" ? (
-        <HiddenInput
-          type="file"
-          onChange={(event) => console.log(event.target.files)}
-        />
-      ) : (
-        <HiddenInput
-          type="file"
-          onChange={(event) => console.log(event.target.files)}
-          multiple
-        />
-      )}
+      <HiddenInput
+        type="file"
+        onChange={
+          (event) => {
+            setInputData((prev: any) => {
+              prev[imageKeyName] = event.currentTarget.files;
+              return prev;
+            })
+            console.log(event.currentTarget.files);
+          }
+        }
+        multiple={multiple}
+      />
     </Button>
   );
 };
