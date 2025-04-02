@@ -54,6 +54,10 @@ app.use((req, res, next) => {
   next();
 });
 
+app.get('/firebase-messaging-sw.js', (req, res) => {
+  res.sendFile(path.join(__dirname, '../public/firebase-messaging-sw.js'));
+});
+
 app.get("*", (req, res) => {
   res.sendFile("index.html", { root: path.join(__dirname, "..", "dist") });
 });
