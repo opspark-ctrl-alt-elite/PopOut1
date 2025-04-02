@@ -46,7 +46,7 @@ const center = {
   lng: -90.0715,
 };
 
-const libraries: ("places")[] = ["places"];
+const libraries: "places"[] = ["places"];
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
@@ -87,7 +87,9 @@ const getMarkerIcon = (category: string) => {
 };
 
 const Map: React.FC<Props> = ({ user }) => {
-  const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
+  const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(
+    null
+  );
   const [activeEvent, setActiveEvent] = useState<any | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -138,7 +140,12 @@ const Map: React.FC<Props> = ({ user }) => {
             py: 1,
           }}
         >
-          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            flexWrap="wrap"
+          >
             <Typography
               component={Link}
               to="/"
@@ -150,7 +157,9 @@ const Map: React.FC<Props> = ({ user }) => {
             </Typography>
 
             <Autocomplete
-              onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+              onLoad={(autocomplete) =>
+                (autocompleteRef.current = autocomplete)
+              }
               onPlaceChanged={() => {
                 const place = autocompleteRef.current?.getPlace();
                 const location = place?.geometry?.location;
@@ -212,6 +221,13 @@ const Map: React.FC<Props> = ({ user }) => {
               <h4 style={{ margin: "0 0 4px" }}>{activeEvent.title}</h4>
               <p style={{ margin: 0 }}>{activeEvent.venue_name}</p>
               <p style={{ margin: 0 }}>{activeEvent.description}</p>
+              <p style={{ margin: 0 }}>
+                {new Date(activeEvent.startDate).toLocaleString(undefined, {
+                  dateStyle: "medium",
+                  timeStyle: "short",
+                })}
+              </p>
+
               <p
                 style={{
                   margin: "4px 0 0",

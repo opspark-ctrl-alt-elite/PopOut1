@@ -123,6 +123,7 @@ router.get("/map/events/nearby", async (req, res) => {
         e.description,
         c.id as category_id,
         c.name as category_name,
+        e.startDate,
         (
           6371 * acos(
             cos(radians(:lat)) * cos(radians(e.latitude)) *
