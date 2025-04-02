@@ -1,5 +1,3 @@
-// src/firebase/sw-registration.ts
-
 export const registerServiceWorker = async () => {
   if ('serviceWorker' in navigator) {
     try {
