@@ -237,28 +237,34 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                   filler grid that changes size to better fit elements on phone screen
                 </Grid2> */}
                 <Grid2 size={6}>
-                  <Typography>Facebook</Typography>
-                  <Avatar
-                    src={facebookImg}
-                    alt={vendor.facebook}
-                    sx={{ width: 40, height: 40 }}
-                  />
+                  <a href={vendor.facebook}>
+                    <Typography>Facebook</Typography>
+                    <Avatar
+                      src={facebookImg}
+                      alt={vendor.facebook}
+                      sx={{ width: 40, height: 40 }}
+                    />
+                  </a>
                 </Grid2>
                 <Grid2 size={6}>
-                  <Typography>Instagram</Typography>
-                  <Avatar
-                    src={instagramImg}
-                    alt={vendor.instagram}
-                    sx={{ width: 40, height: 40 }}
-                  />
+                  <a href={vendor.instagram}>
+                    <Typography>Instagram</Typography>
+                    <Avatar
+                      src={instagramImg}
+                      alt={vendor.instagram}
+                      sx={{ width: 40, height: 40 }}
+                    />
+                  </a>
                 </Grid2>
                 <Grid2 size={6}>
-                  <Typography>Website</Typography>
-                  <Avatar
-                    src={websiteImg}
-                    alt={vendor.website}
-                    sx={{ width: 40, height: 40 }}
-                  />
+                  <a href={vendor.website}>
+                    <Typography>Website</Typography>
+                    <Avatar
+                      src={websiteImg}
+                      alt={vendor.website}
+                      sx={{ width: 40, height: 40 }}
+                    />
+                  </a>
                 </Grid2>
               </Grid2>
             </Grid2>
