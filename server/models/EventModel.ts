@@ -3,7 +3,10 @@ import { DataTypes, Model } from "sequelize";
 import Vendor from "./Vendor";
 import Category from "./Category";
 
-export class Event extends Model {}
+export class Event extends Model {
+  declare vendor_id: string;
+  declare setCategories: (categories: Category[]) => Promise<void>;
+}
 
 Event.init(
   {
@@ -86,5 +89,8 @@ Event.init(
 // event with category
 // Event.belongsToMany(Category, { through: 'EventCategories', foreignKey: 'eventId' });
 // Category.belongsToMany(Event, { through: 'EventCategories', foreignKey: 'categoryId' });
+
+// Event.belongsTo(Category, { foreignKey: "category_id" });
+// Category.hasMany(Event, { foreignKey: "category_id" });
 
 export default Event;

@@ -66,7 +66,11 @@ const getCategoryIcon = (category: string) => {
 };
 
 const getMarkerIcon = (category: string) => {
-  switch (category) {
+  if (!category) {
+    console.error("Missing category for event");
+    return "http://maps.google.com/mapfiles/ms/icons/gray-dot.png";
+  }
+  switch (category.trim()) {
     case "Food & Drink":
       return "http://maps.google.com/mapfiles/ms/icons/orange-dot.png";
     case "Art":
@@ -77,6 +81,8 @@ const getMarkerIcon = (category: string) => {
       return "http://maps.google.com/mapfiles/ms/icons/green-dot.png";
     case "Hobbies":
       return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+    default:
+      return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
   }
 };
 
@@ -93,13 +99,10 @@ const Map: React.FC<Props> = ({ user }) => {
 
   useEffect(() => {
     if (!selected) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const { latitude, longitude } = position.coords;
-          setSelected({ lat: latitude, lng: longitude });
-        },
-        (error) => console.warn(error)
-      );
+      navigator.geolocation.getCurrentPosition((position) => {
+        const { latitude, longitude } = position.coords;
+        setSelected({ lat: latitude, lng: longitude });
+      });
     }
   }, []);
 
@@ -125,7 +128,6 @@ const Map: React.FC<Props> = ({ user }) => {
 
   return (
     <Box>
-      {/* HEADER */}
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar
           sx={{
@@ -136,7 +138,6 @@ const Map: React.FC<Props> = ({ user }) => {
             py: 1,
           }}
         >
-          {/* LOGO */}
           <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
             <Typography
               component={Link}
@@ -171,35 +172,34 @@ const Map: React.FC<Props> = ({ user }) => {
             </Autocomplete>
           </Stack>
 
-          {/* PROFILE PIC */}
           <Stack direction="row" spacing={2} alignItems="center">
             <IconButton component={Link} to="/userprofile">
-              <Avatar
-                src={user?.profile_picture}
-                alt={user?.name || "User"}
-              />
+              <Avatar src={user?.profile_picture} alt={user?.name || "User"} />
             </IconButton>
           </Stack>
         </Toolbar>
       </AppBar>
 
-      {/* MAP */}
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={selected || center}
         zoom={12}
       >
-      {events.map((event, i) => (
-  <Marker
-    key={i}
-    position={{ lat: event.latitude, lng: event.longitude }}
-    title={event.title}
-    onClick={() => setActiveEvent(event)}
-    icon={{
-      url: getMarkerIcon(event.category),
-    }}
-  />
-))}
+        {events.map((event, i) => {
+          const category = event.category_name || "Unknown";
+          return (
+            <Marker
+              key={i}
+              position={{ lat: event.latitude, lng: event.longitude }}
+              title={event.title}
+              onClick={() => setActiveEvent(event)}
+              icon={{
+                url: getMarkerIcon(category),
+              }}
+            />
+          );
+        })}
+
         {activeEvent && (
           <InfoWindow
             position={{
@@ -222,11 +222,13 @@ const Map: React.FC<Props> = ({ user }) => {
                   gap: "4px",
                 }}
               >
-                {getCategoryIcon(activeEvent.category)} {activeEvent.category}
+                {getCategoryIcon(activeEvent.category_name)}{" "}
+                {activeEvent.category_name}
               </p>
             </div>
           </InfoWindow>
         )}
+
         {selected && (
           <Marker
             position={selected}

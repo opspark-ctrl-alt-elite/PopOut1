@@ -1,254 +1,196 @@
-import { Request, Response, NextFunction } from 'express';
-import { Router } from 'express';
-import { Op } from 'sequelize';
-import Vendor from '../models/Vendor';
-import User from '../models/User';
+import { Router, Request, Response, NextFunction } from 'express';
 import { Event as EventModel } from '../models/EventModel';
-import passport from 'passport';
+import Vendor from '../models/Vendor';
+import Category from '../models/Category';
+
 const router = Router();
 
-// Helper function to parse boolean query params safely
-const parseBooleanParam = (value: any): boolean | undefined => {
-  if (value === undefined) return undefined;
-  return String(value).toLowerCase() === 'true';
-};
-interface AuthenticatedRequest extends Request {
-  user: User;  // Now properly typed
-}
-function isAuthenticated(req: Request): req is Request & { user: User } {
+function isAuthenticated(req: Request): req is Request & { user: any } {
   return req.isAuthenticated() && !!req.user;
 }
-// GET /events - Get a list of all events
+
+const ensureVendor = async (req: Request, res: Response, next: NextFunction) => {
+  if (!isAuthenticated(req)) return res.status(403).json({ error: 'Authentication required' });
+  if (!req.user.is_vendor) return res.status(403).json({ error: 'Vendor access required' });
+
+  const vendor = await Vendor.findOne({ where: { userId: req.user.id } });
+  if (!vendor) return res.status(403).json({ error: 'Vendor profile not found' });
+
+  // @ts-ignore
+  req.vendor = vendor;
+  next();
+};
+
+//
+// 🌐 PUBLIC: GET /events (with optional filters)
+//
 router.get('/', async (req: Request, res: Response) => {
   try {
-    // Log incoming query params for debugging
-    console.log('Query params:', req.query);
+    const { category, isFree, isKidFriendly, isSober } = req.query;
+    const where: any = {};
 
-    // Destructure and parse query params
+    if (isFree) where.isFree = isFree === 'true';
+    if (isKidFriendly) where.isKidFriendly = isKidFriendly === 'true';
+    if (isSober) where.isSober = isSober === 'true';
+
+    const events = await EventModel.findAll({
+      where,
+      include: [
+        {
+          model: Category,
+          where: category ? { name: category } : undefined,
+          required: !!category,
+          through: { attributes: [] },
+        },
+        {
+          model: Vendor,
+          attributes: ['businessName'],
+        },
+      ],
+      order: [['startDate', 'ASC']],
+    });
+
+    res.json(events);
+  } catch (err) {
+    console.error('Public event feed error:', err);
+    res.status(500).json({ error: 'Failed to load events' });
+  }
+});
+
+//
+// GET /events/my-events (for the logged-in vendor)
+//
+router.get('/my-events', ensureVendor, async (req: Request, res: Response) => {
+  const vendor = (req as any).vendor;
+
+  try {
+    const events = await EventModel.findAll({
+      where: { vendor_id: vendor.id },
+      order: [['startDate', 'ASC']],
+    });
+    res.json(events);
+  } catch (error) {
+    console.error('Error fetching vendor events:', error);
+    res.status(500).json({ error: 'Failed to fetch vendor events' });
+  }
+});
+
+//
+// POST /events
+//
+router.post('/', ensureVendor, async (req: Request, res: Response) => {
+  try {
+    const vendor = (req as any).vendor;
+
     const {
-      category,
+      title,
+      description,
+      startDate,
+      endDate,
+      venue_name,
+      latitude,
+      longitude,
       isFree,
       isKidFriendly,
       isSober,
-      startDate,
-      endDate,
-      page = 1,
-      limit = 10
-    } = req.query;
+      image_url,
+      categories
+    } = req.body;
 
-    // Build where clause for filtering
-    const whereClause: any = {};
-
-    if (category) whereClause.category = category;
-    if (isFree !== undefined) whereClause.isFree = parseBooleanParam(isFree);
-    if (isKidFriendly !== undefined)
-      whereClause.isKidFriendly = parseBooleanParam(isKidFriendly);
-    if (isSober !== undefined) whereClause.isSober = parseBooleanParam(isSober);
-
-    // Date range filtering (with validation)
-    if (startDate || endDate) {
-      whereClause.startDate = {};
-
-      if (startDate) {
-        const parsedStartDate = new Date(startDate as string);
-        if (isNaN(parsedStartDate.getTime())) {
-          return res.status(400).json({
-            message:
-              'Invalid startDate format. Use ISO format (e.g., YYYY-MM-DD).'
-          });
-        }
-        whereClause.startDate[Op.gte] = parsedStartDate;
-      }
-
-      if (endDate) {
-        const parsedEndDate = new Date(endDate as string);
-        if (isNaN(parsedEndDate.getTime())) {
-          return res.status(400).json({
-            message:
-              'Invalid endDate format. Use ISO format (e.g., YYYY-MM-DD).'
-          });
-        }
-        whereClause.startDate[Op.lte] = parsedEndDate;
-      }
+    if (!title || !startDate || !endDate || !venue_name || !latitude || !longitude) {
+      return res.status(400).json({ error: 'Missing required event fields' });
     }
 
-    // Log final whereClause for debugging
-    console.log('Final whereClause:', JSON.stringify(whereClause, null, 2));
+    const event = await EventModel.create({
+      vendor_id: vendor.id,
+      title,
+      description,
+      startDate,
+      endDate,
+      venue_name,
+      latitude,
+      longitude,
+      isFree,
+      isKidFriendly,
+      isSober,
+      image_url,
+    });
 
-    // Pagination
-    const offset = (Number(page) - 1) * Number(limit);
+    if (categories && Array.isArray(categories)) {
+      const categoryInstances = await Category.findAll({ where: { name: categories } });
+      await (event as any).setCategories(categoryInstances);
+    }
 
-    // Fetch events with filtering and pagination
-    const { count, rows: events } = await EventModel.findAndCountAll({
-      where: whereClause,
-      include: [
-        {
-          model: Vendor,
-          attributes: ['businessName']
-        }
-      ],
-      limit: Number(limit),
-      offset: offset,
+    res.status(201).json(event);
+  } catch (error) {
+    console.error('Error creating event:', error);
+    res.status(500).json({ error: 'Failed to create event' });
+  }
+});
+
+//
+// PUT /events/:id
+//
+router.put('/:id', ensureVendor, async (req: Request, res: Response) => {
+  try {
+    const vendor = (req as any).vendor;
+    const event = await EventModel.findByPk(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+
+    if ((event as any).vendor_id !== vendor.id) {
+      return res.status(403).json({ error: 'You do not own this event' });
+    }
+
+    await event.update(req.body);
+
+    if (req.body.categories && Array.isArray(req.body.categories)) {
+      const categoryInstances = await Category.findAll({ where: { name: req.body.categories } });
+      await (event as any).setCategories(categoryInstances);
+    }
+
+    res.status(200).json(event);
+  } catch (error) {
+    console.error('Error updating event:', error);
+    res.status(500).json({ error: 'Failed to update event' });
+  }
+});
+
+//
+// DELETE /events/:id
+//
+router.delete('/:id', ensureVendor, async (req: Request, res: Response) => {
+  try {
+    const vendor = (req as any).vendor;
+    const event = await EventModel.findByPk(req.params.id);
+    if (!event) return res.status(404).json({ error: 'Event not found' });
+
+    if ((event as any).vendor_id !== vendor.id) {
+      return res.status(403).json({ error: 'You do not own this event' });
+    }
+
+    await event.destroy();
+    res.status(204).send();
+  } catch (error) {
+    console.error('Error deleting event:', error);
+    res.status(500).json({ error: 'Failed to delete event' });
+  }
+});
+
+//
+// GET /events/vendor/:vendorId
+//
+router.get('/vendor/:vendorId', async (req: Request, res: Response) => {
+  try {
+    const events = await EventModel.findAll({
+      where: { vendor_id: req.params.vendorId },
       order: [['startDate', 'ASC']]
     });
 
-    // Log results (for debugging)
-    console.log(`Found ${count} events. Returning ${events.length} events.`);
-
-    // Send response
-    res.json({
-      total: count,
-      page: Number(page),
-      limit: Number(limit),
-      events: events
-    });
+    res.json(events);
   } catch (error) {
-    console.error('Error fetching events:', error);
-    res.status(500).json({
-      message: 'Failed to retrieve events',
-      error: error instanceof Error ? error.message : 'Unknown error'
-    });
+    console.error('Error fetching vendor events:', error);
+    res.status(500).json({ error: 'Failed to fetch vendor events' });
   }
 });
-// POST /events - Create a new event
-// POST /events - Create a new event
-router.post(
-  '/',
-  // Authentication middleware
-  (req: Request, res: Response, next: NextFunction) => {
-    console.log('[1] Starting authentication middleware');
-    console.log(`[1] Request headers: ${JSON.stringify(req.headers)}`);
-    console.log(`[1] Session ID: ${req.sessionID}`);
 
-    if (isAuthenticated(req)) {
-      console.log('[1] User is already authenticated:', req.user);
-      return next();
-    }
-    
-    // Check for API token in header
-    const authHeader = req.headers['authorization'];
-    if (typeof authHeader === 'string' && authHeader.startsWith('Bearer ')) {
-      console.log('[1] Found Authorization header');
-      const token = authHeader.split(' ')[1];
-      
-      if (token === process.env.API_SECRET) {
-        console.log('[1] Valid API token received');
-        req.user = Object.assign(new User(), {
-          id: '1',
-          is_vendor: true,
-          google_id: 'system',
-          email: 'system@example.com',
-          name: 'System User'
-        });
-        console.log('[1] Created system user:', req.user);
-        return next();
-      } else {
-        console.log('[1] Invalid API token');
-      }
-    } else {
-      console.log('[1] No valid Authorization header found');
-    }
-
-    console.log('[1] Attempting Google authentication');
-    passport.authenticate('google', { 
-      session: false,
-      failureRedirect: undefined
-    }, (err: Error, user: User | false, info?: any) => {
-      console.log('[1] Google auth callback executed');
-      if (err) {
-        console.error('[1] Google auth error:', err);
-        return next(err);
-      }
-      if (!user) {
-        console.log('[1] Google auth failed. Info:', info);
-        return res.status(401).json({ 
-          error: 'Please log in first',
-          loginUrl: '/auth/google' 
-        });
-      }
-      console.log('[1] Google auth successful. User:', user);
-      req.user = user;
-      next();
-    })(req, res, next);
-  },
-  // Vendor check
-  (req: Request, res: Response, next: NextFunction) => {
-    console.log('[2] Starting vendor check middleware');
-    console.log(`[2] Current user: ${JSON.stringify(req.user)}`);
-
-    if (!isAuthenticated(req)) {
-      console.log('[2] User not authenticated in vendor check');
-      return res.status(403).json({ 
-        error: 'Authentication required',
-        loginUrl: '/auth/google' 
-      });
-    }
-
-    if (!req.user.is_vendor) {
-      console.log('[2] User is not a vendor');
-      return res.status(403).json({ 
-        error: 'Vendor account required',
-        upgradeUrl: '/account/upgrade' 
-      });
-    }
-
-    console.log('[2] Vendor check passed');
-    next();
-  },
-  // Event creation
-  async (req: Request, res: Response) => {
-    try {
-      console.log('[3] Starting event creation handler');
-      console.log(`[3] Request body: ${JSON.stringify(req.body)}`);
-      
-      if (!isAuthenticated(req)) {
-        console.error('[3] Unexpected unauthenticated request in handler');
-        return res.status(401).json({ error: 'Unauthorized' });
-      }
-
-      const { name, startDate } = req.body;
-      
-      if (!name || !startDate) {
-        console.log('[3] Missing required fields:', { name, startDate });
-        return res.status(400).json({ 
-          error: 'Missing required fields',
-          required: ['name', 'startDate'],
-          received: { name, startDate }
-        });
-      }
-
-      console.log('[3] Creating event with data:', {
-        name,
-        startDate,
-        vendorId: req.user.id
-      });
-
-      const event = await EventModel.create({
-        name,
-        startDate: new Date(startDate),
-        vendorId: req.user.id
-      });
-
-      console.log('[3] Event created successfully:', event);
-      res.status(201).json(event);
-    } catch (error) {
-      console.error('[3] Event creation error:', error);
-      res.status(500).json({ 
-        error: 'Failed to create event',
-        details: error instanceof Error ? error.message : String(error)
-      });
-    }
-  }
-);
-
-// Add a final catch-all for requests that slip through
-router.use((req: Request, res: Response) => {
-  console.error('Request slipped through all handlers!', {
-    method: req.method,
-    path: req.path,
-    authenticated: req.isAuthenticated(),
-    user: req.user
-  });
-  res.status(500).json({ error: 'Unexpected server error' });
-});
 export default router;
