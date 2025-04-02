@@ -86,14 +86,6 @@ const getMarkerIcon = (category: string) => {
   }
 };
 
-const categoryLookup: { [key: number]: string } = {
-  1: "Food & Drink",
-  2: "Art",
-  3: "Music",
-  4: "Sports & Fitness",
-  5: "Hobbies",
-};
-
 const Map: React.FC<Props> = ({ user }) => {
   const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
   const [activeEvent, setActiveEvent] = useState<any | null>(null);
@@ -136,7 +128,6 @@ const Map: React.FC<Props> = ({ user }) => {
 
   return (
     <Box>
-      {/* HEADER */}
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar
           sx={{
@@ -189,14 +180,13 @@ const Map: React.FC<Props> = ({ user }) => {
         </Toolbar>
       </AppBar>
 
-      {/* MAP */}
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={selected || center}
         zoom={12}
       >
         {events.map((event, i) => {
-          const category = categoryLookup[event.category_id];
+          const category = event.category_name || "Unknown";
           return (
             <Marker
               key={i}
@@ -232,8 +222,8 @@ const Map: React.FC<Props> = ({ user }) => {
                   gap: "4px",
                 }}
               >
-                {getCategoryIcon(categoryLookup[activeEvent.category_id])}{" "}
-                {categoryLookup[activeEvent.category_id]}
+                {getCategoryIcon(activeEvent.category_name)}{" "}
+                {activeEvent.category_name}
               </p>
             </div>
           </InfoWindow>
@@ -251,6 +241,5 @@ const Map: React.FC<Props> = ({ user }) => {
     </Box>
   );
 };
-
 
 export default Map;
