@@ -11,6 +11,9 @@ import CreateEvent from "./components/CreateEvent"
 import EditEvent from "./components/EditEvent"
 import ActiveEvents from "./components/ActiveEvents"
 import EventsFeed from './components/EventsFeed';
+import { registerServiceWorker } from './firebase/sw-registration';
+import { requestNotificationPermission } from './firebase/requestPermission';
+
 
 type User = {
   id: string;
@@ -39,42 +42,37 @@ const App: React.FC = () => {
   const [vendors, setVendors] = useState<Vendor[] | null>(null);
 
   useEffect(() => {
-    // get the user record associated with the current user
+    registerServiceWorker();
+    requestNotificationPermission();
+  
+    // get current user
     fetch("/auth/me", {
       credentials: "include",
     })
       .then((res) => {
-        if (!res.ok) {
-          throw new Error("err fetching user");
-        }
+        if (!res.ok) throw new Error("err fetching user");
         return res.json();
       })
       .then((data) => {
-        if (data && data.id) {
-          setUser(data);
-        }
+        if (data && data.id) setUser(data);
       })
       .catch((err) => {
-        // console.error( err);
+        // console.error(err);
       });
-
-      // get all vendor records
-      fetch("/vendor/all")
-        .then((res) => {
-          if (!res.ok) {
-            throw new Error("err fetching vendors");
-          }
-          return res.json();
-        })
-        .then((data) => {
-          console.log("Client Side: getting all vendors: ", data);
-          if (data) {
-            setVendors(data);
-          }
-        })
-        .catch((err) => {
-          // console.error( err);
-        });
+  
+    // Get all vendor records
+    fetch("/vendor/all")
+      .then((res) => {
+        if (!res.ok) throw new Error("err fetching vendors");
+        return res.json();
+      })
+      .then((data) => {
+        console.log("Client Side: getting all vendors: ", data);
+        if (data) setVendors(data);
+      })
+      .catch((err) => {
+        // console.error(err);
+      });
   }, []);
 
   return (
