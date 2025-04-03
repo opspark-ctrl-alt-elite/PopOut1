@@ -1,7 +1,7 @@
 import { Router } from "express";
 import Vendor from "../models/Vendor";
 import User from "../models/User";
-import imageHelperFuncs from "./imageHelperFuncs";
+import axios from "axios";
 
 // create router
 const vendorRouter = Router();
@@ -82,7 +82,9 @@ vendorRouter.post("/:userId", async (req, res) => {
       vendorObj.userId = userId;
 
       // use the image helper function for handling post and patch requests that may contain uploaded images
-      vendorObj.profilePicture = imageHelperFuncs.postAndPatchImageChecker(vendorObj.profilePicture);
+      /////vendorObj.profilePicture = imageHelperFuncs.postAndPatchImageChecker(vendorObj.profilePicture);
+
+
       // // check if the given profile image is an uploaded image instead of an url
       // if (vendorObj.profilePicture !== null && typeof vendorObj.profilePicture === "object") {
       //   // set vendorObj.profilePicture to a string of "uploaded" to indicate that it is an uploaded image

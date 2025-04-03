@@ -37,6 +37,8 @@ const ImageUpload: React.FC<Props> = ({ setInputData, imageKeyName, multiple }) 
       Upload Image(s)
       <HiddenInput
         type="file"
+        // name is new TODO:
+        name="imageUpload"
         onChange={
           (event) => {
             setInputData((prev: any) => {

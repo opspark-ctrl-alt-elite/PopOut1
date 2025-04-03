@@ -140,3 +140,5 @@ dist
 # uploaded images
 server/uploadedImages/eventImages/*
 server/uploadedImages/vendorImages/*
+
+server/routes/imageBackup.ts
