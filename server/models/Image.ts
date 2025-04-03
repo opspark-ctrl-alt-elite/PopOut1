@@ -23,10 +23,10 @@ Image.init(
       primaryKey: true,
       allowNull: false,
     },
-    imageName: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+    // imageName: {
+    //   type: DataTypes.STRING,
+    //   allowNull: true,
+    // },
     filePath: {
       type: DataTypes.STRING,
       allowNull: false,

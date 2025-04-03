@@ -1,6 +1,7 @@
 import { Router } from "express";
 import Vendor from "../models/Vendor";
 import User from "../models/User";
+import imageHelperFuncs from "./imageHelperFuncs";
 
 // create router
 const vendorRouter = Router();
@@ -79,6 +80,17 @@ vendorRouter.post("/:userId", async (req, res) => {
     } else {
       // otherwise, add userId to the vendorObj
       vendorObj.userId = userId;
+
+      // use the image helper function for handling post and patch requests that may contain uploaded images
+      vendorObj.profilePicture = imageHelperFuncs.postAndPatchImageChecker(vendorObj.profilePicture);
+      // // check if the given profile image is an uploaded image instead of an url
+      // if (vendorObj.profilePicture !== null && typeof vendorObj.profilePicture === "object") {
+      //   // set vendorObj.profilePicture to a string of "uploaded" to indicate that it is an uploaded image
+      //   vendorObj.profilePicture = "uploaded";
+      // }
+
+
+
       // create a new vendor record using the Vendor model
       const vendor = await Vendor.create(vendorObj);
       // set the user's "is_vendor" status to true
