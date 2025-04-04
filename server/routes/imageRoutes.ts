@@ -1,6 +1,23 @@
 import multer from "multer";
-const uploadV = multer({ dest: '../../public/uploadedImages/vendorImages/' });
-const uploadE = multer({ dest: '../../public/uploadedImages/eventImages/' });
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'public/uploadedImages/vendorImages')
+  },
+  filename: function (req, file, cb) {
+    console.log(req)
+    console.log(file);
+    // get the file extension to apply to the file name
+    let extension = file.originalname.split('.');
+    const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
+    // create randomized file name with correct extension
+    cb(null, file.fieldname + '-' + uniqueSuffix + '.' + extension[extension.length - 1])
+  }
+})
+
+const uploadV = multer({ storage: storage });
+// const uploadV = multer({ dest: 'public/uploadedImages/vendorImages' });
+const uploadE = multer({ dest: 'public/uploadedImages/eventImages' });
 // import { promises as fsP } from "node:fs";
 
 import { Router } from "express";
@@ -44,7 +61,8 @@ imageRouter.post("/vendor/:foreignKeyName/:foreignKey", uploadV.single("imageUpl
 
 
 console.log(req.body);
-
+console.log(req.file);
+res.sendStatus(201);
 
 
   // try {

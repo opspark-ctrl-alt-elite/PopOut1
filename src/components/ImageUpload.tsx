@@ -56,7 +56,7 @@ const ImageUpload: React.FC<Props> = ({ foreignKeyName, foreignKey, multi = true
     // </Button>
 
     <form action={`/api/images/vendor/${foreignKeyName}/${foreignKey}`} method="post" encType="multipart/form-data">
-      <input type="file" name="imageUpload" />
+      <input type="file" name="imageUpload" accept="image/*"/>
       <button type="submit">Submit</button>
     </form>
   );
