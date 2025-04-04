@@ -11,6 +11,7 @@ import {
   Container,
   IconButton,
 } from "@mui/material";
+import EventsFeed from "./EventsFeed";
 
 type User = {
   id: string;
@@ -41,8 +42,10 @@ type Props = {
 const Home: React.FC<Props> = ({ user, vendors }) => {
   console.log(user);
   console.log(vendors);
+
   return (
     <Box>
+      {/* navbar */}
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar
           sx={{
@@ -89,7 +92,7 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
 
       <Container sx={{ mt: 4 }}>
         {user && (
-          <Stack spacing={2}>
+          <Stack spacing={2} mb={4}>
             <Button component={Link} to="/userprofile" variant="outlined">
               View User Profile
             </Button>
@@ -101,6 +104,9 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
             </Button>
           </Stack>
         )}
+
+        {/* 🔹 evemt feed */}
+        <EventsFeed />
       </Container>
     </Box>
   );
