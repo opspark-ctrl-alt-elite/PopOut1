@@ -24,6 +24,7 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SportsHandballIcon from "@mui/icons-material/SportsHandball";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import PlaceIcon from "@mui/icons-material/Place";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 type User = {
   id: string;
@@ -66,11 +67,7 @@ const getCategoryIcon = (category: string) => {
 };
 
 const getMarkerIcon = (category: string) => {
-  if (!category) {
-    console.error("Missing category for event");
-    return "http://maps.google.com/mapfiles/ms/icons/gray-dot.png";
-  }
-  switch (category.trim()) {
+  switch (category?.trim()) {
     case "Food & Drink":
       return "http://maps.google.com/mapfiles/ms/icons/orange-dot.png";
     case "Art":
@@ -82,7 +79,7 @@ const getMarkerIcon = (category: string) => {
     case "Hobbies":
       return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
     default:
-      return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
+      return "http://maps.google.com/mapfiles/ms/icons/gray-dot.png";
   }
 };
 
@@ -92,6 +89,7 @@ const Map: React.FC<Props> = ({ user }) => {
   );
   const [activeEvent, setActiveEvent] = useState<any | null>(null);
   const [events, setEvents] = useState<any[]>([]);
+  const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const { isLoaded } = useLoadScript({
@@ -169,16 +167,66 @@ const Map: React.FC<Props> = ({ user }) => {
               }}
             >
               <InputBase
-                placeholder="Search by location..."
+                placeholder="Search..."
                 sx={{
                   px: 2,
                   py: 0.5,
                   border: "1px solid #ccc",
                   borderRadius: 2,
-                  width: 250,
+                  width: { xs: 150, sm: 200, md: 250 },
                 }}
               />
             </Autocomplete>
+
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ ml: 2 }}
+            >
+              {[
+                "Food & Drink",
+                "Art",
+                "Music",
+                "Sports & Fitness",
+                "Hobbies",
+              ].map((cat) => (
+                <IconButton
+                  key={cat}
+                  size="small"
+                  onClick={() =>
+                    setActiveCategory((prev) => (prev === cat ? null : cat))
+                  }
+                  sx={{
+                    bgcolor: activeCategory === cat ? "#1976d2" : "#f0f0f0",
+                    color: activeCategory === cat ? "#fff" : "#000",
+                    border: "1px solid #ccc",
+                    "&:hover": {
+                      bgcolor: activeCategory === cat ? "#1565c0" : "#e0e0e0",
+                    },
+                  }}
+                >
+                  {getCategoryIcon(cat)}
+                </IconButton>
+              ))}
+
+              {activeCategory && (
+                <IconButton
+                  size="small"
+                  onClick={() => setActiveCategory(null)}
+                  sx={{
+                    border: "1px solid #ccc",
+                    bgcolor: "#f0f0f0",
+                    "&:hover": {
+                      bgcolor: "#e0e0e0",
+                    },
+                  }}
+                  title="Show all categories"
+                >
+                  <RefreshIcon />
+                </IconButton>
+              )}
+            </Stack>
           </Stack>
 
           <Stack direction="row" spacing={2} alignItems="center">
@@ -194,20 +242,24 @@ const Map: React.FC<Props> = ({ user }) => {
         center={selected || center}
         zoom={12}
       >
-        {events.map((event, i) => {
-          const category = event.category_name || "Unknown";
-          return (
-            <Marker
-              key={i}
-              position={{ lat: event.latitude, lng: event.longitude }}
-              title={event.title}
-              onClick={() => setActiveEvent(event)}
-              icon={{
-                url: getMarkerIcon(category),
-              }}
-            />
-          );
-        })}
+        {events
+          .filter(
+            (event) => !activeCategory || event.category_name === activeCategory
+          )
+          .map((event, i) => {
+            const category = event.category_name || "Unknown";
+            return (
+              <Marker
+                key={i}
+                position={{ lat: event.latitude, lng: event.longitude }}
+                title={event.title}
+                onClick={() => setActiveEvent(event)}
+                icon={{
+                  url: getMarkerIcon(category),
+                }}
+              />
+            );
+          })}
 
         {activeEvent && (
           <InfoWindow
