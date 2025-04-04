@@ -2,6 +2,12 @@ import User from './User';
 import Vendor from './Vendor';
 import Category from './Category';
 import Event from './EventModel'
+import Review from './Review';
+
+Review.belongsTo(User, { foreignKey: 'user_id' });
+Review.belongsTo(Event, { foreignKey: 'event_id' });
+User.hasMany(Review, { foreignKey: 'user_id' });
+Event.hasMany(Review, { foreignKey: 'event_id' });
 
 User.hasOne(Vendor, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Vendor.belongsTo(User, { foreignKey: 'userId' });
