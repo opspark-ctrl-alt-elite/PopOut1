@@ -132,29 +132,29 @@ const ActiveEvents: React.FC = () => {
             </Stack>
 
             <Stack direction="row" spacing={2} alignItems="center">
-              <IconButton href="#">
+              <IconButton href="#" sx={{ color: "#1877F2" }} aria-label="Facebook">
                 <FacebookIcon />
               </IconButton>
-              <IconButton href="#">
+              <IconButton href="#" sx={{ color: "#C13584" }} aria-label="Instagram">
                 <InstagramIcon />
               </IconButton>
-              <IconButton href="#">
+              <IconButton href="#" sx={{ color: "#34A853" }} aria-label="Website">
                 <LanguageIcon />
               </IconButton>
               <Button
                 variant="outlined"
                 size="small"
                 component={Link}
-                to="/edit-profile"
+                to="/vendorprofile"
               >
-                Edit Profile
+                Back to Vendor Profile
               </Button>
             </Stack>
           </Stack>
         </Container>
       )}
 
-      {/* active events*/}
+      {/* active events */}
       <Container maxWidth="md" sx={{ mt: 2 }}>
         <Typography variant="h4" gutterBottom>
           My Events
@@ -172,13 +172,14 @@ const ActiveEvents: React.FC = () => {
                     {event.venue_name}
                   </Typography>
                   <Typography variant="body2">
-                    {new Date(event.startDate).toLocaleString()} — {" "}
+                    {new Date(event.startDate).toLocaleString()} —{" "}
                     {new Date(event.endDate).toLocaleString()}
                   </Typography>
 
                   {event.Categories && event.Categories.length > 0 && (
                     <Typography variant="body2" sx={{ mt: 1 }}>
-                      Categories: {event.Categories.map((cat) => cat.name).join(", ")}
+                      Categories:{" "}
+                      {event.Categories.map((cat) => cat.name).join(", ")}
                     </Typography>
                   )}
 
