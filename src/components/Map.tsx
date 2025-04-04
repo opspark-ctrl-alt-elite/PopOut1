@@ -157,13 +157,13 @@ const Map: React.FC<Props> = ({ user }) => {
               }}
             >
               <InputBase
-                placeholder="Search by location..."
+                placeholder="Search..."
                 sx={{
                   px: 2,
                   py: 0.5,
                   border: "1px solid #ccc",
                   borderRadius: 2,
-                  width: 250,
+                  width: { xs: 150, sm: 200, md: 250 }
                 }}
               />
             </Autocomplete>
