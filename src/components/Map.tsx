@@ -24,6 +24,7 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SportsHandballIcon from "@mui/icons-material/SportsHandball";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import PlaceIcon from "@mui/icons-material/Place";
+import RefreshIcon from "@mui/icons-material/Refresh";
 
 type User = {
   id: string;
@@ -83,7 +84,9 @@ const getMarkerIcon = (category: string) => {
 };
 
 const Map: React.FC<Props> = ({ user }) => {
-  const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(null);
+  const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(
+    null
+  );
   const [activeEvent, setActiveEvent] = useState<any | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
@@ -135,7 +138,12 @@ const Map: React.FC<Props> = ({ user }) => {
             py: 1,
           }}
         >
-          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            flexWrap="wrap"
+          >
             <Typography
               component={Link}
               to="/"
@@ -147,7 +155,9 @@ const Map: React.FC<Props> = ({ user }) => {
             </Typography>
 
             <Autocomplete
-              onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+              onLoad={(autocomplete) =>
+                (autocompleteRef.current = autocomplete)
+              }
               onPlaceChanged={() => {
                 const place = autocompleteRef.current?.getPlace();
                 const location = place?.geometry?.location;
@@ -163,13 +173,24 @@ const Map: React.FC<Props> = ({ user }) => {
                   py: 0.5,
                   border: "1px solid #ccc",
                   borderRadius: 2,
-                  width: { xs: 150, sm: 200, md: 250 }
+                  width: { xs: 150, sm: 200, md: 250 },
                 }}
               />
             </Autocomplete>
 
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ ml: 2 }}>
-              {["Food & Drink", "Art", "Music", "Sports & Fitness", "Hobbies"].map((cat) => (
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ ml: 2 }}
+            >
+              {[
+                "Food & Drink",
+                "Art",
+                "Music",
+                "Sports & Fitness",
+                "Hobbies",
+              ].map((cat) => (
                 <IconButton
                   key={cat}
                   size="small"
@@ -188,6 +209,23 @@ const Map: React.FC<Props> = ({ user }) => {
                   {getCategoryIcon(cat)}
                 </IconButton>
               ))}
+
+              {activeCategory && (
+                <IconButton
+                  size="small"
+                  onClick={() => setActiveCategory(null)}
+                  sx={{
+                    border: "1px solid #ccc",
+                    bgcolor: "#f0f0f0",
+                    "&:hover": {
+                      bgcolor: "#e0e0e0",
+                    },
+                  }}
+                  title="Show all categories"
+                >
+                  <RefreshIcon />
+                </IconButton>
+              )}
             </Stack>
           </Stack>
 
@@ -205,7 +243,9 @@ const Map: React.FC<Props> = ({ user }) => {
         zoom={12}
       >
         {events
-          .filter((event) => !activeCategory || event.category_name === activeCategory)
+          .filter(
+            (event) => !activeCategory || event.category_name === activeCategory
+          )
           .map((event, i) => {
             const category = event.category_name || "Unknown";
             return (
