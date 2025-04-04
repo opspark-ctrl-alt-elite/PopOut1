@@ -18,7 +18,7 @@ type Event = {
   startDate: string;
   endDate: string;
   venue_name: string;
-  categories?: { name: string }[];
+  Categories?: { name: string }[];
 };
 
 const ActiveEvents: React.FC = () => {
@@ -31,6 +31,7 @@ const ActiveEvents: React.FC = () => {
   const fetchEvents = async () => {
     try {
       const res = await axios.get("/api/events/my-events");
+      console.log("fetched events", res.data);
       setEvents(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to fetch vendor events:", err);
@@ -69,10 +70,10 @@ const ActiveEvents: React.FC = () => {
                   {new Date(event.endDate).toLocaleString()}
                 </Typography>
 
-                {event.categories && event.categories.length > 0 && (
+                {event.Categories && event.Categories.length > 0 && (
                   <Typography variant="body2" sx={{ mt: 1 }}>
                     Categories:{" "}
-                    {event.categories.map((cat) => cat.name).join(", ")}
+                    {event.Categories.map((cat) => cat.name).join(", ")}
                   </Typography>
                 )}
 

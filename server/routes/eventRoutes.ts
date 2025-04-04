@@ -70,10 +70,12 @@ router.get('/my-events', ensureVendor, async (req: Request, res: Response) => {
       include: [
         {
           model: Category,
+          attributes: ['name'],
           through: { attributes: [] }
         }
       ]
     });
+    console.log(JSON.stringify(events, null, 2));
     res.json(events);
   } catch (error) {
     console.error('Error fetching vendor events:', error);
