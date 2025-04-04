@@ -1,22 +1,22 @@
 import multer from "multer";
+import cloudinary from "../../cloudinaryConfig";
 
+// configure how multer should temporarily store files on the server side
 const storage = multer.diskStorage({
+  // TODO: delete destination from here and utilize cloudinary
   destination: function (req, file, cb) {
     cb(null, 'public/uploadedImages/vendorImages')
   },
   filename: function (req, file, cb) {
-    console.log(req)
-    console.log(file);
-    // get the file extension to apply to the file name
-    let extension = file.originalname.split('.');
+    // create unique suffix
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
-    // create randomized file name with correct extension
-    cb(null, file.fieldname + '-' + uniqueSuffix + '.' + extension[extension.length - 1])
+    // create file name with a fieldname, randomized suffix, and correct original file name
+    cb(null, file.fieldname + '-' + uniqueSuffix + '-' + file.originalname)
   }
 })
 
-const uploadV = multer({ storage: storage });
-// const uploadV = multer({ dest: 'public/uploadedImages/vendorImages' });
+const upload = multer({ storage: storage });
+// const upload = multer({ dest: 'public/uploadedImages/vendorImages' });
 const uploadE = multer({ dest: 'public/uploadedImages/eventImages' });
 // import { promises as fsP } from "node:fs";
 
@@ -52,7 +52,7 @@ imageRouter.get("/:foreignKeyName/:foreignKey", async (req, res) => {
 });
 
 // handle POST requests by using multer to save the given image for a vendor
-imageRouter.post("/vendor/:foreignKeyName/:foreignKey", uploadV.single("imageUpload"), async (req, res) => {
+imageRouter.post("/vendor/:foreignKeyName/:foreignKey", upload.single("imageUpload"), async (req, res) => {
   // extract foreignKeyName and foreignKey from the request parameters
   const { foreignKeyName, foreignKey } = req.params;
   // extract the vendor object from the request body
@@ -62,7 +62,7 @@ imageRouter.post("/vendor/:foreignKeyName/:foreignKey", uploadV.single("imageUpl
 
 console.log(req.body);
 console.log(req.file);
-res.sendStatus(201);
+res.status(201).send(req.file);
 
 
   // try {
@@ -104,7 +104,7 @@ res.sendStatus(201);
 
 // //TODO:
 // // handle POST requests by using multer to save the given images for an event
-// imageRouter.post("/event/:foreignKeyName/:foreignKey", uploadV.array("imageUpload"), async (req, res) => {
+// imageRouter.post("/event/:foreignKeyName/:foreignKey", upload.array("imageUpload"), async (req, res) => {
 //   // extract foreignKeyName and foreignKey from the request parameters
 //   const { foreignKeyName, foreignKey } = req.params;
 //   // extract the vendor object from the request body
