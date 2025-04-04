@@ -67,7 +67,15 @@ router.get('/my-events', ensureVendor, async (req: Request, res: Response) => {
     const events = await EventModel.findAll({
       where: { vendor_id: vendor.id },
       order: [['startDate', 'ASC']],
+      include: [
+        {
+          model: Category,
+          attributes: ['name'],
+          through: { attributes: [] }
+        }
+      ]
     });
+    console.log(JSON.stringify(events, null, 2));
     res.json(events);
   } catch (error) {
     console.error('Error fetching vendor events:', error);
@@ -75,13 +83,9 @@ router.get('/my-events', ensureVendor, async (req: Request, res: Response) => {
   }
 });
 
-//
-// POST /events
-//
 router.post('/', ensureVendor, async (req: Request, res: Response) => {
   try {
     const vendor = (req as any).vendor;
-
     const {
       title,
       description,
@@ -97,8 +101,13 @@ router.post('/', ensureVendor, async (req: Request, res: Response) => {
       categories
     } = req.body;
 
+    // Required field validation
     if (!title || !startDate || !endDate || !venue_name || !latitude || !longitude) {
       return res.status(400).json({ error: 'Missing required event fields' });
+    }
+
+    if (new Date(endDate) <= new Date(startDate)) {
+      return res.status(400).json({ error: 'End date must be after start date' });
     }
 
     const event = await EventModel.create({
@@ -128,9 +137,6 @@ router.post('/', ensureVendor, async (req: Request, res: Response) => {
   }
 });
 
-//
-// PUT /events/:id
-//
 router.put('/:id', ensureVendor, async (req: Request, res: Response) => {
   try {
     const vendor = (req as any).vendor;
@@ -139,6 +145,13 @@ router.put('/:id', ensureVendor, async (req: Request, res: Response) => {
 
     if ((event as any).vendor_id !== vendor.id) {
       return res.status(403).json({ error: 'You do not own this event' });
+    }
+
+    // Optional: validate date logic if both provided
+    if (req.body.startDate && req.body.endDate) {
+      if (new Date(req.body.endDate) <= new Date(req.body.startDate)) {
+        return res.status(400).json({ error: 'End date must be after start date' });
+      }
     }
 
     await event.update(req.body);
@@ -154,6 +167,7 @@ router.put('/:id', ensureVendor, async (req: Request, res: Response) => {
     res.status(500).json({ error: 'Failed to update event' });
   }
 });
+
 
 //
 // DELETE /events/:id

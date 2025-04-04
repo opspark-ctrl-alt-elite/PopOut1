@@ -86,7 +86,9 @@ const EventsFeed: React.FC = () => {
           <Select
             value={filters.category}
             label="Category"
-            onChange={(e) => setFilters((f) => ({ ...f, category: e.target.value }))}
+            onChange={(e) =>
+              setFilters((f) => ({ ...f, category: e.target.value }))
+            }
           >
             <MenuItem value="">All</MenuItem>
             {categories.map((cat) => (
@@ -101,32 +103,35 @@ const EventsFeed: React.FC = () => {
           control={
             <Checkbox
               checked={filters.isFree}
-              onChange={(e) => setFilters((f) => ({ ...f, isFree: e.target.checked }))}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, isFree: e.target.checked }))
+              }
             />
           }
           label="Free"
         />
-
         <FormControlLabel
           control={
             <Checkbox
               checked={filters.isKidFriendly}
-              onChange={(e) => setFilters((f) => ({ ...f, isKidFriendly: e.target.checked }))}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, isKidFriendly: e.target.checked }))
+              }
             />
           }
           label="Kid-Friendly"
         />
-
         <FormControlLabel
           control={
             <Checkbox
               checked={filters.isSober}
-              onChange={(e) => setFilters((f) => ({ ...f, isSober: e.target.checked }))}
+              onChange={(e) =>
+                setFilters((f) => ({ ...f, isSober: e.target.checked }))
+              }
             />
           }
           label="Sober"
         />
-
         <Button onClick={fetchEvents} variant="contained">
           Apply Filters
         </Button>
@@ -143,13 +148,22 @@ const EventsFeed: React.FC = () => {
               </Typography>
               <Typography variant="body2">{event.venue_name}</Typography>
               <Typography variant="body2">
-                {new Date(event.startDate).toLocaleString()} –{' '}
+                {new Date(event.startDate).toLocaleString()} —{' '}
                 {new Date(event.endDate).toLocaleString()}
               </Typography>
-              <Typography variant="body2">
-                {event.isFree && 'Free'} {event.isKidFriendly && '· Kid-Friendly'}{' '}
+              <Typography variant="body2" sx={{ mt: 1 }}>
+                {event.isFree && 'Free '}
+                {event.isKidFriendly && '· Kid-Friendly '}
                 {event.isSober && '· Sober'}
               </Typography>
+
+              <Button
+                variant="outlined"
+                sx={{ mt: 2 }}
+                onClick={() => alert(`TODO: Show details for ${event.title}`)}
+              >
+                View Details
+              </Button>
             </CardContent>
           </Card>
         ))}
