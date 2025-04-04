@@ -187,11 +187,14 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
               flexWrap="wrap"
             >
               <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar
-                  src={vendor.profilePicture}
-                  alt={vendor.businessName}
-                  sx={{ width: 56, height: 56 }}
-                />
+                <Box>
+                  <Avatar
+                    src={vendor.profilePicture}
+                    alt={vendor.businessName}
+                    sx={{ width: 56, height: 56 }}
+                  />
+                  <ImageUpload foreignKeyName="profilePicture" foreignKey={vendor.id} multi={false} />
+                </Box>
                 <Box>
                   <Typography variant="h6" fontWeight="bold">
                     {vendor.businessName}
@@ -349,7 +352,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                   onChange={handleUpdateFieldChange}
                 />
                 {/* Two different methods for adding a vendor profile */}
-                <Box sx={{ outline: 5 }}>
+                {/* <Box sx={{ outline: 5 }}>
                   <Typography>
                     Add image url or upload image
                   </Typography>
@@ -361,17 +364,16 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     value={fields.profilePicture}
                     onChange={handleUpdateFieldChange}
                   />
-                  {/* <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName="profilePicture" multiple={false} /> */}
                   <ImageUpload setInputData={setFields} imageKeyName="profilePicture" multiple={false} />
-                </Box>
-                {/* <TextField
+                </Box> */}
+                <TextField
                   name="profilePicture"
                   label="Profile Picture Link"
                   fullWidth
                   margin="normal"
                   value={fields.profilePicture}
                   onChange={handleUpdateFieldChange}
-                /> */}
+                />
                 <TextField
                   name="description"
                   label="Description"

@@ -5,13 +5,13 @@ import { CloudUpload } from '@mui/icons-material';
 
 type Props = {
 //  inputData: object;
-  setInputData: Function;
-  imageKeyName: string;
-  multiple: boolean;
+  foreignKeyName: string;
+  foreignKey: string;
+  multi: boolean;
 };
 
 // image upload component used for uploading images to the db
-const ImageUpload: React.FC<Props> = ({ setInputData, imageKeyName, multiple }) => {
+const ImageUpload: React.FC<Props> = ({ foreignKeyName, foreignKey, multi = true }) => {
 
   // create a component for a hidden input field
   const HiddenInput = styled('input')({
@@ -27,30 +27,38 @@ const ImageUpload: React.FC<Props> = ({ setInputData, imageKeyName, multiple }) 
   });
 
   return (
-    <Button
-      component="label"
-      role={undefined}
-      variant="contained"
-      tabIndex={-1}
-      startIcon={<CloudUpload />}
-    >
-      Upload Image(s)
-      <HiddenInput
-        type="file"
-        // name is new TODO:
-        name="imageUpload"
-        onChange={
-          (event) => {
-            setInputData((prev: any) => {
-              prev[imageKeyName] = event.currentTarget.files;
-              return prev;
-            })
-            console.log(event.currentTarget.files);
-          }
-        }
-        multiple={multiple}
-      />
-    </Button>
+    // <Button
+    //   component="form"
+    //   action={`/api/images/vendor/${foreignKeyName}/${foreignKey}`}
+    //   method="post"
+    //   encType="multipart/form-data"
+    //   role={undefined}
+    //   variant="contained"
+    //   tabIndex={-1}
+    //   startIcon={<CloudUpload />}
+    // >
+    //   Upload Image(s)
+    //   <HiddenInput
+    //     type="file"
+    //     // name is new TODO:
+    //     name="imageUpload"
+    //     // onChange={
+    //     //   (event) => {
+    //     //     setInputData((prev: any) => {
+    //     //       prev[imageKeyName] = event.currentTarget.files;
+    //     //       return prev;
+    //     //     })
+    //     //     console.log(event.currentTarget.files);
+    //     //   }
+    //     // }
+    //     multiple={multi}
+    //   />
+    // </Button>
+
+    <form action={`/api/images/vendor/${foreignKeyName}/${foreignKey}`} method="post" encType="multipart/form-data">
+      <input type="file" name="imageUpload" />
+      <button type="submit">Submit</button>
+    </form>
   );
 };
 

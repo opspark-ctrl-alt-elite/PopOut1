@@ -168,10 +168,10 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
           />
 
           {/* Two different methods for adding a vendor profile */}
-          <Box sx={{ outline: 5 }}>
+          {/* <Box sx={{ outline: 5 }}>
             <Typography>
               Add image url or upload image
-            </Typography>
+            </Typography> */}
             <TextField
               name="profilePicture"
               label="Profile Picture URL (optional)"
@@ -180,9 +180,12 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
               value={formData.profilePicture}
               onChange={handleChange}
             />
+            <Typography >
+              *Custom image may be uploaded after vendor creation.
+            </Typography>
             {/* <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName="profilePicture" multiple={false} /> */}
-            <ImageUpload setInputData={setFormData} imageKeyName="profilePicture" multiple={false} />
-          </Box>
+            {/* <ImageUpload setInputData={setFormData} imageKeyName="profilePicture" multiple={false} />
+          </Box> */}
 
           <Button
             type="submit"
