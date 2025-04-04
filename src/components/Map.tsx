@@ -82,7 +82,7 @@ const getMarkerIcon = (category: string) => {
     case "Hobbies":
       return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
     default:
-      return "http://maps.google.com/mapfiles/ms/icons/blue-dot.png";
+      return "http://maps.google.com/mapfiles/ms/icons/yellow-dot.png";
   }
 };
 

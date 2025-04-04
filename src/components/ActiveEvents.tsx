@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Button,
   Card,
@@ -8,8 +8,8 @@ import {
   Stack,
   Container,
   Divider,
-} from '@mui/material';
-import { Link } from 'react-router-dom';
+} from "@mui/material";
+import { Link } from "react-router-dom";
 
 type Event = {
   id: string;
@@ -18,6 +18,7 @@ type Event = {
   startDate: string;
   endDate: string;
   venue_name: string;
+  categories?: { name: string }[];
 };
 
 const ActiveEvents: React.FC = () => {
@@ -29,10 +30,10 @@ const ActiveEvents: React.FC = () => {
 
   const fetchEvents = async () => {
     try {
-      const res = await axios.get('/api/events/my-events');
+      const res = await axios.get("/api/events/my-events");
       setEvents(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
-      console.error('Failed to fetch vendor events:', err);
+      console.error("Failed to fetch vendor events:", err);
       setEvents([]);
     }
   };
@@ -42,7 +43,7 @@ const ActiveEvents: React.FC = () => {
       await axios.delete(`/api/events/${eventId}`);
       fetchEvents(); // refresh after deletion
     } catch (err) {
-      console.error('Error deleting event:', err);
+      console.error("Error deleting event:", err);
     }
   };
 
@@ -64,9 +65,16 @@ const ActiveEvents: React.FC = () => {
                   {event.venue_name}
                 </Typography>
                 <Typography variant="body2">
-                  {new Date(event.startDate).toLocaleString()} —{' '}
+                  {new Date(event.startDate).toLocaleString()} —{" "}
                   {new Date(event.endDate).toLocaleString()}
                 </Typography>
+
+                {event.categories && event.categories.length > 0 && (
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    Categories:{" "}
+                    {event.categories.map((cat) => cat.name).join(", ")}
+                  </Typography>
+                )}
 
                 <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
                   <Button

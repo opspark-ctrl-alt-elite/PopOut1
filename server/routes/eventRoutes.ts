@@ -67,6 +67,12 @@ router.get('/my-events', ensureVendor, async (req: Request, res: Response) => {
     const events = await EventModel.findAll({
       where: { vendor_id: vendor.id },
       order: [['startDate', 'ASC']],
+      include: [
+        {
+          model: Category,
+          through: { attributes: [] }
+        }
+      ]
     });
     res.json(events);
   } catch (error) {
