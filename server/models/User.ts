@@ -12,11 +12,13 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare categories?: Category[];
   declare location: string | null;
   declare is_vendor: boolean;
+  declare fcm_token: string | null;
   declare created_at: CreationOptional<Date>;
 
   // mixins
   declare getCategories: HasManyGetAssociationsMixin<Category>;
   declare setCategories: HasManySetAssociationsMixin<Category, string>;
+  
 
   public toJSON(): InferAttributes<User> {
     return super.toJSON();
@@ -58,6 +60,10 @@ User.init(
     is_vendor: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
+    },
+    fcm_token: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     created_at: {
       type: DataTypes.DATE,
