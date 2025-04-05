@@ -138,5 +138,9 @@ dist
 ## CUSTOM
 
 # uploaded images
-server/uploadedImages/eventImages/*
-server/uploadedImages/vendorImages/*
+public/uploadedImages/eventImages/*
+public/uploadedImages/vendorImages/*
+
+# backups
+server/routes/imageBackup.ts
+src/components/backupImgUp.tsx

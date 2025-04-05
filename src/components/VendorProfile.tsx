@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import ImageUpload from "./ImageUpload";
 
 // img imports
 import facebookImg from "../../public/includedImages/facebook.png";
@@ -43,7 +44,7 @@ type Vendor = {
 type Fields = {
   businessName?: string;
   email?: string;
-  profilePicture?: string;
+  profilePicture?: any;
   description?: string;
   website?: string;
   instagram?: string;
@@ -72,8 +73,23 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     instagram: "",
     facebook: "",
   });
+
+  // states used to toggle the modals
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
+
+  // create a style for the box that the modal holds
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
 
   useEffect(() => {
     getVendor();
@@ -128,19 +144,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       ...prev,
       [name]: value,
     }));
-  };
-
-  // create a style for the modal
-  const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
+    console.log(fields);
   };
 
   return (
@@ -185,11 +189,14 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
               flexWrap="wrap"
             >
               <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar
-                  src={vendor.profilePicture}
-                  alt={vendor.businessName}
-                  sx={{ width: 56, height: 56 }}
-                />
+                <Box>
+                  <Avatar
+                    src={vendor.profilePicture}
+                    alt={vendor.businessName}
+                    sx={{ width: 56, height: 56 }}
+                  />
+                  <ImageUpload foreignKeyName="vendorId" foreignKey={vendor.id} multi={false} />
+                </Box>
                 <Box>
                   <Typography variant="h6" fontWeight="bold">
                     {vendor.businessName}
@@ -218,9 +225,9 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                 {/* <Grid2 size={{ xs: 3, sm: 0 }}>
                   filler grid that changes size to better fit elements on phone screen
                 </Grid2> */}
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                   <a href={vendor.facebook}>
-                    <Typography>Facebook</Typography>
+                    {/* <Typography>Facebook</Typography> */}
                     <Avatar
                       src={facebookImg}
                       alt={vendor.facebook}
@@ -228,9 +235,9 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     />
                   </a>
                 </Grid2>
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                   <a href={vendor.instagram}>
-                    <Typography>Instagram</Typography>
+                    {/* <Typography>Instagram</Typography> */}
                     <Avatar
                       src={instagramImg}
                       alt={vendor.instagram}
@@ -238,7 +245,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     />
                   </a>
                 </Grid2>
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                   <a href={vendor.website}>
                     <Typography>Website</Typography>
                     <Avatar
@@ -346,6 +353,21 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                   value={fields.email}
                   onChange={handleUpdateFieldChange}
                 />
+                {/* Two different methods for adding a vendor profile */}
+                {/* <Box sx={{ outline: 5 }}>
+                  <Typography>
+                    Add image url or upload image
+                  </Typography>
+                  <TextField
+                    name="profilePicture"
+                    label="Profile Picture Link"
+                    fullWidth
+                    margin="normal"
+                    value={fields.profilePicture}
+                    onChange={handleUpdateFieldChange}
+                  />
+                  <ImageUpload setInputData={setFields} imageKeyName="profilePicture" multiple={false} />
+                </Box> */}
                 <TextField
                   name="profilePicture"
                   label="Profile Picture Link"
@@ -417,7 +439,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     setOpenDelete(false);
                   }}
                   variant="outlined"
-                  color="error"
                 >
                   Yes
                 </Button>
@@ -426,6 +447,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     setOpenDelete(false);
                   }}
                   variant="outlined"
+                  color="error"
                 >
                   No
                 </Button>
@@ -433,9 +455,27 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
             </Modal>
           </Box>
         ) : (
-          <Typography variant="h4" textAlign="center" mt={4}>
-            No Vendor Found
-          </Typography>
+          <Box>
+            <Typography variant="h4" textAlign="center" mt={4}>
+              No Vendor Found
+            </Typography>
+            <Button
+              variant="outlined"
+              fullWidth
+              component={Link}
+              to="/"
+            >
+              Home
+            </Button>
+            <Button
+              variant="outlined"
+              fullWidth
+              component={Link}
+              to="/vendor-signup"
+            >
+              Become a Vendor
+            </Button>
+          </Box>
         )}
       </Container>
     </div>
