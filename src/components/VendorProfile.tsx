@@ -73,8 +73,23 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     instagram: "",
     facebook: "",
   });
+
+  // states used to toggle the modals
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
+
+  // create a style for the box that the modal holds
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
 
   useEffect(() => {
     getVendor();
@@ -130,19 +145,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       [name]: value,
     }));
     console.log(fields);
-  };
-
-  // create a style for the box that the modal holds
-  const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
   };
 
   return (

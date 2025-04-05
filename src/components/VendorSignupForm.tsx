@@ -4,6 +4,7 @@ import ImageUpload from "./ImageUpload";
 
 import {
   Box,
+  Modal,
   TextField,
   Button,
   Typography,
@@ -37,6 +38,23 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
     profilePicture: "",
   });
 
+  // states used to toggle the modals
+  const [openAlertS, setOpenAlertS] = React.useState(false);
+  const [openAlertF, setOpenAlertF] = React.useState(false);
+
+  // create a style for the box that the modal holds
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+
   const navigate = useNavigate();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -66,11 +84,8 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
 
       const result = await res.json();
       console.log(result);
-      alert("Vendor request submitted!");
-      navigate('/');
     } catch (err) {
       console.error("Error submitting vendor form", err);
-      alert("Error submitting vendor form (you may already be a vendor)");
     }
   };
 
@@ -206,6 +221,38 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
               Cancel
             </Button>
           </Link>
+            <Modal open={openAlertS}>
+              <Box sx={style}>
+                <Typography variant="h6" component="h2">
+                  Vendor request submitted!
+                </Typography>
+                <Button
+                  onClick={() => {
+                    navigate('/');
+                  }}
+                  variant="outlined"
+                  color="error"
+                >
+                  OK
+                </Button>
+              </Box>
+            </Modal>
+            <Modal open={openAlertF}>
+              <Box sx={style}>
+                <Typography variant="h6" component="h2">
+                  Error submitting vendor form (you may already be a vendor)
+                </Typography>
+                <Button
+                  onClick={() => {
+                    setOpenAlertF(false);
+                  }}
+                  variant="outlined"
+                  color="error"
+                >
+                  OK
+                </Button>
+              </Box>
+            </Modal>
         </Box>
       </Paper>
     </Box>

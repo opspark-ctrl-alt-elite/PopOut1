@@ -95,9 +95,10 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), as
     // create an array of image objects to bulkCreate image records with
     const imgObjs = uploadResults.map((result: any) => {
       return {
-        [foreignKeyName]: foreignKey,
+        publicId: result.public_id,
         // use result.url (for http) instead of result.secure_url (for https)
-        reference: result.url
+        referenceURL: result.url,
+        [foreignKeyName]: foreignKey,
       }
     })
 
