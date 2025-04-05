@@ -193,7 +193,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     alt={vendor.businessName}
                     sx={{ width: 56, height: 56 }}
                   />
-                  <ImageUpload foreignKeyName="profilePicture" foreignKey={vendor.id} multi={false} />
+                  <ImageUpload foreignKeyName="vendorId" foreignKey={vendor.id} multi={false} />
                 </Box>
                 <Box>
                   <Typography variant="h6" fontWeight="bold">

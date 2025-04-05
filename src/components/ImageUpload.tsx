@@ -10,7 +10,11 @@ type Props = {
   multi: boolean;
 };
 
-// image upload component used for uploading images to the db
+// image upload component used for uploading images to the cloud and the image link to the db
+
+// foreignKeyName: the name of the foreign key in the images db to modify for the record currently being made
+// foreignKey: the value to set the foreignKeyName to within the record
+// multi: determines whether or not multiple files are allowed to be uploaded
 const ImageUpload: React.FC<Props> = ({ foreignKeyName, foreignKey, multi = true }) => {
 
   // create a component for a hidden input field
@@ -55,7 +59,8 @@ const ImageUpload: React.FC<Props> = ({ foreignKeyName, foreignKey, multi = true
     //   />
     // </Button>
 
-    <form action={`/api/images/vendor/${foreignKeyName}/${foreignKey}`} method="post" encType="multipart/form-data">
+    <form action={`/api/images/${foreignKeyName}/${foreignKey}`} method="post" encType="multipart/form-data">
+      <p>max size is 20mb</p>
       <input type="file" name="imageUpload" accept="image/*"/>
       <button type="submit">Submit</button>
     </form>

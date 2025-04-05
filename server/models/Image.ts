@@ -27,7 +27,7 @@ Image.init(
     //   type: DataTypes.STRING,
     //   allowNull: true,
     // },
-    filePath: {
+    reference: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,

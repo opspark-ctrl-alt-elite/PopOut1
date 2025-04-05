@@ -4,9 +4,9 @@ import cloudinary from "../../cloudinaryConfig";
 // configure how multer should temporarily store files on the server side
 const storage = multer.diskStorage({
   // TODO: delete destination from here and utilize cloudinary
-  destination: function (req, file, cb) {
-    cb(null, 'public/uploadedImages/vendorImages')
-  },
+  // destination: function (req, file, cb) {
+  //   cb(null, 'public/uploadedImages/vendorImages')
+  // },
   filename: function (req, file, cb) {
     // create unique suffix
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
@@ -15,10 +15,10 @@ const storage = multer.diskStorage({
   }
 })
 
-const upload = multer({ storage: storage });
-// const upload = multer({ dest: 'public/uploadedImages/vendorImages' });
-const uploadE = multer({ dest: 'public/uploadedImages/eventImages' });
-// import { promises as fsP } from "node:fs";
+const upload = multer({
+  storage: storage,
+  limits: { fileSize: 20000000 /* measured in bytes */ }
+});
 
 import { Router } from "express";
 import Image from '../models/Image';
@@ -51,18 +51,67 @@ imageRouter.get("/:foreignKeyName/:foreignKey", async (req, res) => {
   }
 });
 
-// handle POST requests by using multer to save the given image for a vendor
-imageRouter.post("/vendor/:foreignKeyName/:foreignKey", upload.single("imageUpload"), async (req, res) => {
+// handle POST requests by using multer to save the given image
+imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), async (req, res) => {
+
   // extract foreignKeyName and foreignKey from the request parameters
   const { foreignKeyName, foreignKey } = req.params;
-  // extract the vendor object from the request body
-  const imgObj = req.body;
+  // // extract the image object from the request body
+  // const imgObj = req.body;
+
+  try {
+
+    // check if the image upload if for vendor
+    if (foreignKeyName === "vendorId") {
+      // check if the vendor already has an uploaded image
+      const image = await Image.findOne({ where: { [foreignKeyName]: foreignKey }});
+      if (image !== null) {
+        // send back 403 error if the vendor already has an uploaded image
+        console.error("Given vendor already has an associated image record");
+        res.status(403).send("Given vendor already has an associated image record");
+        // end function early
+        return;
+      }
+    }
+
+    // upload the images to cloudinary
+    const imgUploadPromises = req.files.map(file => {
+      return cloudinary.uploader.upload(file.path, {
+        resource_type: 'image'
+      });
+    });
+
+    
+    // wait for the image uploads to complete and return the links
+    const uploadResults = await Promise.all(imgUploadPromises);
+
+    // create an array of image objects to bulkCreate image records with
+    const imgObjs = uploadResults.map(url => {
+      return {
+        [foreignKeyName]: foreignKey,
+        reference: url
+      }
+    })
+
+    // // upload the image to cloudinary
+    // // const uploadResult = await cloudinary.uploader.upload(req.file.path);
+
+    // console.log(req.body);
+    // console.log(req.files);
+
+    //   // // otherwise, add foreignKey to the imgObj
+    //   // imgObj[foreignKeyName] = foreignKey;
 
 
+      // create new image records using the Image model
+      const images = await Image.bulkCreate(imgObj);
 
-console.log(req.body);
-console.log(req.file);
-res.status(201).send(req.file);
+    res.sendStatus(201);
+  } catch (err) {
+    // generic error handling
+    console.error("Error uploading and/or POSTING image", err);
+    res.status(500).send(err);
+  }
 
 
   // try {
