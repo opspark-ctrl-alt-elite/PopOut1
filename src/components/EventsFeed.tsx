@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import {
-  Container,
+  Box,
   Typography,
   Card,
   CardContent,
@@ -13,7 +13,10 @@ import {
   Checkbox,
   FormControlLabel,
   Button,
+  IconButton,
 } from '@mui/material';
+import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
+import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
 
 type Event = {
   id: string;
@@ -37,6 +40,8 @@ const EventsFeed: React.FC = () => {
     isKidFriendly: false,
     isSober: false,
   });
+
+  const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchCategories();
@@ -64,7 +69,6 @@ const EventsFeed: React.FC = () => {
       } else if (Array.isArray(data.events)) {
         setEvents(data.events);
       } else {
-        console.warn('Unexpected response shape:', data);
         setEvents([]);
       }
     } catch (err) {
@@ -73,15 +77,21 @@ const EventsFeed: React.FC = () => {
     }
   };
 
-  return (
-    <Container sx={{ mt: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Events Near You
-      </Typography>
+  const scroll = (dir: 'left' | 'right') => {
+    const scrollAmount = 320;
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({
+        left: dir === 'left' ? -scrollAmount : scrollAmount,
+        behavior: 'smooth',
+      });
+    }
+  };
 
-      {/* Filters */}
+  return (
+    <Box sx={{ mt: 4, px: 2 }}>
+      {/* filters */}
       <Stack spacing={2} direction="row" flexWrap="wrap" mb={4}>
-        <FormControl sx={{ minWidth: 160 }}>
+        <FormControl sx={{ minWidth: 160 }} size="small">
           <InputLabel>Category</InputLabel>
           <Select
             value={filters.category}
@@ -106,6 +116,7 @@ const EventsFeed: React.FC = () => {
               onChange={(e) =>
                 setFilters((f) => ({ ...f, isFree: e.target.checked }))
               }
+              size="small"
             />
           }
           label="Free"
@@ -117,6 +128,7 @@ const EventsFeed: React.FC = () => {
               onChange={(e) =>
                 setFilters((f) => ({ ...f, isKidFriendly: e.target.checked }))
               }
+              size="small"
             />
           }
           label="Kid-Friendly"
@@ -128,47 +140,110 @@ const EventsFeed: React.FC = () => {
               onChange={(e) =>
                 setFilters((f) => ({ ...f, isSober: e.target.checked }))
               }
+              size="small"
             />
           }
           label="Sober"
         />
-        <Button onClick={fetchEvents} variant="contained">
-          Apply Filters
+
+        <Button
+          onClick={fetchEvents}
+          variant="contained"
+          size="small"
+          sx={{ height: 30 }}
+        >
+          Filter
         </Button>
       </Stack>
 
-      {/* Event List */}
-      <Stack spacing={3}>
-        {events.map((event) => (
-          <Card key={event.id}>
-            <CardContent>
-              <Typography variant="h6">{event.title}</Typography>
-              <Typography variant="body2" color="text.secondary">
-                Hosted by {event.vendor?.businessName}
-              </Typography>
-              <Typography variant="body2">{event.venue_name}</Typography>
-              <Typography variant="body2">
-                {new Date(event.startDate).toLocaleString()} —{' '}
-                {new Date(event.endDate).toLocaleString()}
-              </Typography>
-              <Typography variant="body2" sx={{ mt: 1 }}>
-                {event.isFree && 'Free '}
-                {event.isKidFriendly && '· Kid-Friendly '}
-                {event.isSober && '· Sober'}
-              </Typography>
+      {/* events */}
+      <Box sx={{ position: 'relative' }}>
+        {/* arrows */}
+        <IconButton
+          onClick={() => scroll('left')}
+          sx={{
+            position: 'absolute',
+            top: '35%',
+            left: 0,
+            zIndex: 2,
+            bgcolor: '#fff',
+            boxShadow: 2,
+            '&:hover': { bgcolor: '#f0f0f0' },
+          }}
+        >
+          <ArrowBackIosIcon />
+        </IconButton>
 
-              <Button
-                variant="outlined"
-                sx={{ mt: 2 }}
-                onClick={() => alert(`TODO: Show details for ${event.title}`)}
-              >
-                View Details
-              </Button>
-            </CardContent>
-          </Card>
-        ))}
-      </Stack>
-    </Container>
+        <IconButton
+          onClick={() => scroll('right')}
+          sx={{
+            position: 'absolute',
+            top: '35%',
+            right: 0,
+            zIndex: 2,
+            bgcolor: '#fff',
+            boxShadow: 2,
+            '&:hover': { bgcolor: '#f0f0f0' },
+          }}
+        >
+          <ArrowForwardIosIcon />
+        </IconButton>
+
+        {/* scroller */}
+        <Box
+          ref={scrollRef}
+          sx={{
+            display: 'flex',
+            gap: 3,
+            py: 2,
+            px: 5,
+            overflowX: 'scroll',
+            scrollbarWidth: 'none',
+            '&::-webkit-scrollbar': { display: 'none' },
+          }}
+        >
+          {events.map((event) => (
+            <Card
+              key={event.id}
+              sx={{
+                minWidth: 300,
+                maxWidth: 300,
+                flex: '0 0 auto',
+                boxShadow: 3,
+              }}
+            >
+              <CardContent>
+                <Typography variant="h6" gutterBottom>
+                  {event.title}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  Hosted by {event.vendor?.businessName}
+                </Typography>
+                <Typography variant="body2">{event.venue_name}</Typography>
+                <Typography variant="body2">
+                  {new Date(event.startDate).toLocaleString()} —{' '}
+                  {new Date(event.endDate).toLocaleString()}
+                </Typography>
+                <Typography variant="body2" sx={{ mt: 1 }}>
+                  {event.isFree && 'Free '}
+                  {event.isKidFriendly && '· Kid-Friendly '}
+                  {event.isSober && '· Sober'}
+                </Typography>
+                <Button
+                  variant="outlined"
+                  sx={{ mt: 2 }}
+                  onClick={() =>
+                    alert(`TODO: Show details for ${event.title}`)
+                  }
+                >
+                  View Details
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      </Box>
+    </Box>
   );
 };
 

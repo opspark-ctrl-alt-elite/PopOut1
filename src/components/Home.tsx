@@ -40,9 +40,6 @@ type Props = {
 };
 
 const Home: React.FC<Props> = ({ user, vendors }) => {
-  console.log(user);
-  console.log(vendors);
-
   return (
     <Box>
       {/* navbar */}
@@ -91,22 +88,22 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
       </AppBar>
 
       <Container sx={{ mt: 4 }}>
+        {/* events */}
+        <EventsFeed />
+
+        {/* become vendor */}
         {user && (
-          <Stack spacing={2} mb={4}>
-            <Button component={Link} to="/userprofile" variant="outlined">
-              View User Profile
-            </Button>
-            <Button component={Link} to="/vendorprofile" variant="outlined">
-              View Vendor Profile
-            </Button>
-            <Button component={Link} to="/vendor-signup" variant="outlined">
+          <Box mt={5} textAlign="center">
+            <Button
+              component={Link}
+              to="/vendor-signup"
+              variant="outlined"
+              size="large"
+            >
               Become a Vendor
             </Button>
-          </Stack>
+          </Box>
         )}
-
-        {/* 🔹 evemt feed */}
-        <EventsFeed />
       </Container>
     </Box>
   );
