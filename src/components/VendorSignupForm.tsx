@@ -84,8 +84,12 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
 
       const result = await res.json();
       console.log(result);
+      // open success modal;
+      setOpenAlertS(true);
     } catch (err) {
       console.error("Error submitting vendor form", err);
+      // open failure modal
+      setOpenAlertF(true);
     }
   };
 
@@ -231,7 +235,6 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
                     navigate('/');
                   }}
                   variant="outlined"
-                  color="error"
                 >
                   OK
                 </Button>
@@ -247,7 +250,6 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
                     setOpenAlertF(false);
                   }}
                   variant="outlined"
-                  color="error"
                 >
                   OK
                 </Button>

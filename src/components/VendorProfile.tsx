@@ -439,7 +439,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     setOpenDelete(false);
                   }}
                   variant="outlined"
-                  color="error"
                 >
                   Yes
                 </Button>
@@ -448,6 +447,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     setOpenDelete(false);
                   }}
                   variant="outlined"
+                  color="error"
                 >
                   No
                 </Button>
