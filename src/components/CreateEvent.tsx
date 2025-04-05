@@ -5,7 +5,7 @@ import {
   FormControlLabel, Stack, FormGroup, FormLabel
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Autocomplete, LoadScript } from '@react-google-maps/api';
+import { Autocomplete, useLoadScript } from '@react-google-maps/api';
 
 const libraries: ("places")[] = ["places"];
 
@@ -22,6 +22,11 @@ const CreateEvent = () => {
 
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
+    libraries,
+  });
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -102,68 +107,65 @@ const CreateEvent = () => {
     }
   };
 
+  // google map render
+  if (!isLoaded) return <div>Loading...</div>;
+
   return (
-    <LoadScript
-      googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY!}
-      libraries={libraries}
-    >
-      <Container sx={{ mt: 4 }}>
-        <Typography variant="h4">Create Event</Typography>
-        <Stack spacing={2} sx={{ mt: 2 }}>
-          <TextField name="title" label="Title *" value={form.title} onChange={handleChange} error={!!errors.title} helperText={errors.title} fullWidth />
-          <TextField name="description" label="Description" value={form.description} onChange={handleChange} fullWidth multiline />
-          <TextField name="startDate" label="Start Date *" type="datetime-local" value={form.startDate} onChange={handleChange} error={!!errors.startDate} helperText={errors.startDate} fullWidth />
-          <TextField name="endDate" label="End Date *" type="datetime-local" value={form.endDate} onChange={handleChange} error={!!errors.endDate} helperText={errors.endDate} fullWidth />
-          <TextField name="venue_name" label="Venue *" value={form.venue_name} onChange={handleChange} error={!!errors.venue_name} helperText={errors.venue_name} fullWidth />
+    <Container sx={{ mt: 4 }}>
+      <Typography variant="h4">Create Event</Typography>
+      <Stack spacing={2} sx={{ mt: 2 }}>
+        <TextField name="title" label="Title *" value={form.title} onChange={handleChange} error={!!errors.title} helperText={errors.title} fullWidth />
+        <TextField name="description" label="Description" value={form.description} onChange={handleChange} fullWidth multiline />
+        <TextField name="startDate" label="Start Date *" type="datetime-local" value={form.startDate} onChange={handleChange} error={!!errors.startDate} helperText={errors.startDate} fullWidth />
+        <TextField name="endDate" label="End Date *" type="datetime-local" value={form.endDate} onChange={handleChange} error={!!errors.endDate} helperText={errors.endDate} fullWidth />
+        <TextField name="venue_name" label="Venue *" value={form.venue_name} onChange={handleChange} error={!!errors.venue_name} helperText={errors.venue_name} fullWidth />
 
+        <Autocomplete
+          onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+          onPlaceChanged={handlePlaceChanged}
+        >
+          <TextField
+            label="Location *"
+            value={form.location}
+            onChange={handleChange}
+            name="location"
+            error={!!errors.location}
+            helperText={errors.location || 'Start typing address...'}
+            fullWidth
+          />
+        </Autocomplete>
 
-          <Autocomplete
-            onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-            onPlaceChanged={handlePlaceChanged}
-          >
-            <TextField
-              label="Location *"
-              value={form.location}
-              onChange={handleChange}
-              name="location"
-              error={!!errors.location}
-              helperText={errors.location || 'Start typing address...'}
-              fullWidth
-            />
-          </Autocomplete>
+        <TextField name="image_url" label="Image URL (optional)" value={form.image_url} onChange={handleChange} fullWidth />
 
-          <TextField name="image_url" label="Image URL (optional)" value={form.image_url} onChange={handleChange} fullWidth />
+        <FormControlLabel control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />} label="Free?" />
+        <FormControlLabel control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />} label="Kid-Friendly?" />
+        <FormControlLabel control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />} label="Sober?" />
 
-          <FormControlLabel control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />} label="Free?" />
-          <FormControlLabel control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />} label="Kid-Friendly?" />
-          <FormControlLabel control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />} label="Sober?" />
+        {availableCategories.length > 0 && (
+          <>
+            <FormLabel component="legend">Categories</FormLabel>
+            <FormGroup row>
+              {availableCategories.map((category) => (
+                <FormControlLabel
+                  key={category}
+                  control={
+                    <Checkbox
+                      checked={form.categories.includes(category)}
+                      onChange={() => handleCategoryToggle(category)}
+                    />
+                  }
+                  label={category}
+                />
+              ))}
+            </FormGroup>
+          </>
+        )}
 
-          {availableCategories.length > 0 && (
-            <>
-              <FormLabel component="legend">Categories</FormLabel>
-              <FormGroup row>
-                {availableCategories.map((category) => (
-                  <FormControlLabel
-                    key={category}
-                    control={
-                      <Checkbox
-                        checked={form.categories.includes(category)}
-                        onChange={() => handleCategoryToggle(category)}
-                      />
-                    }
-                    label={category}
-                  />
-                ))}
-              </FormGroup>
-            </>
-          )}
-
-          <Button variant="contained" onClick={handleSubmit}>
-            Submit
-          </Button>
-        </Stack>
-      </Container>
-    </LoadScript>
+        <Button variant="contained" onClick={handleSubmit}>
+          Submit
+        </Button>
+      </Stack>
+    </Container>
   );
 };
 
