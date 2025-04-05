@@ -1,6 +1,11 @@
 import multer from "multer";
 import cloudinary from "../../cloudinaryConfig";
 
+// type Req = {
+//   files: any[];
+//   file: any{};
+// };
+
 // configure how multer should temporarily store files on the server side
 const storage = multer.diskStorage({
   // TODO: delete destination from here and utilize cloudinary
@@ -74,39 +79,44 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), as
       }
     }
 
-    // upload the images to cloudinary
-    const imgUploadPromises = req.files.map(file => {
-      return cloudinary.uploader.upload(file.path, {
-        resource_type: 'image'
+    // upload the images to cloudinary (if req.files is an array)
+    let imgUploadPromises: any[] = [];
+    if (Array.isArray(req.files)) {
+      imgUploadPromises = req.files.map(file => {
+        return cloudinary.uploader.upload(file.path, {
+          resource_type: 'image'
+        });
       });
-    });
+    }
 
-    
     // wait for the image uploads to complete and return the links
     const uploadResults = await Promise.all(imgUploadPromises);
 
     // create an array of image objects to bulkCreate image records with
-    const imgObjs = uploadResults.map(url => {
+    const imgObjs = uploadResults.map((result: any) => {
       return {
         [foreignKeyName]: foreignKey,
-        reference: url
+        // use result.url (for http) instead of result.secure_url (for https)
+        reference: result.url
       }
     })
 
-    // // upload the image to cloudinary
-    // // const uploadResult = await cloudinary.uploader.upload(req.file.path);
+    // upload the image to cloudinary
+    // const uploadResult = await cloudinary.uploader.upload(req.file.path);
 
-    // console.log(req.body);
-    // console.log(req.files);
+    console.log('body:', req.body);
+    console.log('files:', req.files);
+    console.log('uploadResults:', uploadResults);
+    console.log('imgObjs:', imgObjs);
 
-    //   // // otherwise, add foreignKey to the imgObj
-    //   // imgObj[foreignKeyName] = foreignKey;
+      // // otherwise, add foreignKey to the imgObj
+      // imgObj[foreignKeyName] = foreignKey;
 
 
       // create new image records using the Image model
-      const images = await Image.bulkCreate(imgObj);
+      const images = await Image.bulkCreate(imgObjs);
 
-    res.sendStatus(201);
+    res.status(201).send(uploadResults);
   } catch (err) {
     // generic error handling
     console.error("Error uploading and/or POSTING image", err);
