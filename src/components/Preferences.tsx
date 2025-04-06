@@ -8,7 +8,23 @@ import {
   Stack,
 } from "@mui/material";
 
-const categoriesList = [
+type Category = string;
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  profile_picture?: string;
+  location?: string | null;
+  is_vendor?: boolean;
+  Categories?: { id: number; name: string }[];
+};
+
+type PreferencesProps = {
+  setUser: (user: User | ((prevUser: User | null) => User)) => void;
+};
+
+const categoriesList: Category[] = [
   "Food & Drink",
   "Art",
   "Music",
@@ -16,18 +32,23 @@ const categoriesList = [
   "Hobbies",
 ];
 
-const Preferences: React.FC = () => {
+const Preferences: React.FC<PreferencesProps> = ({ setUser }) => {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [userId, setUserId] = useState<string | null>(null);
-
   const navigate = useNavigate();
 
+  // Fetch user on mount
   useEffect(() => {
     fetch("/auth/me", { credentials: "include" })
       .then((res) => res.json())
       .then((data) => {
         if (data && data.id) {
           setUserId(data.id);
+          setUser(data); // initial set
+          if (data.Categories) {
+            const categoryNames = data.Categories.map((cat: any) => cat.name);
+            setSelectedCategories(categoryNames);
+          }
         } else {
           console.error("User not found");
         }
@@ -49,6 +70,8 @@ const Preferences: React.FC = () => {
       return;
     }
 
+    console.log("📤 Selected categories:", selectedCategories);
+
     fetch(`/users/${userId}/preferences`, {
       method: "PATCH",
       headers: {
@@ -61,9 +84,18 @@ const Preferences: React.FC = () => {
         return res.json();
       })
       .then((data) => {
-        console.log("Preferences updated:", data);
-        alert("Preferences saved!");
-        navigate('/userprofile');
+        console.log(" PATCH RESPONSE:", data);
+
+        // Merge old user with updated fields
+        setUser((prevUser) => {
+          if (!prevUser) return data.updated;
+          return {
+            ...prevUser,
+            ...data.updated, // merges in location, is_vendor, Categories
+          };
+        });
+
+        navigate("/userprofile");
       })
       .catch((err) => {
         console.error("Error updating preferences:", err);
@@ -80,7 +112,10 @@ const Preferences: React.FC = () => {
         backgroundColor: "#f0f0f0",
       }}
     >
-      <Paper elevation={4} sx={{ p: 5, borderRadius: 3, width: "100%", maxWidth: 500 }}>
+      <Paper
+        elevation={4}
+        sx={{ p: 5, borderRadius: 3, width: "100%", maxWidth: 500 }}
+      >
         <Typography variant="h5" fontWeight="bold" gutterBottom>
           Select Your Preference
         </Typography>
@@ -92,11 +127,17 @@ const Preferences: React.FC = () => {
           {categoriesList.map((category) => (
             <Button
               key={category}
-              variant={selectedCategories.includes(category) ? "contained" : "outlined"}
+              variant={
+                selectedCategories.includes(category)
+                  ? "contained"
+                  : "outlined"
+              }
               onClick={() => toggleCategory(category)}
               fullWidth
               sx={{
-                backgroundColor: selectedCategories.includes(category) ? "#3f0071" : undefined,
+                backgroundColor: selectedCategories.includes(category)
+                  ? "#3f0071"
+                  : undefined,
                 color: selectedCategories.includes(category) ? "#fff" : undefined,
                 "&:hover": {
                   boxShadow: "0 0 10px rgba(63,0,113,0.5)",
@@ -106,17 +147,16 @@ const Preferences: React.FC = () => {
               {category.toUpperCase()}
             </Button>
           ))}
-
-          <Button
-            variant="contained"
-            color="primary"
-            onClick={handleSave}
-            fullWidth
-            sx={{ mt: 3, backgroundColor: "#3f0071" }}
-          >
-            SAVE PREFERENCES
-          </Button>
         </Stack>
+
+        <Button
+          variant="contained"
+          color="primary"
+          onClick={handleSave}
+          sx={{ mt: 3, backgroundColor: "#3f0071" }}
+        >
+          SAVE PREFERENCES
+        </Button>
       </Paper>
     </Box>
   );
