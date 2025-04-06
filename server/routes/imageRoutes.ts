@@ -1,5 +1,8 @@
 import multer from "multer";
 import cloudinary from "../../cloudinaryConfig";
+import { Router } from "express";
+import Image from '../models/Image';
+import { Op } from "sequelize";
 
 // type Req = {
 //   files: any[];
@@ -24,9 +27,6 @@ const upload = multer({
   storage: storage,
   limits: { fileSize: 20000000 /* measured in bytes */ }
 });
-
-import { Router } from "express";
-import Image from '../models/Image';
 
 // create router
 const imageRouter = Router();
@@ -56,13 +56,11 @@ imageRouter.get("/:foreignKeyName/:foreignKey", async (req, res) => {
   }
 });
 
-// handle POST requests by using multer to save the given image
+// handle POST requests by using multer to temporarily hold the given image(s) before posting said image(s) to both the cloud and the images db
 imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), async (req, res) => {
 
   // extract foreignKeyName and foreignKey from the request parameters
   const { foreignKeyName, foreignKey } = req.params;
-  // // extract the image object from the request body
-  // const imgObj = req.body;
 
   try {
 
@@ -110,12 +108,8 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), as
     console.log('uploadResults:', uploadResults);
     console.log('imgObjs:', imgObjs);
 
-      // // otherwise, add foreignKey to the imgObj
-      // imgObj[foreignKeyName] = foreignKey;
-
-
-      // create new image records using the Image model
-      const images = await Image.bulkCreate(imgObjs);
+    // create new image records using the Image model
+    await Image.bulkCreate(imgObjs);
 
     res.status(201).send(uploadResults);
   } catch (err) {
@@ -123,89 +117,119 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), as
     console.error("Error uploading and/or POSTING image", err);
     res.status(500).send(err);
   }
-
-
-  // try {
-  //   // check if the vendor already has an uploaded image
-  //   const image = await Image.findOne({ where: { [foreignKeyName]: foreignKey }});
-  //   if (image !== null) {
-  //     // send back 403 error if the vendor already has an uploaded image
-  //     console.error("Given vendor already has an associated image record");
-  //     res.sendStatus(403);
-  //     // ADVISE
-  //     // res.status(403).send("Given vendor already has an associated image record");
-  //   } else {
-
-
-  //     // // otherwise, add foreignKey to the imgObj
-  //     // imgObj[foreignKeyName] = foreignKey;
-
-
-  //     // create a new image record using the Image model
-  //     const image = await Image.create(imgObj);
-
-
-
-  //     // // set the user's "is_vendor" status to true
-  //     // await User.update({ is_vendor: true }, { where: { id: foreignKey } });
-
-
-
-  //     // send back new image record with status code of 201
-  //     res.status(201).send(image);
-  //   }
-
-  // } catch (err) {
-  //   // generic error handling
-  //   console.error("Error POSTING image record for vendor", err);
-  //   res.sendStatus(500);
-  // }
 });
 
-// //TODO:
-// // handle POST requests by using multer to save the given images for an event
-// imageRouter.post("/event/:foreignKeyName/:foreignKey", upload.array("imageUpload"), async (req, res) => {
-//   // extract foreignKeyName and foreignKey from the request parameters
-//   const { foreignKeyName, foreignKey } = req.params;
-//   // extract the vendor object from the request body
-//   const imgObj = req.body;
+//imageRouter.patch
+// handle PATCH requests by using multer to temporarily hold the given image(s) before using said image(s) to replace old ones (by public id) in both the cloud and the images db
+imageRouter.patch("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), async (req, res) => {
 
-//   try {
-//     // check if the event already has any of the uploaded images
-//     const image = await Image.findAll({ where: { [foreignKeyName]: foreignKey }});
-//     if (image !== null) {
-//       // send back 403 error if the event already has an uploaded image(s)
-//       console.error("Given event already has an associated image record(s)");
-//       res.sendStatus(403);
-//       // ADVISE
-//       // res.status(403).send("Given event already has an associated image record(s)");
-//     } else {
+  // extract foreignKeyName and foreignKey from the request parameters
+  //const { foreignKeyName, foreignKey } = req.params;
 
+   // extract the array of publicIds that correspond to the images that will be replaced
+   const { publicIds } = req.body;
 
-//       // // otherwise, add foreignKey to the imgObj
-//       // imgObj[foreignKeyName] = foreignKey;
+  try {
 
+    // // check if the image upload if for vendor
+    // if (foreignKeyName === "vendorId") {
+    //   // check if the vendor already has an uploaded image
+    //   const image = await Image.findOne({ where: { [foreignKeyName]: foreignKey }});
+    //   if (image !== null) {
+    //     // send back 403 error if the vendor already has an uploaded image
+    //     console.error("Given vendor already has an associated image record");
+    //     res.status(403).send("Given vendor already has an associated image record");
+    //     // end function early
+    //     return;
+    //   }
+    // }
 
-//       // create a new image record using the Image model
-//       const image = await Image.create(imgObj);
+    // upload the replacement images to cloudinary (if req.files is an array)
+    let imgUploadPromises: any[] = [];
+    if (Array.isArray(req.files)) {
+      imgUploadPromises = req.files.map((file, index) => {
+        return cloudinary.uploader.upload(file.path, {
+          resource_type: 'image',
+          public_id: publicIds[index]
+        });
+      });
+    }
 
+    // wait for the image uploads to complete and return the links
+    const uploadResults = await Promise.all(imgUploadPromises);
 
+    // create an array of image objects to bulkCreate (replace) image records with
+    const imgObjs = uploadResults.map((result: any) => {
+      return {
+        publicId: result.public_id,
+        // use result.url (for http) instead of result.secure_url (for https)
+        referenceURL: result.url,
+      }
+    })
 
-//       // // set the user's "is_vendor" status to true
-//       // await User.update({ is_vendor: true }, { where: { id: foreignKey } });
+    // upload the image to cloudinary
+    // const uploadResult = await cloudinary.uploader.upload(req.file.path);
 
+    console.log('body:', req.body);
+    console.log('files:', req.files);
+    console.log('uploadResults:', uploadResults);
+    console.log('imgObjs:', imgObjs);
 
+    // replace the image records using the Image model
+    await Image.bulkCreate(imgObjs, {
+      updateOnDuplicate: ['publicId']
+    });
 
-//       // send back new image record with status code of 201
-//       res.status(201).send(image);
-//     }
+    res.status(201).send(uploadResults);
+  } catch (err) {
+    // generic error handling
+    console.error("Error uploading and/or POSTING image", err);
+    res.status(500).send(err);
+  }
+});
 
-//   } catch (err) {
-//     // generic error handling
-//     console.error("Error POSTING image record for vendor", err);
-//     res.sendStatus(500);
-//   }
-// });
+// handle delete requests by deleting images from both cloudinary and the images database
+imageRouter.delete("/", async (req, res) => {
+  // extract the array of publicIds that correspond to the images that will be deleted
+  const { publicIds } = req.body;
+
+  console.log(req.body);
+  console.log(publicIds);
+
+  try {
+    // delete the images from the cloudinary asset storage
+    let deletedCloudImages = await cloudinary.api.delete_resources(publicIds);
+    console.log(deletedCloudImages);
+
+    if (deletedCloudImages.deleted[''] === 'not_found') {
+      // return 404 error wih message if no images were found in the cloud
+      res.status(404).send("no Images were found in or deleted from the cloud");
+    } else {
+      // otherwise, delete the corresponding images from the images db
+      const deletedRecords = await Image.destroy({
+        where: {
+          publicId: {
+            [Op.in]: publicIds
+          }
+        }
+      });
+      if (deletedRecords === 0) {
+        // if an image wasn't found, send a status code of 404 with message
+        res.status(404).send("no Images were found in or deleted from the db");
+      } else {
+        // // otherwise, update the associated user record to make the user's "is_vendor" status false
+        // await User.update({ is_vendor: false }, { where: { id: foreignKey } });
+        // send a status code of 200 with message
+        res.status(200).send("Images successfully deleted from cloud and database");
+      }
+    }
+
+  } catch (err) {
+    // generic error handling
+    console.error("Error DELETING image", err);
+    res.status(500).send(err);
+  }
+});
 
 // //TODO:
 // // handle PATCH requests by finding and altering the vendor record associated with the given foreignKey

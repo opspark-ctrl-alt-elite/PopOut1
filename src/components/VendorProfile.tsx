@@ -58,6 +58,14 @@ type User = {
   profile_picture?: string;
 };
 
+type UploadedImage = {
+  id: string;
+  publicId: string;
+  referenceURL: string;
+  vendorId?: string | null;
+  eventId?: string | null;
+}
+
 type Props = {
   user: User | null;
 };
@@ -73,6 +81,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     instagram: "",
     facebook: "",
   });
+  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
 
   // states used to toggle the modals
   const [openDelete, setOpenDelete] = React.useState(false);
@@ -95,18 +104,44 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     getVendor();
   }, []);
 
+  useEffect(() => {
+    if (vendor) {
+      getUploadedImage();
+    }
+  }, [vendor]);
+
+  // gets the vendor associated with the user
   const getVendor = async () => {
     try {
       const vendorObj = await axios.get(`/api/vendor/${user?.id}`, {
         withCredentials: true,
       });
+      // set state's vendor value
       setVendor(vendorObj.data);
     } catch (err) {
+      // set vendor to null when no vendor can be found
       setVendor(null);
       console.error("Error retrieving vendor record: ", err);
     }
   };
 
+  // gets the uploaded image associated with the vendor
+  const getUploadedImage = async () => {
+    try {
+      const imageRes = await axios.get(`/api/images/vendorId/${vendor?.id}`, {
+        withCredentials: true,
+      });
+      // set state's uploaded image value to the first (and only) image record in the imageRes.data array
+      console.log(imageRes.data[0]);
+      setUploadedImage(imageRes.data[0]);
+    } catch (err) {
+      // set uploaded image to null when no uploaded image can be found or when another error occurs
+      setUploadedImage(null);
+      console.error("Error retrieving uploaded image record for vendor: ", err);
+    }
+  };
+
+  // updates the vendor account
   const updateVendor = async () => {
     try {
       const trimmedFields: Record<string, any> = {};
@@ -126,6 +161,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     }
   };
 
+  // deletes the vendor account
   const deleteVendor = async () => {
     try {
       await axios.delete(`/api/vendor/${user?.id}`, {
@@ -136,6 +172,26 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       console.error("Error deleting vendor record: ", err);
     }
   };
+
+   // deletes the uploaded Image
+   const deleteUploadedImage = async () => {
+    // create config object so that the delete request can have a body
+    const config = {
+      method: 'delete',
+      url: '/api/images/',
+      withCredentials: true,
+      data: {
+        publicIds: [ uploadedImage?.publicId ]
+      }
+      };
+    try {
+      await axios(config);
+      getUploadedImage();
+    } catch (err) {
+      console.error("Error deleting vendor record: ", err);
+    }
+  };
+
 
   // handle inputs to the fields by saving them to the state
   const handleUpdateFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -191,11 +247,26 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
               <Stack direction="row" spacing={2} alignItems="center">
                 <Box>
                   <Avatar
-                    src={vendor.profilePicture}
+                    src={uploadedImage ? uploadedImage.referenceURL : vendor.profilePicture}
                     alt={vendor.businessName}
                     sx={{ width: 56, height: 56 }}
                   />
-                  <ImageUpload foreignKeyName="vendorId" foreignKey={vendor.id} multi={false} />
+                  <Typography variant="body2" color="text.secondary">
+                    Uploaded Images override a vendor's url image until they are deleted
+                  </Typography>
+                  <ImageUpload
+                    foreignKeyName="vendorId"
+                    foreignKey={vendor.id}
+                    multi={false}
+                    getImages={getUploadedImage}
+                  />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={deleteUploadedImage}
+                  >
+                    Delete Uploaded Image
+                  </Button>
                 </Box>
                 <Box>
                   <Typography variant="h6" fontWeight="bold">

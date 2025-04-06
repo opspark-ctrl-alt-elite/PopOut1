@@ -232,7 +232,7 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
                 </Typography>
                 <Button
                   onClick={() => {
-                    navigate('/');
+                    navigate('/vendorprofile');
                   }}
                   variant="outlined"
                 >
