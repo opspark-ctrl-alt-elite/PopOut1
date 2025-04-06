@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { styled } from '@mui/material/styles';
 import { Button, Box } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
+import axios from 'axios';
 
 type Props = {
 //  inputData: object;
@@ -31,6 +32,32 @@ const ImageUpload: React.FC<Props> = ({ foreignKeyName, foreignKey, multi = true
     whiteSpace: 'nowrap',
     width: 1,
   });
+
+  // handle POSTING to the images route handler
+  const postImage = async (files: any) => {
+    try {
+
+      // create new form data instance
+      const formData = new FormData();
+  
+      // add files to form data
+      formData.append('file', files);
+  
+      // send axios request
+      const result = await axios.post(`/api/images/${foreignKeyName}/${foreignKey}`, formData, {
+        headers: {
+          'content-type': 'multipart/form-data'
+        }
+      });
+
+      console.log('help');
+      console.log(result);
+      getImages();
+    } catch (err) {
+      // generic error handling
+      console.error("Error with image upload post request: ", err);
+    }
+  }
 
   // sends a post request
   /*
@@ -129,33 +156,34 @@ document.getElementById('uploadForm').addEventListener('submit', function(event)
   */
 
   return (
-    // <Button
-    //   component="form"
-    //   action={`/api/images/vendor/${foreignKeyName}/${foreignKey}`}
-    //   method="post"
-    //   encType="multipart/form-data"
-    //   role={undefined}
-    //   variant="contained"
-    //   tabIndex={-1}
-    //   startIcon={<CloudUpload />}
-    // >
-    //   Upload Image(s)
-    //   <HiddenInput
-    //     type="file"
-    //     // name is new TODO:
-    //     name="imageUpload"
-    //     // onChange={
-    //     //   (event) => {
-    //     //     setInputData((prev: any) => {
-    //     //       prev[imageKeyName] = event.currentTarget.files;
-    //     //       return prev;
-    //     //     })
-    //     //     console.log(event.currentTarget.files);
-    //     //   }
-    //     // }
-    //     multiple={multi}
-    //   />
-    // </Button>
+    <Button
+      component="label"
+      //method="post"
+      //encType="multipart/form-data"
+      role={undefined}
+      variant="contained"
+      tabIndex={-1}
+      startIcon={<CloudUpload />}
+    >
+      Upload Image(s)
+      <HiddenInput
+        type="file"
+        name="imageUpload"
+        accept="image/*"
+        onChange={
+          (event) => {
+            postImage(event.currentTarget.files);
+            console.log(event.currentTarget.files);
+          }
+        }
+        multiple={multi}
+      />
+    </Button>
+  );
+};
+
+/*
+
 <Box>
   <iframe name="dummyframe" id="dummyframe" style={{display: 'none'}}></iframe>
   <form action={`/api/images/${foreignKeyName}/${foreignKey}`} target="dummyframe" method="post" encType="multipart/form-data">
@@ -163,13 +191,14 @@ document.getElementById('uploadForm').addEventListener('submit', function(event)
     <input type="file" name="imageUpload" accept="image/*"/>
     <button type="submit">Submit (new upload)</button>
   </form>
-  {/* <form action={`/api/images/${foreignKeyName}/${foreignKey}`} target="dummyframe" method="patch" encType="multipart/form-data">
-    <p>max size is 20mb</p>
-    <input type="file" name="imageUpload" accept="image/*"/>
-    <button type="submit">Submit (replace upload)</button>
-  </form> */}
-</Box>
-  );
-};
+//  <form action={`/api/images/${foreignKeyName}/${foreignKey}`} target="dummyframe" method="patch" encType="multipart/form-data">
+//    <p>max size is 20mb</p>
+//    <input type="file" name="imageUpload" accept="image/*"/>
+//    <button type="submit">Submit (replace upload)</button>
+//  </form>
+  </Box>
+
+
+*/
 
 export default ImageUpload;
