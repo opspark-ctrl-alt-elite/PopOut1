@@ -19,6 +19,9 @@ type User = {
   name: string;
   email: string;
   profile_picture?: string;
+  Categories?: { id: number; name: string }[];
+
+  
 };
 
 type Vendor = {
@@ -81,7 +84,7 @@ const App: React.FC = () => {
       <Route path="/edit-profile" element={<EditProfile user={user} />} />
       <Route path="/vendorprofile" element={<VendorProfile user={user} />} />
       <Route path="/vendor-signup" element={<VendorSignupForm user={user} />} />
-      <Route path="/preferences" element={<Preferences user={user} />} />
+      <Route path="/preferences" element={<Preferences setUser={setUser} />} />
       <Route path="/create-event" element={<CreateEvent />} />
       <Route path="/edit-event/:id" element={<EditEvent />} />
       <Route path="/active-events" element={<ActiveEvents user={user} />} />

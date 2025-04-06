@@ -3,6 +3,7 @@ import Vendor from './Vendor';
 import Category from './Category';
 import Event from './EventModel'
 import Review from './Review';
+import Preferences from './Preferences';
 
 Review.belongsTo(User, { foreignKey: 'user_id' });
 Review.belongsTo(Event, { foreignKey: 'event_id' });
@@ -23,3 +24,7 @@ Event.belongsTo(Vendor, { foreignKey: "vendor_id" });
 Event.belongsToMany(Category, { through: 'EventCategories', foreignKey: 'eventId' });
 Category.belongsToMany(Event, { through: 'EventCategories', foreignKey: 'categoryId' });
 
+
+// preferences 
+User.belongsToMany(Category, { through: 'Preferences', foreignKey: 'userId', });
+Category.belongsToMany(User, { through: 'Preferences', foreignKey: 'categoryId', });

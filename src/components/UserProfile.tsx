@@ -13,11 +13,18 @@ import {
   Divider,
 } from "@mui/material";
 
+// category and User types
+type Category = {
+  id: number;
+  name: string;
+};
+
 type User = {
   id: string;
   name: string;
   email: string;
   profile_picture?: string;
+  categories?: Category[];
 };
 
 type Props = {
@@ -29,19 +36,19 @@ const UserProfile: React.FC<Props> = ({ user }) => {
 
   const handleDeleteUser = () => {
     if (!user) return;
-  
+
     const confirmed = window.confirm(
       "Are you sure you want to delete your account? This action cannot be undone."
     );
     if (!confirmed) return;
-  
+
     fetch(`/user/me`, {
       method: "DELETE",
       credentials: "include",
     })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to delete user");
-        navigate("/"); // redirect after deletion
+        navigate("/");
       })
       .catch((err) => {
         console.error("Error deleting user:", err);
@@ -90,7 +97,7 @@ const UserProfile: React.FC<Props> = ({ user }) => {
       <Container maxWidth="md" sx={{ mt: 6 }}>
         {user ? (
           <Box>
-            {/* Top Row: Name, Email, Avatar, Edit Profile */}
+            {/* Top: Avatar, Name, Email, Edit */}
             <Stack
               direction="row"
               alignItems="center"
@@ -125,7 +132,33 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               </Button>
             </Stack>
 
-            {/* Profile Links */}
+            {/* Preferences Display */}
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              Your Preferences:
+            </Typography>
+
+            {user.categories && user.categories.length > 0 ? (
+              <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
+                {user.categories.map((cat) => (
+                  <Box
+                    key={cat.id}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: "8px",
+                      backgroundColor: "#e0e0e0",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {cat.name}
+                  </Box>
+                ))}
+              </Stack>
+            ) : (
+              <Typography>No preferences selected yet.</Typography>
+            )}
+
+            {/* Navigation Buttons */}
             <Stack spacing={2}>
               <Button
                 variant="contained"
