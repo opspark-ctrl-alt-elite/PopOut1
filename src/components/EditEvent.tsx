@@ -10,9 +10,17 @@ import {
   Stack,
   FormGroup,
   FormLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
-import { Autocomplete, LoadScript } from "@react-google-maps/api";
+import { Autocomplete, useLoadScript } from "@react-google-maps/api";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
+import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
 const libraries: "places"[] = ["places"];
 
@@ -25,6 +33,19 @@ const EditEvent = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
+  // Modal state for notifications
+  const [modal, setModal] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    success: boolean;
+  }>({ open: false, title: "", message: "", success: false });
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
+    libraries,
+  });
+
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -35,7 +56,12 @@ const EditEvent = () => {
 
         const event = eventRes.data.find((e: any) => e.id === id);
         if (!event) {
-          alert("Event not found");
+          setModal({
+            open: true,
+            title: "Error",
+            message: "Event not found",
+            success: false,
+          });
           return;
         }
 
@@ -47,6 +73,12 @@ const EditEvent = () => {
         setAvailableCategories(categoriesRes.data.map((cat: any) => cat.name));
       } catch (err) {
         console.error("Failed to fetch event or categories:", err);
+        setModal({
+          open: true,
+          title: "Error",
+          message: "Failed to load event data",
+          success: false,
+        });
       }
     };
     fetchEvent();
@@ -60,29 +92,11 @@ const EditEvent = () => {
     if (!form.endDate) newErrors.endDate = "End date is required";
     if (!form.venue_name) newErrors.venue_name = "Venue is required";
     if (!form.location) newErrors.location = "Location is required";
-    if (new Date(form.endDate) <= new Date(form.startDate)) {
+    if (form.startDate && form.endDate && new Date(form.endDate) <= new Date(form.startDate)) {
       newErrors.endDate = "End date must be after start date";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  };
-
-  const mockGeocode = async (location: string) => {
-    return { latitude: "37.7749", longitude: "-122.4194" };
-  };
-
-  const handleLocationBlur = async () => {
-    if (!form.location) return;
-    try {
-      const coords = await mockGeocode(form.location);
-      setForm((prev: any) => ({
-        ...prev,
-        latitude: coords.latitude,
-        longitude: coords.longitude,
-      }));
-    } catch (err) {
-      console.error("Failed to geocode location", err);
-    }
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -108,7 +122,6 @@ const EditEvent = () => {
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current?.getPlace();
     const location = place?.geometry?.location;
-
     if (place && location) {
       setForm((prev: any) => ({
         ...prev,
@@ -128,23 +141,28 @@ const EditEvent = () => {
         longitude: parseFloat(form.longitude),
       };
       await axios.put(`/api/events/${id}`, payload, { withCredentials: true });
-      alert("Event updated!");
-      navigate("/active-events");
+      setModal({ open: true, title: "Success", message: "Event updated!", success: true });
     } catch (err) {
       console.error(err);
-      alert("Error updating event.");
+      setModal({ open: true, title: "Error", message: "Error updating event.", success: false });
     }
   };
 
+  const handleModalClose = () => {
+    setModal((prev) => ({ ...prev, open: false }));
+    if (modal.success) {
+      navigate("/active-events");
+    }
+  };
+
+  // Google Maps API render
+  if (!isLoaded) return <div>Loading...</div>;
   if (!form) return <Typography>Loading...</Typography>;
 
   return (
-    <LoadScript
-      googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY!}
-      libraries={libraries}
-    >
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container sx={{ mt: 4 }}>
-        <Typography variant="h4">Create Event</Typography>
+        <Typography variant="h4">Edit Event</Typography>
         <Stack spacing={2} sx={{ mt: 2 }}>
           <TextField
             name="title"
@@ -163,26 +181,43 @@ const EditEvent = () => {
             fullWidth
             multiline
           />
-          <TextField
-            name="startDate"
+
+          {/* Updated Start Date using DateTimePicker */}
+          <DateTimePicker
             label="Start Date *"
-            type="datetime-local"
-            value={form.startDate}
-            onChange={handleChange}
-            error={!!errors.startDate}
-            helperText={errors.startDate}
-            fullWidth
+            value={form.startDate ? new Date(form.startDate) : null}
+            onChange={(newValue) =>
+              setForm((prev: any) => ({
+                ...prev,
+                startDate: newValue ? newValue.toISOString() : "",
+              }))
+            }
+            inputFormat="MM/dd/yyyy hh:mm aa"
+            ampm
+            onError={() => null}
+            renderInput={(params) => (
+              <TextField {...params} fullWidth error={!!errors.startDate} helperText={errors.startDate} />
+            )}
           />
-          <TextField
-            name="endDate"
+
+          {/* Updated End Date using DateTimePicker */}
+          <DateTimePicker
             label="End Date *"
-            type="datetime-local"
-            value={form.endDate}
-            onChange={handleChange}
-            error={!!errors.endDate}
-            helperText={errors.endDate}
-            fullWidth
+            value={form.endDate ? new Date(form.endDate) : null}
+            onChange={(newValue) =>
+              setForm((prev: any) => ({
+                ...prev,
+                endDate: newValue ? newValue.toISOString() : "",
+              }))
+            }
+            inputFormat="MM/dd/yyyy hh:mm aa"
+            ampm
+            onError={() => null}
+            renderInput={(params) => (
+              <TextField {...params} fullWidth error={!!errors.endDate} helperText={errors.endDate} />
+            )}
           />
+
           <TextField
             name="venue_name"
             label="Venue *"
@@ -192,6 +227,7 @@ const EditEvent = () => {
             helperText={errors.venue_name}
             fullWidth
           />
+
           <Autocomplete
             onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
             onPlaceChanged={handlePlaceChanged}
@@ -206,6 +242,7 @@ const EditEvent = () => {
               fullWidth
             />
           </Autocomplete>
+
           <TextField
             name="image_url"
             label="Image URL (optional)"
@@ -213,34 +250,17 @@ const EditEvent = () => {
             onChange={handleChange}
             fullWidth
           />
+
           <FormControlLabel
-            control={
-              <Checkbox
-                name="isFree"
-                checked={form.isFree}
-                onChange={handleChange}
-              />
-            }
+            control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />}
             label="Free?"
           />
           <FormControlLabel
-            control={
-              <Checkbox
-                name="isKidFriendly"
-                checked={form.isKidFriendly}
-                onChange={handleChange}
-              />
-            }
+            control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />}
             label="Kid-Friendly?"
           />
           <FormControlLabel
-            control={
-              <Checkbox
-                name="isSober"
-                checked={form.isSober}
-                onChange={handleChange}
-              />
-            }
+            control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />}
             label="Sober?"
           />
 
@@ -268,8 +288,28 @@ const EditEvent = () => {
             Update
           </Button>
         </Stack>
+
+        {/* Non-blocking Modal Notification */}
+        <Dialog
+          open={modal.open}
+          onClose={handleModalClose}
+          hideBackdrop
+          disableEnforceFocus
+          aria-labelledby="notification-dialog-title"
+          aria-describedby="notification-dialog-description"
+        >
+          <DialogTitle id="notification-dialog-title">{modal.title}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="notification-dialog-description">
+              {modal.message}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleModalClose}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Container>
-    </LoadScript>
+    </LocalizationProvider>
   );
 };
 

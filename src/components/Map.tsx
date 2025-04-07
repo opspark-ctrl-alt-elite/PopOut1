@@ -66,6 +66,14 @@ const getCategoryIcon = (category: string) => {
   }
 };
 
+const categoryColors: { [key: string]: string } = {
+  "Food & Drink": "#FB8C00",
+  Art: "#8E24AA",
+  Music: "#E53935",
+  "Sports & Fitness": "#43A047",
+  Hobbies: "#FDD835",
+};
+
 const getMarkerIcon = (category: string) => {
   switch (category?.trim()) {
     case "Food & Drink":
@@ -198,11 +206,12 @@ const Map: React.FC<Props> = ({ user }) => {
                     setActiveCategory((prev) => (prev === cat ? null : cat))
                   }
                   sx={{
-                    bgcolor: activeCategory === cat ? "#1976d2" : "#f0f0f0",
+                    bgcolor:
+                      activeCategory === cat ? categoryColors[cat] : "#f0f0f0",
                     color: activeCategory === cat ? "#fff" : "#000",
-                    border: "1px solid #ccc",
                     "&:hover": {
-                      bgcolor: activeCategory === cat ? "#1565c0" : "#e0e0e0",
+                      bgcolor: categoryColors[cat],
+                      color: "#fff",
                     },
                   }}
                 >

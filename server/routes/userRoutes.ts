@@ -114,6 +114,51 @@ router.patch("/:userId", (req, res) => {
   });
 
 
+
+  // perfernce route 
+  router.patch('/users/:userId/preferences', async (req, res) => {
+    const { userId } = req.params;
+    const { categories, location, is_vendor } = req.body;
+  
+    // validation
+    if (categories && !Array.isArray(categories)) {
+      return res.status(400).json({ error: 'Categories must be an array.' });
+    }
+  
+    if (is_vendor !== undefined && typeof is_vendor !== 'boolean') {
+      return res.status(400).json({ error: '`is_vendor` must be a boolean.' });
+    }
+  
+    try {
+      // this will find user 
+      const user = await User.findByPk(userId);
+      if (!user) return res.status(404).json({ error: 'User not found' });
+  
+      // dont really need this 
+      await user.update({ location, is_vendor });
+  
+      // if categories are provided, update them
+      if (categories && categories.length > 0) {
+        const categoryInstances = await Category.findAll({
+          where: { name: categories }
+        });
+  
+        await user.setCategories(categoryInstances);
+      }
+  
+      // refetch full user with categories
+      const updatedUser = await User.findByPk(userId, {
+         attributes: ['id', 'name', 'email', 'profile_picture', 'location', 'is_vendor'], // add all needed fields
+        include: [{ model: Category, through: { attributes: [] } }],
+      });
+  
+      res.status(200).json(updatedUser); // return full user object
+    } catch (err) {
+      console.error("Error updating preferences:", err);
+      res.status(500).json({ error: 'Failed to update preferences' });
+    }
+  });
+
 // POST /user/me - create a user if it doesnt exist (uses req.user from Google)
 // router.post('/user/me', (req, res) => {
 //   const user = req.user as User;

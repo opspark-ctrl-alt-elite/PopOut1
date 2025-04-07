@@ -2,6 +2,7 @@ import { DataTypes, Model, CreationOptional } from 'sequelize';
 import sequelize from './index';
 import User from './User';
 import Event from './EventModel';
+import Preferences from './Preferences';
 
 
 export class Category extends Model {

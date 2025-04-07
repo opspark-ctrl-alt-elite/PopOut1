@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
   AppBar,
@@ -10,8 +10,12 @@ import {
   Stack,
   Container,
   IconButton,
+  Popover,
+  Badge,
 } from "@mui/material";
+import NotificationsIcon from "@mui/icons-material/Notifications";
 import EventsFeed from "./EventsFeed";
+import { onMessageListener } from '../firebase/onMessageListener';
 
 type User = {
   id: string;
@@ -40,6 +44,28 @@ type Props = {
 };
 
 const Home: React.FC<Props> = ({ user, vendors }) => {
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  useEffect(() => {
+    onMessageListener().then((payload: any) => {
+      setNotifications((prev) => [payload.notification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    });
+  }, []);
+
+  const handleBellClick = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+    setUnreadCount(0);
+  };
+
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
+
+  const open = Boolean(anchorEl);
+
   return (
     <Box>
       {/* navbar */}
@@ -72,9 +98,19 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
 
           {user ? (
             <Stack direction="row" spacing={2} alignItems="center">
+              {/* notification */}
+              <IconButton onClick={handleBellClick}>
+                <Badge badgeContent={unreadCount} color="error">
+                  <NotificationsIcon />
+                </Badge>
+              </IconButton>
+
+              {/* avatar */}
               <IconButton component={Link} to="/userprofile">
                 <Avatar src={user.profile_picture} alt={user.name} />
               </IconButton>
+
+              {/* logout */}
               <Button variant="outlined" href="/auth/logout" color="error">
                 Logout
               </Button>
@@ -87,8 +123,35 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
         </Toolbar>
       </AppBar>
 
+      {/* notification list */}
+      <Popover
+        open={open}
+        anchorEl={anchorEl}
+        onClose={handleClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Box sx={{ p: 2, minWidth: 250 }}>
+          <Typography variant="subtitle1" fontWeight="bold">
+            Notifications
+          </Typography>
+          {notifications.length === 0 ? (
+            <Typography variant="body2">No new notifications</Typography>
+          ) : (
+            notifications.map((n, i) => (
+              <Box key={i} sx={{ my: 1 }}>
+                <Typography variant="body2" fontWeight="bold">
+                  {n.title}
+                </Typography>
+                <Typography variant="body2">{n.body}</Typography>
+              </Box>
+            ))
+          )}
+        </Box>
+      </Popover>
+
+      {/* events */}
       <Container sx={{ mt: 4 }}>
-        {/* events */}
         <EventsFeed />
 
         {/* become vendor */}

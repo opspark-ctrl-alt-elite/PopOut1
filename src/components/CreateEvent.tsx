@@ -1,11 +1,31 @@
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import {
-  Container, Typography, TextField, Button, Checkbox,
-  FormControlLabel, Stack, FormGroup, FormLabel
+  Container,
+  Typography,
+  TextField,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+  FormGroup,
+  FormLabel,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
+  FilledTextFieldProps,
+  OutlinedTextFieldProps,
+  StandardTextFieldProps,
+  TextFieldVariants,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
-import { Autocomplete, LoadScript } from '@react-google-maps/api';
+import { Autocomplete, useLoadScript } from '@react-google-maps/api';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import { JSX } from 'react/jsx-runtime';
 
 const libraries: ("places")[] = ["places"];
 
@@ -14,14 +34,36 @@ const CreateEvent = () => {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const [form, setForm] = useState({
-    title: '', description: '', startDate: '', endDate: '',
-    venue_name: '', location: '', latitude: '', longitude: '',
-    isFree: false, isKidFriendly: false, isSober: false,
-    image_url: '', categories: [] as string[],
+    title: '',
+    description: '',
+    startDate: '',
+    endDate: '',
+    venue_name: '',
+    location: '',
+    latitude: '',
+    longitude: '',
+    isFree: false,
+    isKidFriendly: false,
+    isSober: false,
+    image_url: '',
+    categories: [] as string[],
   });
 
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
+
+  // Modal state for notifications (non-blocking dialogs)
+  const [modal, setModal] = useState<{
+    open: boolean;
+    title: string;
+    message: string;
+    success: boolean;
+  }>({ open: false, title: '', message: '', success: false });
+
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
+    libraries,
+  });
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -35,12 +77,26 @@ const CreateEvent = () => {
     fetchCategories();
   }, []);
 
+  // Inline validation for date fields (endDate must be after startDate)
+  useEffect(() => {
+    if (form.startDate && form.endDate) {
+      if (new Date(form.endDate) <= new Date(form.startDate)) {
+        setErrors((prev) => ({ ...prev, endDate: 'End date must be after start date' }));
+      } else {
+        setErrors((prev) => {
+          const { endDate, ...rest } = prev;
+          return rest;
+        });
+      }
+    }
+  }, [form.startDate, form.endDate]);
+
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
     if (!form.title) newErrors.title = 'Title is required';
     if (!form.startDate) newErrors.startDate = 'Start date is required';
     if (!form.endDate) newErrors.endDate = 'End date is required';
-    if (new Date(form.endDate) <= new Date(form.startDate)) {
+    if (form.startDate && form.endDate && new Date(form.endDate) <= new Date(form.startDate)) {
       newErrors.endDate = 'End date must be after start date';
     }
     if (!form.venue_name) newErrors.venue_name = 'Venue is required';
@@ -72,7 +128,6 @@ const CreateEvent = () => {
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current?.getPlace();
     const location = place?.geometry?.location;
-
     if (place && location) {
       setForm((prev) => ({
         ...prev,
@@ -84,38 +139,102 @@ const CreateEvent = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validate()) return;
-
+    if (!validate()) {
+      setModal({ open: true, title: 'Error', message: 'Please fix the errors in the form.', success: false });
+      return;
+    }
     try {
       const payload = {
         ...form,
         latitude: parseFloat(form.latitude),
         longitude: parseFloat(form.longitude),
       };
-
       await axios.post('/api/events', payload, { withCredentials: true });
-      alert('Event created!');
-      navigate('/active-events');
+      setModal({ open: true, title: 'Success', message: 'Event created!', success: true });
     } catch (err) {
       console.error(err);
-      alert('Error creating event.');
+      setModal({ open: true, title: 'Error', message: 'Error creating event.', success: false });
     }
   };
 
+  const handleModalClose = () => {
+    setModal((prev) => ({ ...prev, open: false }));
+    if (modal.success) {
+      navigate('/active-events');
+    }
+  };
+
+  // Google Maps render
+  if (!isLoaded) return <div>Loading...</div>;
+
   return (
-    <LoadScript
-      googleMapsApiKey={process.env.REACT_APP_GOOGLE_MAPS_API_KEY!}
-      libraries={libraries}
-    >
+    <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container sx={{ mt: 4 }}>
         <Typography variant="h4">Create Event</Typography>
         <Stack spacing={2} sx={{ mt: 2 }}>
-          <TextField name="title" label="Title *" value={form.title} onChange={handleChange} error={!!errors.title} helperText={errors.title} fullWidth />
-          <TextField name="description" label="Description" value={form.description} onChange={handleChange} fullWidth multiline />
-          <TextField name="startDate" label="Start Date *" type="datetime-local" value={form.startDate} onChange={handleChange} error={!!errors.startDate} helperText={errors.startDate} fullWidth />
-          <TextField name="endDate" label="End Date *" type="datetime-local" value={form.endDate} onChange={handleChange} error={!!errors.endDate} helperText={errors.endDate} fullWidth />
-          <TextField name="venue_name" label="Venue *" value={form.venue_name} onChange={handleChange} error={!!errors.venue_name} helperText={errors.venue_name} fullWidth />
+          <TextField
+            name="title"
+            label="Title *"
+            value={form.title}
+            onChange={handleChange}
+            error={!!errors.title}
+            helperText={errors.title}
+            fullWidth
+          />
+          <TextField
+            name="description"
+            label="Description"
+            value={form.description}
+            onChange={handleChange}
+            fullWidth
+            multiline
+          />
 
+          {/* Updated Start Date using DateTimePicker */}
+          <DateTimePicker
+            label="Start Date *"
+            value={form.startDate ? new Date(form.startDate) : null}
+            onChange={(newValue) =>
+              setForm((prev) => ({
+                ...prev,
+                startDate: newValue ? newValue.toISOString() : '',
+              }))
+            }
+            inputFormat="MM/dd/yyyy hh:mm aa"
+            ampm
+            onError={() => null}
+            renderInput={(params: JSX.IntrinsicAttributes & { variant?: TextFieldVariants | undefined; } & Omit<FilledTextFieldProps | OutlinedTextFieldProps | StandardTextFieldProps, "variant">) => (
+              <TextField {...params} fullWidth error={!!errors.startDate} helperText={errors.startDate} />
+            )}
+          />
+
+          {/* Updated End Date using DateTimePicker */}
+          <DateTimePicker
+            label="End Date *"
+            value={form.endDate ? new Date(form.endDate) : null}
+            onChange={(newValue) =>
+              setForm((prev) => ({
+                ...prev,
+                endDate: newValue ? newValue.toISOString() : '',
+              }))
+            }
+            inputFormat="MM/dd/yyyy hh:mm aa"
+            ampm
+            onError={() => null}
+            renderInput={(params: JSX.IntrinsicAttributes & { variant?: TextFieldVariants | undefined; } & Omit<FilledTextFieldProps | OutlinedTextFieldProps | StandardTextFieldProps, "variant">) => (
+              <TextField {...params} fullWidth error={!!errors.endDate} helperText={errors.endDate} />
+            )}
+          />
+
+          <TextField
+            name="venue_name"
+            label="Venue *"
+            value={form.venue_name}
+            onChange={handleChange}
+            error={!!errors.venue_name}
+            helperText={errors.venue_name}
+            fullWidth
+          />
 
           <Autocomplete
             onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
@@ -132,11 +251,26 @@ const CreateEvent = () => {
             />
           </Autocomplete>
 
-          <TextField name="image_url" label="Image URL (optional)" value={form.image_url} onChange={handleChange} fullWidth />
+          <TextField
+            name="image_url"
+            label="Image URL (optional)"
+            value={form.image_url}
+            onChange={handleChange}
+            fullWidth
+          />
 
-          <FormControlLabel control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />} label="Free?" />
-          <FormControlLabel control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />} label="Kid-Friendly?" />
-          <FormControlLabel control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />} label="Sober?" />
+          <FormControlLabel
+            control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />}
+            label="Free?"
+          />
+          <FormControlLabel
+            control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />}
+            label="Kid-Friendly?"
+          />
+          <FormControlLabel
+            control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />}
+            label="Sober?"
+          />
 
           {availableCategories.length > 0 && (
             <>
@@ -162,8 +296,28 @@ const CreateEvent = () => {
             Submit
           </Button>
         </Stack>
+
+        {/* Non-blocking Modal Notification */}
+        <Dialog
+          open={modal.open}
+          onClose={handleModalClose}
+          hideBackdrop
+          disableEnforceFocus
+          aria-labelledby="notification-dialog-title"
+          aria-describedby="notification-dialog-description"
+        >
+          <DialogTitle id="notification-dialog-title">{modal.title}</DialogTitle>
+          <DialogContent>
+            <DialogContentText id="notification-dialog-description">
+              {modal.message}
+            </DialogContentText>
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={handleModalClose}>Close</Button>
+          </DialogActions>
+        </Dialog>
       </Container>
-    </LoadScript>
+    </LocalizationProvider>
   );
 };
 

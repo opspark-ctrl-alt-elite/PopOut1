@@ -7,19 +7,20 @@ import UserProfile from "./components/UserProfile";
 import VendorProfile from "./components/VendorProfile";
 import EditProfile from "./components/EditProfile";
 import Preferences from "./components/Preferences";
-import CreateEvent from "./components/CreateEvent"
-import EditEvent from "./components/EditEvent"
-import ActiveEvents from "./components/ActiveEvents"
-import EventsFeed from './components/EventsFeed';
-import { registerServiceWorker } from './firebase/sw-registration';
-import { requestNotificationPermission } from './firebase/requestPermission';
-
+import CreateEvent from "./components/CreateEvent";
+import EditEvent from "./components/EditEvent";
+import ActiveEvents from "./components/ActiveEvents";
+import EventsFeed from "./components/EventsFeed";
+import { registerServiceWorker } from "./firebase/sw-registration";
+import { requestNotificationPermission } from "./firebase/requestPermission";
 
 type User = {
   id: string;
   name: string;
   email: string;
   profile_picture?: string;
+  Categories?: { id: number; name: string }[];
+
   
 };
 
@@ -44,7 +45,7 @@ const App: React.FC = () => {
   useEffect(() => {
     registerServiceWorker();
     requestNotificationPermission();
-  
+
     // get current user
     fetch("/auth/me", {
       credentials: "include",
@@ -59,7 +60,7 @@ const App: React.FC = () => {
       .catch((err) => {
         // console.error(err);
       });
-  
+
     // Get all vendor records
     fetch("/vendor/all")
       .then((res) => {
@@ -83,12 +84,11 @@ const App: React.FC = () => {
       <Route path="/edit-profile" element={<EditProfile user={user} />} />
       <Route path="/vendorprofile" element={<VendorProfile user={user} />} />
       <Route path="/vendor-signup" element={<VendorSignupForm user={user} />} />
-      <Route path="/preferences" element={<Preferences user={user} />} />
+      <Route path="/preferences" element={<Preferences setUser={setUser} />} />
       <Route path="/create-event" element={<CreateEvent />} />
-<Route path="/edit-event/:id" element={<EditEvent />} />
-<Route path="/active-events" element={<ActiveEvents user={user} />} />
-<Route path="/events" element={<EventsFeed />} />
-
+      <Route path="/edit-event/:id" element={<EditEvent />} />
+      <Route path="/active-events" element={<ActiveEvents user={user} />} />
+      <Route path="/events" element={<EventsFeed />} />
     </Routes>
   );
 };
