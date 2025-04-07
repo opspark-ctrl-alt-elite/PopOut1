@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import ImageUpload from "./ImageUpload";
 
 // img imports
 import facebookImg from "../../public/includedImages/facebook.png";
@@ -43,7 +44,7 @@ type Vendor = {
 type Fields = {
   businessName?: string;
   email?: string;
-  profilePicture?: string;
+  profilePicture?: any;
   description?: string;
   website?: string;
   instagram?: string;
@@ -56,6 +57,14 @@ type User = {
   email: string;
   profile_picture?: string;
 };
+
+type UploadedImage = {
+  id: string;
+  publicId: string;
+  referenceURL: string;
+  vendorId?: string | null;
+  eventId?: string | null;
+}
 
 type Props = {
   user: User | null;
@@ -72,25 +81,67 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     instagram: "",
     facebook: "",
   });
+  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
+
+  // states used to toggle the modals
   const [openDelete, setOpenDelete] = React.useState(false);
   const [openEdit, setOpenEdit] = React.useState(false);
+
+  // create a style for the box that the modal holds
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
 
   useEffect(() => {
     getVendor();
   }, []);
 
+  useEffect(() => {
+    if (vendor) {
+      getUploadedImage();
+    }
+  }, [vendor]);
+
+  // gets the vendor associated with the user
   const getVendor = async () => {
     try {
       const vendorObj = await axios.get(`/api/vendor/${user?.id}`, {
         withCredentials: true,
       });
+      // set state's vendor value
       setVendor(vendorObj.data);
     } catch (err) {
+      // set vendor to null when no vendor can be found
       setVendor(null);
       console.error("Error retrieving vendor record: ", err);
     }
   };
 
+  // gets the uploaded image associated with the vendor
+  const getUploadedImage = async () => {
+    try {
+      const imageRes = await axios.get(`/api/images/vendorId/${vendor?.id}`, {
+        withCredentials: true,
+      });
+      // set state's uploaded image value to the first (and only) image record in the imageRes.data array
+      console.log(imageRes.data[0]);
+      setUploadedImage(imageRes.data[0]);
+    } catch (err) {
+      // set uploaded image to null when no uploaded image can be found or when another error occurs
+      setUploadedImage(null);
+      console.error("Error retrieving uploaded image record for vendor: ", err);
+    }
+  };
+
+  // updates the vendor account
   const updateVendor = async () => {
     try {
       const trimmedFields: Record<string, any> = {};
@@ -110,6 +161,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     }
   };
 
+  // deletes the vendor account
   const deleteVendor = async () => {
     try {
       await axios.delete(`/api/vendor/${user?.id}`, {
@@ -121,6 +173,26 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
     }
   };
 
+   // deletes the uploaded Image
+   const deleteUploadedImage = async () => {
+    // create config object so that the delete request can have a body
+    const config = {
+      method: 'delete',
+      url: '/api/images/',
+      withCredentials: true,
+      data: {
+        publicIds: [ uploadedImage?.publicId ]
+      }
+      };
+    try {
+      await axios(config);
+      getUploadedImage();
+    } catch (err) {
+      console.error("Error deleting vendor record: ", err);
+    }
+  };
+
+
   // handle inputs to the fields by saving them to the state
   const handleUpdateFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
@@ -128,19 +200,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       ...prev,
       [name]: value,
     }));
-  };
-
-  // create a style for the modal
-  const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
+    console.log(fields);
   };
 
   return (
@@ -185,11 +245,30 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
               flexWrap="wrap"
             >
               <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar
-                  src={vendor.profilePicture}
-                  alt={vendor.businessName}
-                  sx={{ width: 56, height: 56 }}
-                />
+                <Box>
+                  <Avatar
+                    src={uploadedImage ? uploadedImage.referenceURL : vendor.profilePicture}
+                    alt={vendor.businessName}
+                    sx={{ width: 56, height: 56 }}
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    Uploaded Images override a vendor's url image until they are deleted
+                  </Typography>
+                  <ImageUpload
+                    foreignKeyName="vendorId"
+                    foreignKey={vendor.id}
+                    multi={false}
+                    getImages={getUploadedImage}
+                    publicIds={[uploadedImage?.publicId]}
+                  />
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    onClick={deleteUploadedImage}
+                  >
+                    Delete Uploaded Image
+                  </Button>
+                </Box>
                 <Box>
                   <Typography variant="h6" fontWeight="bold">
                     {vendor.businessName}
@@ -218,9 +297,9 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                 {/* <Grid2 size={{ xs: 3, sm: 0 }}>
                   filler grid that changes size to better fit elements on phone screen
                 </Grid2> */}
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                   <a href={vendor.facebook}>
-                    <Typography>Facebook</Typography>
+                    {/* <Typography>Facebook</Typography> */}
                     <Avatar
                       src={facebookImg}
                       alt={vendor.facebook}
@@ -228,9 +307,9 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     />
                   </a>
                 </Grid2>
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                   <a href={vendor.instagram}>
-                    <Typography>Instagram</Typography>
+                    {/* <Typography>Instagram</Typography> */}
                     <Avatar
                       src={instagramImg}
                       alt={vendor.instagram}
@@ -238,7 +317,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     />
                   </a>
                 </Grid2>
-                <Grid2 size={6}>
+                <Grid2 size={12}>
                   <a href={vendor.website}>
                     <Typography>Website</Typography>
                     <Avatar
@@ -346,6 +425,21 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                   value={fields.email}
                   onChange={handleUpdateFieldChange}
                 />
+                {/* Two different methods for adding a vendor profile */}
+                {/* <Box sx={{ outline: 5 }}>
+                  <Typography>
+                    Add image url or upload image
+                  </Typography>
+                  <TextField
+                    name="profilePicture"
+                    label="Profile Picture Link"
+                    fullWidth
+                    margin="normal"
+                    value={fields.profilePicture}
+                    onChange={handleUpdateFieldChange}
+                  />
+                  <ImageUpload setInputData={setFields} imageKeyName="profilePicture" multiple={false} />
+                </Box> */}
                 <TextField
                   name="profilePicture"
                   label="Profile Picture Link"
@@ -417,7 +511,6 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     setOpenDelete(false);
                   }}
                   variant="outlined"
-                  color="error"
                 >
                   Yes
                 </Button>
@@ -426,6 +519,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     setOpenDelete(false);
                   }}
                   variant="outlined"
+                  color="error"
                 >
                   No
                 </Button>
@@ -433,9 +527,27 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
             </Modal>
           </Box>
         ) : (
-          <Typography variant="h4" textAlign="center" mt={4}>
-            No Vendor Found
-          </Typography>
+          <Box>
+            <Typography variant="h4" textAlign="center" mt={4}>
+              No Vendor Found
+            </Typography>
+            <Button
+              variant="outlined"
+              fullWidth
+              component={Link}
+              to="/"
+            >
+              Home
+            </Button>
+            <Button
+              variant="outlined"
+              fullWidth
+              component={Link}
+              to="/vendor-signup"
+            >
+              Become a Vendor
+            </Button>
+          </Box>
         )}
       </Container>
     </div>

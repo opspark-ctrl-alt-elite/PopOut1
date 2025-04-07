@@ -23,11 +23,11 @@ Image.init(
       primaryKey: true,
       allowNull: false,
     },
-    imageName: {
+    publicId: {
       type: DataTypes.STRING,
-      allowNull: true,
+      allowNull: false,
     },
-    filePath: {
+    referenceURL: {
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,

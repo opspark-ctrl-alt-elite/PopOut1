@@ -14,6 +14,7 @@ import userRoutes from './routes/userRoutes'
 import vendorRoutes from "./routes/vendorRoutes";
 import eventRoutes from './routes/eventRoutes';
 import categoryRoutes from './routes/categoryRoutes';
+import imageRoutes from './routes/imageRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 
 dotenv.config();
@@ -49,6 +50,7 @@ app.use("/api/vendor", vendorRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/categories', categoryRoutes);
+app.use('/api/images', imageRoutes);
 app.use('/api/notifications', notificationRoutes);
 
 app.use((req, res, next) => {
