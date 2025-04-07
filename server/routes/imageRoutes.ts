@@ -121,13 +121,19 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), as
 
 //imageRouter.patch
 // handle PATCH requests by using multer to temporarily hold the given image(s) before using said image(s) to replace old ones (by public id) in both the cloud and the images db
-imageRouter.patch("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), async (req, res) => {
+// HAS TO BE POST DUE TO LIMITATIONS OF HTML FORMS
+imageRouter.post("/:publicIds", upload.array("imageUpload"), async (req, res) => {
 
-  // extract foreignKeyName and foreignKey from the request parameters
-  //const { foreignKeyName, foreignKey } = req.params;
+  // extract foreign key info and publicIds from the request parameters
+  const { foreignKeyName, foreignKey, publicIds } = req.params;
+
+  // turn publicIds back into an array of public ids
+  const parsedPublicIds: string[] = publicIds.split("-");
+
+  console.log(parsedPublicIds)
 
    // extract the array of publicIds that correspond to the images that will be replaced
-   const { publicIds } = req.body;
+   // const { publicIds } = req.body;
 
   try {
 
@@ -150,7 +156,7 @@ imageRouter.patch("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), a
       imgUploadPromises = req.files.map((file, index) => {
         return cloudinary.uploader.upload(file.path, {
           resource_type: 'image',
-          public_id: publicIds[index]
+          public_id: parsedPublicIds[index]
         });
       });
     }
@@ -158,13 +164,29 @@ imageRouter.patch("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), a
     // wait for the image uploads to complete and return the links
     const uploadResults = await Promise.all(imgUploadPromises);
 
-    // create an array of image objects to bulkCreate (replace) image records with
-    const imgObjs = uploadResults.map((result: any) => {
+    // create an array of image objects/modifications to modify image records with
+    const imagesMods = uploadResults.map((result: any) => {
       return {
         publicId: result.public_id,
         // use result.url (for http) instead of result.secure_url (for https)
         referenceURL: result.url,
       }
+    })
+
+    // find the images associated with the public ids
+    let images = await Image.findAll({ where: { publicId: parsedPublicIds }});
+
+    // get the data out of each image
+    images = images.map(image => image.dataValues);
+
+    // modify the obtained image records with the new urls
+    const moddedImages = images.map((image: any) => {
+      imagesMods.forEach((mod: any) => {
+        if (image.publicId === mod.publicId) {
+          image.referenceURL = mod.referenceURL;
+        }
+      })
+      return image;
     })
 
     // upload the image to cloudinary
@@ -173,12 +195,15 @@ imageRouter.patch("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), a
     console.log('body:', req.body);
     console.log('files:', req.files);
     console.log('uploadResults:', uploadResults);
-    console.log('imgObjs:', imgObjs);
+    console.log('imgObjs:', moddedImages);
 
-    // replace the image records using the Image model
-    await Image.bulkCreate(imgObjs, {
-      updateOnDuplicate: ['publicId']
-    });
+    // replace the image records using the moddedImages and Image model
+    for (let newRec of moddedImages) {
+      await Image.update( newRec, { where: { id: newRec.id }});
+    }
+    // await Image.bulkCreate(moddedImages, {
+    //   updateOnDuplicate: ['referenceURL']
+    // });
 
     res.status(201).send(uploadResults);
   } catch (err) {

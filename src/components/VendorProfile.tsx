@@ -259,6 +259,7 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
                     foreignKey={vendor.id}
                     multi={false}
                     getImages={getUploadedImage}
+                    publicIds={[uploadedImage?.publicId]}
                   />
                   <Button
                     variant="outlined"

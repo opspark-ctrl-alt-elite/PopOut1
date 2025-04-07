@@ -1,8 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { styled } from '@mui/material/styles';
 import { Button, Box } from '@mui/material';
 import { CloudUpload } from '@mui/icons-material';
-import axios from 'axios';
 
 type Props = {
 //  inputData: object;
@@ -10,6 +9,8 @@ type Props = {
   foreignKey: string;
   multi: boolean;
   getImages: Function;
+  publicIds: any[];
+  // images: any[];
 };
 
 // image upload component used for uploading images to the cloud and the image link to the db
@@ -18,7 +19,8 @@ type Props = {
 // foreignKey: the value to set the foreignKeyName to within the record
 // multi: determines whether or not multiple files are allowed to be uploaded
 // getImages: function passed in from parent component that gets the uploaded image(s) from the db and updates the state with said image(s)
-const ImageUpload: React.FC<Props> = ({ foreignKeyName, foreignKey, multi = true, getImages }) => {
+// publicIds: array of the public ids of uploaded images from the state of parent component that will be used in path requests
+const ImageUpload: React.FC<Props> = ({ foreignKeyName, foreignKey, multi = true, getImages, publicIds }) => {
 
   // create a component for a hidden input field
   const HiddenInput = styled('input')({
@@ -33,30 +35,24 @@ const ImageUpload: React.FC<Props> = ({ foreignKeyName, foreignKey, multi = true
     width: 1,
   });
 
-  // handle POSTING to the images route handler
-  const postImage = async (files: any) => {
-    try {
+  // // create array of public ids
+  // let publicIds = images.map(image => image ? image.publicId : null);
+  // every time this component ios rendered, turn the array of public ids into a string of public ids separate by "-"
+  const publicIdsString = publicIds.join("-");
 
-      // create new form data instance
-      const formData = new FormData();
-  
-      // add files to form data
-      formData.append('file', files);
-  
-      // send axios request
-      const result = await axios.post(`/api/images/${foreignKeyName}/${foreignKey}`, formData, {
-        headers: {
-          'content-type': 'multipart/form-data'
-        }
-      });
+  ///////////// keep running getImages on an interval until the result is different
+  const runImageGetter = () => {
+    // // create a reference by using the updatedAt property of one of the images
+    // let currTime = images[0] ? images[0].updatedAt : null;
+    // let interval = setInterval(() => {
+    //   getImages();
+    //   if (currTime === images[0] ? images[0].updatedAt : null) {
+    //     clearInterval(interval);
+    //   }
+    // }, 2000);
 
-      console.log('help');
-      console.log(result);
-      getImages();
-    } catch (err) {
-      // generic error handling
-      console.error("Error with image upload post request: ", err);
-    }
+    // just give 5 seconds to give time for updating cloud before getting image
+    setTimeout(getImages, 5000);
   }
 
   // sends a post request
@@ -156,49 +152,20 @@ document.getElementById('uploadForm').addEventListener('submit', function(event)
   */
 
   return (
-    <Button
-      component="label"
-      //method="post"
-      //encType="multipart/form-data"
-      role={undefined}
-      variant="contained"
-      tabIndex={-1}
-      startIcon={<CloudUpload />}
-    >
-      Upload Image(s)
-      <HiddenInput
-        type="file"
-        name="imageUpload"
-        accept="image/*"
-        onChange={
-          (event) => {
-            postImage(event.currentTarget.files);
-            console.log(event.currentTarget.files);
-          }
-        }
-        multiple={multi}
-      />
-    </Button>
-  );
-};
-
-/*
-
 <Box>
   <iframe name="dummyframe" id="dummyframe" style={{display: 'none'}}></iframe>
-  <form action={`/api/images/${foreignKeyName}/${foreignKey}`} target="dummyframe" method="post" encType="multipart/form-data">
+  <form onSubmit={runImageGetter} action={`/api/images/${foreignKeyName}/${foreignKey}`} target="dummyframe" method="post" encType="multipart/form-data">
     <p>max size is 20mb</p>
-    <input type="file" name="imageUpload" accept="image/*"/>
+    <input type="file" name="imageUpload" accept="image/*" multiple={multi}/>
     <button type="submit">Submit (new upload)</button>
   </form>
-//  <form action={`/api/images/${foreignKeyName}/${foreignKey}`} target="dummyframe" method="patch" encType="multipart/form-data">
-//    <p>max size is 20mb</p>
-//    <input type="file" name="imageUpload" accept="image/*"/>
-//    <button type="submit">Submit (replace upload)</button>
-//  </form>
-  </Box>
-
-
-*/
+  <form onSubmit={runImageGetter} action={`/api/images/${publicIdsString}`} target="dummyframe" method="post" encType="multipart/form-data">
+    <p>max size is 20mb</p>
+    <input type="file" name="imageUpload" accept="image/*" multiple={multi}/>
+    <button type="submit">Submit (replace upload)</button>
+  </form>
+</Box>
+  );
+};
 
 export default ImageUpload;
