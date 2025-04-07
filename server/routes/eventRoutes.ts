@@ -44,6 +44,7 @@ router.get('/', async (req: Request, res: Response) => {
         },
         {
           model: Vendor,
+          as: 'vendor',
           attributes: ['businessName'],
         },
       ],
