@@ -117,10 +117,22 @@ const Map: React.FC<Props> = ({ user }) => {
   useEffect(() => {
     if (!selected) return;
 
+    // const fetchEvents = async () => {
+    //   try {
+    //     const res = await fetch(
+    //       `/map/events/nearby?lat=${selected.lat}&lng=${selected.lng}`
+    //     );
+    //     const data = await res.json();
+    //     setEvents(data);
+    //   } catch (err) {
+    //     console.error("err fetching nearby events", err);
+    //   }
+    // };
+
     const fetchEvents = async () => {
       try {
         const res = await fetch(
-          `/map/events/nearby?lat=${selected.lat}&lng=${selected.lng}`
+          `${window.location.origin}/api/map/events/nearby?lat=${selected.lat}&lng=${selected.lng}`
         );
         const data = await res.json();
         setEvents(data);
