@@ -45,7 +45,7 @@ router.get('/', async (req: Request, res: Response) => {
         {
           model: Vendor,
           as: 'vendor',
-          attributes: ['businessName'],
+          attributes: ['id', 'businessName'],
         },
       ],
       order: [['startDate', 'ASC']],
