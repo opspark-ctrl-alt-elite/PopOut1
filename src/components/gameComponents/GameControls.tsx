@@ -131,7 +131,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
 
   // make the player go rightwards upon pressing the right button
   const pressRight = () => {
-    console.log("fook")
+    console.log("press")
     setPlayer((prev: Player) => {
       return {
         x: prev.x,
@@ -144,7 +144,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
 
   // stop rightwards movement if right button is unpressed
   const unPressRight = () => {
-    console.log("ass")
+    console.log("unpress")
     // check if player is currently going right
     if (player.xVel > 0) {
       // set the player's horizontal velocity to 0 if so
@@ -162,17 +162,17 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
   return (
     <Container>
       <Stack spacing={2} sx={{ alignItems: "center" }}>
-        <Button variant="contained" onMouseDown={pressUp} onMouseUp={unPressUp}>
+        <Button variant="contained" onMouseDown={pressUp} onMouseUp={unPressUp} onMouseOut={unPressUp}>
           <ArrowDropUp />
         </Button>
         <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-          <Button variant="contained" onMouseDown={pressLeft} onMouseUp={unPressLeft}>
+          <Button variant="contained" onMouseDown={pressLeft} onMouseUp={unPressLeft} onMouseOut={unPressLeft}>
             <ArrowLeft />
           </Button>
-          <Button variant="contained" onMouseDown={pressDown} onMouseUp={unPressDown}>
+          <Button variant="contained" onMouseDown={pressDown} onMouseUp={unPressDown} onMouseOut={unPressDown}>
             <ArrowDropDown />
           </Button>
-          <Button variant="contained" onMouseDown={pressRight} onMouseUp={unPressRight}>
+          <Button variant="contained" onMouseDown={pressRight} onMouseUp={unPressRight} onMouseOut={unPressRight}>
             <ArrowRight />
           </Button>
         </Stack>
