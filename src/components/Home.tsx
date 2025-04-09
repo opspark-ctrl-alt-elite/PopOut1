@@ -66,6 +66,18 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
 
   const open = Boolean(anchorEl);
 
+  // // create array of colors to loop through
+  // const colorArray = ["red", "orange", "yellow", "green", "cyan", "blue", "violet", "purple", "maroon"];
+
+  // // set current color index
+  // let currColorInd = 0;
+
+  // // initiate current color
+  // let currColor: string;
+
+  // // create time out loop to cycle the colors
+  // if (colorInterval)
+  // setInterval(() => {console.log("jasjkadsdashdshdhdhjshjjhsj")}, 1000);
   return (
     <Box>
       {/* navbar */}
@@ -164,6 +176,20 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
               size="large"
             >
               Become a Vendor
+            </Button>
+          </Box>
+        )}
+
+        {/* play game */}
+        {user && (
+          <Box mt={5} textAlign="center">
+            <Button
+              component={Link}
+              to="/game"
+              variant="outlined"
+              size="large"
+            >
+              Play Maze Game
             </Button>
           </Box>
         )}
