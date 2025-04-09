@@ -10,6 +10,18 @@ import {
   Stack,
 } from '@mui/material';
 
+import Navbar from './NavBar';
+
+
+type Props = {
+  user: {
+    id: string;
+    name: string;
+    email: string;
+    profile_picture?: string;
+  } | null;
+};
+
 type Event = {
   id: string;
   title: string;
@@ -19,7 +31,7 @@ type Event = {
   venue_name: string;
 };
 
-const PublicVendorProfile: React.FC = () => {
+const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const { vendorId } = useParams<{ vendorId: string }>();
   const [events, setEvents] = useState<Event[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,37 +53,41 @@ const PublicVendorProfile: React.FC = () => {
   }, [vendorId]);
 
   return (
-    <Box sx={{ p: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Vendor Events
-      </Typography>
+    <>
+      <Navbar user={user} />
 
-      {loading ? (
-        <CircularProgress />
-      ) : events.length === 0 ? (
-        <Typography>No events</Typography>
-      ) : (
-        <Stack spacing={2}>
-          {events.map((event) => (
-            <Card key={event.id}>
-              <CardContent>
-                <Typography variant="h6">{event.title}</Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {event.venue_name}
-                </Typography>
-                <Typography variant="body2">
-                  {new Date(event.startDate).toLocaleString()} —{' '}
-                  {new Date(event.endDate).toLocaleString()}
-                </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
-                  {event.description}
-                </Typography>
-              </CardContent>
-            </Card>
-          ))}
-        </Stack>
-      )}
-    </Box>
+      <Box sx={{ p: 4 }}>
+        <Typography variant="h4" gutterBottom>
+          Vendor Events
+        </Typography>
+
+        {loading ? (
+          <CircularProgress />
+        ) : events.length === 0 ? (
+          <Typography>No events</Typography>
+        ) : (
+          <Stack spacing={2}>
+            {events.map((event) => (
+              <Card key={event.id}>
+                <CardContent>
+                  <Typography variant="h6">{event.title}</Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {event.venue_name}
+                  </Typography>
+                  <Typography variant="body2">
+                    {new Date(event.startDate).toLocaleString()} —{' '}
+                    {new Date(event.endDate).toLocaleString()}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mt: 1 }}>
+                    {event.description}
+                  </Typography>
+                </CardContent>
+              </Card>
+            ))}
+          </Stack>
+        )}
+      </Box>
+    </>
   );
 };
 
