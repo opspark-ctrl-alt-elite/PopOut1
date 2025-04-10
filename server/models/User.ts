@@ -1,9 +1,27 @@
-import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional, HasManyGetAssociationsMixin, HasManySetAssociationsMixin } from 'sequelize';
+import { DataTypes, Model, InferAttributes, InferCreationAttributes, CreationOptional, HasManyGetAssociationsMixin, HasManySetAssociationsMixin, BelongsToManyAddAssociationMixin,
+  BelongsToManyGetAssociationsMixin,
+  BelongsToManyRemoveAssociationMixin, } from 'sequelize';
 import sequelize from './index';
 import Category from './Category';
 import Vendor from './Vendor';
+import UserFollowsVendor from './UserFollowsVendor';
 
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
+  // addFollowedVendor(vendor: Vendor) {
+  //   throw new Error('Method not implemented.');
+  // }
+  // $remove(arg0: string, vendor: Vendor) {
+  //   throw new Error('Method not implemented.');
+  // }
+  // $add(arg0: string, vendor: Vendor) {
+  //   throw new Error('Method not implemented.');
+  // }
+  // FollowedVendors(FollowedVendors: any) {
+  //   throw new Error('Method not implemented.');
+  // }
+  // Vendors(Vendors: any) {
+  //   throw new Error('Method not implemented.');
+  // }
   declare id: CreationOptional<string>;
   declare google_id: string;
   declare email: string;
@@ -14,10 +32,15 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare is_vendor: boolean;
   declare fcm_token: string | null;
   declare created_at: CreationOptional<Date>;
-
+  declare FollowedVendors?: Vendor[];
+  
   // mixins
   declare getCategories: HasManyGetAssociationsMixin<Category>;
   declare setCategories: HasManySetAssociationsMixin<Category, string>;
+  declare addFollowedVendor: BelongsToManyAddAssociationMixin<Vendor, string>;
+  declare getFollowedVendors: BelongsToManyGetAssociationsMixin<Vendor>;
+  declare removeFollowedVendor: BelongsToManyRemoveAssociationMixin<Vendor, string>;
+  //  FollowedVendors: any;
   
 
   public toJSON(): InferAttributes<User> {

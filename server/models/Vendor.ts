@@ -1,6 +1,7 @@
 import sequelize from "./index";
 import { DataTypes, Model, CreationOptional } from "sequelize";
 import User from "./User";
+import UserFollowsVendor from './UserFollowsVendor';
 
 // Define Vendor model
 export class Vendor extends Model {
