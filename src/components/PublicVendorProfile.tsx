@@ -34,6 +34,7 @@ type Event = {
   startDate: string;
   endDate: string;
   venue_name: string;
+  Categories?: { name: string }[];
 };
 
 type Vendor = {
@@ -92,7 +93,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     if (!user) return;
 
     if (isFollowing) {
-      //axios
+      // axios
       setIsFollowing(false);
     } else {
       // axios
@@ -172,7 +173,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         )}
 
         <Typography variant="h4" gutterBottom>
-          Vendor Events
+          Upcoming Events
         </Typography>
 
         {loading ? (
@@ -195,6 +196,12 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                   <Typography variant="body2" sx={{ mt: 1 }}>
                     {event.description}
                   </Typography>
+                  {event.Categories && event.Categories.length > 0 && (
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      Categories:{" "}
+                      {event.Categories.map((cat) => cat.name).join(", ")}
+                    </Typography>
+                  )}
                 </CardContent>
               </Card>
             ))}
