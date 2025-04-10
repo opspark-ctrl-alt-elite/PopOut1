@@ -4,6 +4,7 @@ import Category from './Category';
 import Event from './EventModel'
 import Review from './Review';
 import Preferences from './Preferences';
+import UserFollowsVendor from './UserFollowsVendor';
 
 Review.belongsTo(User, { foreignKey: 'user_id' });
 Review.belongsTo(Event, { foreignKey: 'event_id' });
@@ -35,3 +36,8 @@ Review.belongsTo(User, { foreignKey: 'user_id' });
 User.hasMany(Review, { foreignKey: 'user_id' });
 Review.belongsTo(Vendor, { foreignKey: 'vendorId' });
 Vendor.hasMany(Review, { foreignKey: 'vendorId' });
+
+// user follows vendor
+User.belongsToMany(Vendor, { through: UserFollowsVendor, foreignKey: 'userId', as: 'followedVendors' });
+Vendor.belongsToMany(User, { through: UserFollowsVendor, foreignKey: 'vendorId', as: 'followers' });
+
