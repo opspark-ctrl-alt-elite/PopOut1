@@ -13,7 +13,7 @@ import ActiveEvents from "./components/ActiveEvents";
 import EventsFeed from "./components/EventsFeed";
 import { registerServiceWorker } from "./firebase/sw-registration";
 import { requestNotificationPermission } from "./firebase/requestPermission";
-
+import VendorReviewForm from "./components/vendorReviewForm";
 type User = {
   id: string;
   name: string;
@@ -89,6 +89,7 @@ const App: React.FC = () => {
       <Route path="/edit-event/:id" element={<EditEvent />} />
       <Route path="/active-events" element={<ActiveEvents user={user} />} />
       <Route path="/events" element={<EventsFeed />} />
+      
     </Routes>
   );
 };
