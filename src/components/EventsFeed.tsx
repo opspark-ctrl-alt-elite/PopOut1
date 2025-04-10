@@ -1,5 +1,7 @@
-import React, { useEffect, useRef, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useRef, useState } from "react";
+import axios from "axios";
+import { Link } from "react-router-dom";
+
 import {
   Box,
   Typography,
@@ -14,9 +16,9 @@ import {
   FormControlLabel,
   Button,
   IconButton,
-} from '@mui/material';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
+} from "@mui/material";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 type Event = {
   id: string;
@@ -28,14 +30,17 @@ type Event = {
   isFree: boolean;
   isKidFriendly: boolean;
   isSober: boolean;
-  vendor: { businessName: string };
+  vendor: {
+    id: string;
+    businessName: string;
+  };
 };
 
 const EventsFeed: React.FC = () => {
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [filters, setFilters] = useState({
-    category: '',
+    category: "",
     isFree: false,
     isKidFriendly: false,
     isSober: false,
@@ -49,7 +54,7 @@ const EventsFeed: React.FC = () => {
   }, []);
 
   const fetchCategories = async () => {
-    const res = await axios.get('/api/categories');
+    const res = await axios.get("/api/categories");
     setCategories(res.data.map((cat: any) => cat.name));
   };
 
@@ -61,7 +66,7 @@ const EventsFeed: React.FC = () => {
       if (filters.isKidFriendly) params.isKidFriendly = true;
       if (filters.isSober) params.isSober = true;
 
-      const res = await axios.get('/api/events', { params });
+      const res = await axios.get("/api/events", { params });
       const data = res.data;
 
       if (Array.isArray(data)) {
@@ -72,17 +77,17 @@ const EventsFeed: React.FC = () => {
         setEvents([]);
       }
     } catch (err) {
-      console.error('Error fetching public events:', err);
+      console.error("Error fetching public events:", err);
       setEvents([]);
     }
   };
 
-  const scroll = (dir: 'left' | 'right') => {
+  const scroll = (dir: "left" | "right") => {
     const scrollAmount = 320;
     if (scrollRef.current) {
       scrollRef.current.scrollBy({
-        left: dir === 'left' ? -scrollAmount : scrollAmount,
-        behavior: 'smooth',
+        left: dir === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
       });
     }
   };
@@ -157,33 +162,33 @@ const EventsFeed: React.FC = () => {
       </Stack>
 
       {/* events */}
-      <Box sx={{ position: 'relative' }}>
+      <Box sx={{ position: "relative" }}>
         {/* arrows */}
         <IconButton
-          onClick={() => scroll('left')}
+          onClick={() => scroll("left")}
           sx={{
-            position: 'absolute',
-            top: '35%',
+            position: "absolute",
+            top: "35%",
             left: 0,
             zIndex: 2,
-            bgcolor: '#fff',
+            bgcolor: "#fff",
             boxShadow: 2,
-            '&:hover': { bgcolor: '#f0f0f0' },
+            "&:hover": { bgcolor: "#f0f0f0" },
           }}
         >
           <ArrowBackIosIcon />
         </IconButton>
 
         <IconButton
-          onClick={() => scroll('right')}
+          onClick={() => scroll("right")}
           sx={{
-            position: 'absolute',
-            top: '35%',
+            position: "absolute",
+            top: "35%",
             right: 0,
             zIndex: 2,
-            bgcolor: '#fff',
+            bgcolor: "#fff",
             boxShadow: 2,
-            '&:hover': { bgcolor: '#f0f0f0' },
+            "&:hover": { bgcolor: "#f0f0f0" },
           }}
         >
           <ArrowForwardIosIcon />
@@ -193,13 +198,13 @@ const EventsFeed: React.FC = () => {
         <Box
           ref={scrollRef}
           sx={{
-            display: 'flex',
+            display: "flex",
             gap: 3,
             py: 2,
             px: 5,
-            overflowX: 'scroll',
-            scrollbarWidth: 'none',
-            '&::-webkit-scrollbar': { display: 'none' },
+            overflowX: "scroll",
+            scrollbarWidth: "none",
+            "&::-webkit-scrollbar": { display: "none" },
           }}
         >
           {events.map((event) => (
@@ -208,7 +213,7 @@ const EventsFeed: React.FC = () => {
               sx={{
                 minWidth: 300,
                 maxWidth: 300,
-                flex: '0 0 auto',
+                flex: "0 0 auto",
                 boxShadow: 3,
               }}
             >
@@ -216,25 +221,38 @@ const EventsFeed: React.FC = () => {
                 <Typography variant="h6" gutterBottom>
                   {event.title}
                 </Typography>
+
                 <Typography variant="body2" color="text.secondary">
-                  Hosted by {event.vendor?.businessName}
+                  Hosted by{" "}
+                  {event.vendor?.id ? (
+                    <Link
+                      to={`/vendor/${event.vendor.id}`}
+                      style={{
+                        color: "#1976d2",
+                        textDecoration: "underline",
+                      }}
+                    >
+                      {event.vendor.businessName}
+                    </Link>
+                  ) : (
+                    event.vendor?.businessName
+                  )}
                 </Typography>
+
                 <Typography variant="body2">{event.venue_name}</Typography>
                 <Typography variant="body2">
-                  {new Date(event.startDate).toLocaleString()} —{' '}
+                  {new Date(event.startDate).toLocaleString()} —{" "}
                   {new Date(event.endDate).toLocaleString()}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  {event.isFree && 'Free '}
-                  {event.isKidFriendly && '· Kid-Friendly '}
-                  {event.isSober && '· Sober'}
+                  {event.isFree && "Free "}
+                  {event.isKidFriendly && "· Kid-Friendly "}
+                  {event.isSober && "· Sober"}
                 </Typography>
                 <Button
                   variant="outlined"
                   sx={{ mt: 2 }}
-                  onClick={() =>
-                    alert(`TODO: Show details for ${event.title}`)
-                  }
+                  onClick={() => alert(`TODO: Show details for ${event.title}`)}
                 >
                   View Details
                 </Button>

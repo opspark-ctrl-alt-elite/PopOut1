@@ -14,6 +14,7 @@ import EventsFeed from "./components/EventsFeed";
 import GameApp from "./components/gameComponents/GameApp";
 import { registerServiceWorker } from "./firebase/sw-registration";
 import { requestNotificationPermission } from "./firebase/requestPermission";
+import PublicVendorProfile from "./components/PublicVendorProfile";
 
 type User = {
   id: string;
@@ -21,8 +22,6 @@ type User = {
   email: string;
   profile_picture?: string;
   Categories?: { id: number; name: string }[];
-
-  
 };
 
 type Vendor = {
@@ -91,6 +90,7 @@ const App: React.FC = () => {
       <Route path="/active-events" element={<ActiveEvents user={user} />} />
       <Route path="/events" element={<EventsFeed />} />
       <Route path="/game" element={<GameApp />} />
+      <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} />
     </Routes>
   );
 };
