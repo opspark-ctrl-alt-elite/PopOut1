@@ -131,7 +131,6 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
 
   // make the player go rightwards upon pressing the right button
   const pressRight = () => {
-    console.log("press")
     setPlayer((prev: Player) => {
       return {
         x: prev.x,
@@ -144,7 +143,6 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
 
   // stop rightwards movement if right button is unpressed
   const unPressRight = () => {
-    console.log("unpress")
     // check if player is currently going right
     if (player.xVel > 0) {
       // set the player's horizontal velocity to 0 if so
