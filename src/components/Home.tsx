@@ -66,6 +66,35 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
 
   const open = Boolean(anchorEl);
 
+
+
+
+
+  // create array of colors to loop through
+  const colorArray = ["red", "orange", "yellow", "green", "cyan", "blue", "violet", "purple", "maroon"];
+
+  // create index in state for current color for game button
+  const [gameButtonColorInd, setGameButtonColorInd] = useState(0);
+
+  // set interval on first render
+  useEffect(() => {
+    // call changeColorInd every half second
+      setInterval(changeColorInd, 500);
+    }, []);
+  
+    // set the game button color index in state to the next index in the color array
+    const changeColorInd = () => {
+      console.log("tug");
+      setGameButtonColorInd(prev => {
+        prev++;
+        // reset index to 0 if the game button color index goes past the last color index in the color array
+        if (prev >= colorArray.length) {
+          return 0;
+        }
+        return prev;
+      })
+    }
+
   return (
     <Box>
       {/* navbar */}
@@ -164,6 +193,21 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
               size="large"
             >
               Become a Vendor
+            </Button>
+          </Box>
+        )}
+
+        {/* play game */}
+        {user && (
+          <Box mt={5} textAlign="center">
+            <Button
+              component={Link}
+              to="/game"
+              variant="outlined"
+              size="large"
+              sx={{ color: colorArray[gameButtonColorInd], borderColor: colorArray[gameButtonColorInd] }}
+            >
+              Play Maze Game
             </Button>
           </Box>
         )}

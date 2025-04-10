@@ -2,6 +2,7 @@ import { Router } from 'express';
 import User from '../models/User';
 import { Category } from '../models/Category';
 import router from './authRoutes';
+import Vendor from '../models/Vendor';
 
 const allowedCategories = [
   'Food & Drink',
@@ -385,4 +386,75 @@ router.delete('/user/me', (req, res) => {
     );
 });
 
+
+
+// GET /users/:userId/vendors
+router.get("/users/:userId/vendors", async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findByPk(userId, {
+      include: [{ model: Vendor, as: "followedVendors", through: { attributes: [] } }],
+    });
+
+    if (!user) return res.status(404).json({ error: "User not found" });
+
+    res.status(200).json(user.FollowedVendors); // return only vendors
+  } catch (err) {
+    console.error("Error fetching followed vendors:", err);
+    res.status(500).json({ error: "Failed to fetch followed vendors" });
+  }
+});
+// GET all the vendors a user follows
+router.get('/users/:userId/followed-vendors', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ error: 'User not found' });
+
+    const followed = await user.getFollowedVendors(); // mixin
+    res.status(200).json(followed);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to get followed vendors' });
+  }
+});
+
+
+// follow the vendor 
+router.post('/users/:userId/follow/:vendorId', async (req, res) => {
+  const { userId, vendorId } = req.params;
+
+  try {
+    const user = await User.findByPk(userId);
+    const vendor = await Vendor.findByPk(vendorId);
+
+    if (!user || !vendor) {
+      return res.status(404).json({ error: 'User or Vendor not found' });
+    }
+
+    await user.addFollowedVendor(vendor); // mixin
+
+    res.status(200).json({ message: 'Vendor followed successfully' });
+  } catch (err) {
+    console.error('Error following vendor:', err);
+    res.status(500).json({ error: 'Failed to follow vendor' });
+  }
+});
+// unfollow 
+router.post('/users/:userId/unfollow/:vendorId', async (req, res) => {
+  const { userId, vendorId } = req.params;
+  try {
+    const user = await User.findByPk(userId);
+    const vendor = await Vendor.findByPk(vendorId);
+    if (!user || !vendor) return res.status(404).json({ error: 'User or Vendor not found' });
+
+    await user.removeFollowedVendor(vendor); // mixin
+    res.status(200).json({ message: 'Vendor unfollowed successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to unfollow vendor' });
+  }
+});
+// G
 export default router;
