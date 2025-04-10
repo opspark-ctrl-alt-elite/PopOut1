@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
+import axios from "axios";
 import {
   Box,
   Typography,
@@ -11,12 +11,12 @@ import {
   Avatar,
   IconButton,
   Button,
-} from '@mui/material';
-import FacebookIcon from '@mui/icons-material/Facebook';
-import InstagramIcon from '@mui/icons-material/Instagram';
-import LanguageIcon from '@mui/icons-material/Language';
+} from "@mui/material";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import LanguageIcon from "@mui/icons-material/Language";
 
-import Navbar from './NavBar';
+import Navbar from "./NavBar";
 
 type Props = {
   user: {
@@ -59,7 +59,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         const res = await axios.get(`/api/events/vendor/${vendorId}`);
         setEvents(res.data);
       } catch (err) {
-        console.error('err fetching vendor events', err);
+        console.error("err fetching vendor events", err);
         setEvents([]);
       }
     };
@@ -69,11 +69,10 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         const res = await axios.get(`/api/vendor/public/${vendorId}`);
         setVendor(res.data);
       } catch (err) {
-        console.error('err fetching vendor info', err);
+        console.error("err fetching vendor info", err);
         setVendor(null);
       }
     };
-
 
     const checkFollowStatus = async () => {
       // axios
@@ -135,26 +134,31 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
 
             <Stack direction="row" spacing={2} alignItems="center">
               {vendor.facebook && (
-                <IconButton component="a" href={vendor.facebook} target="_blank">
+                <IconButton
+                  component="a"
+                  href={vendor.facebook}
+                  target="_blank"
+                >
                   <FacebookIcon color="primary" />
                 </IconButton>
               )}
               {vendor.instagram && (
-                <IconButton component="a" href={vendor.instagram} target="_blank">
-                  <InstagramIcon sx={{ color: '#d62976' }} />
+                <IconButton
+                  component="a"
+                  href={vendor.instagram}
+                  target="_blank"
+                >
+                  <InstagramIcon sx={{ color: "#d62976" }} />
                 </IconButton>
               )}
               {vendor.website && (
                 <IconButton component="a" href={vendor.website} target="_blank">
-                  <LanguageIcon sx={{ color: '#4caf50' }} />
+                  <LanguageIcon sx={{ color: "#4caf50" }} />
                 </IconButton>
               )}
               {user && (
-                <Button
-                  variant="outlined"
-                  onClick={handleFollowToggle}
-                >
-                  {isFollowing ? 'Unfollow' : 'Follow'} Vendor
+                <Button variant="outlined" onClick={handleFollowToggle}>
+                  {isFollowing ? "Unfollow" : "Follow"} Vendor
                 </Button>
               )}
             </Stack>
@@ -185,7 +189,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                     {event.venue_name}
                   </Typography>
                   <Typography variant="body2">
-                    {new Date(event.startDate).toLocaleString()} —{' '}
+                    {new Date(event.startDate).toLocaleString()} —{" "}
                     {new Date(event.endDate).toLocaleString()}
                   </Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>
