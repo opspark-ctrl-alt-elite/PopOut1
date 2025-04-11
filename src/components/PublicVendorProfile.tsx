@@ -17,6 +17,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import LanguageIcon from "@mui/icons-material/Language";
 
 import Navbar from "./NavBar";
+import formatDate from "../utils/formatDate";
 
 type Props = {
   user: {
@@ -203,8 +204,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                     {event.venue_name}
                   </Typography>
                   <Typography variant="body2">
-                    {new Date(event.startDate).toLocaleString()} —{" "}
-                    {new Date(event.endDate).toLocaleString()}
+                    {formatDate(event.startDate, event.endDate)}
                   </Typography>
                   <Typography variant="body2" sx={{ mt: 1 }}>
                     {event.description}
