@@ -41,6 +41,11 @@ type Player = {
 
 const GameApp: React.FC = () => {
 
+  // initiate references to the important elements
+  const boardRef = useRef(null);
+  const targetRef = useRef(null);
+  const playerRef = useRef(null);
+
 //   // create state to represent the game board
 //   const [board, setBoard] = useState<Board>({
 //     height: document.documentElement.clientHeight,
@@ -89,13 +94,6 @@ function isColliding(element1, element2) {
   // create state to represent the current score
   const [score, setScore] = useState(0);
 
-  // get a reference to the current player HTML element
-  let playerElement = document.getElementById("playerElement");
-
-  // create references to the gameBoard's height and width
-  let playerHeight = playerElement?.clientHeight ? playerElement?.clientHeight : 50;
-  let playerWidth = playerElement?.clientWidth ? playerElement?.clientWidth : 50;
-
   // create an interval only on the first time this component is rendered
   useEffect(() => {
 
@@ -110,26 +108,34 @@ function isColliding(element1, element2) {
 
       //TODO: just gotta replace the numbers with actaul widths and stuff and make the elements get their widths off of "5vh" or something of the like (and use useRef instead of getElementById)
       
-      console.log(prev.x, prev.y, target.x, target.y)
-
-      // check if the player has touched the target
-      if (!(target.y >= prev.y + 50 || target.x + 30 <= prev.x || target.y + 30 <= prev.y || target.x >= prev.x + 50)) {
-          setScore(prev => prev + 1);
-      }
-
-      /*
-      rect1.top > rect2.bottom ||
-        rect1.right < rect2.left ||
-        rect1.bottom < rect2.top ||
-        rect1.left > rect2.right
-      */
+      console.log(boardRef);
+      console.log(targetRef);
+      console.log(playerRef);
 
       // get a reference to the current game board HTML element
-  let gameBoard = document.getElementById("gameBoard");
+      let gameBoard = boardRef.current !== undefined ? boardRef.current : document.getElementById("gameBoard");
 
-  // create references to the gameBoard's height and width
-  let gameBoardHeight = gameBoard?.clientHeight ? gameBoard?.clientHeight : 448;
-  let gameBoardWidth = gameBoard?.clientWidth ? gameBoard?.clientWidth : 600;
+      // create references to the gameBoard's height and width
+      let gameBoardHeight = gameBoard?.clientHeight !== undefined ? gameBoard?.clientHeight : 448;
+      let gameBoardWidth = gameBoard?.clientWidth !== undefined ? gameBoard?.clientWidth : 600;
+
+      // get a reference to the current player HTML element
+      let playerElement = playerRef.current !== undefined ? playerRef.current : document.getElementById("playerElement");
+
+      // create references to the player's height and width
+      let playerHeight = playerElement?.clientHeight !== undefined ? playerElement?.clientHeight : 50;
+      let playerWidth = playerElement?.clientWidth !== undefined ? playerElement?.clientWidth : 50;
+
+      // get a reference to the current target HTML element
+      let targetElement = targetRef.current !== undefined ? targetRef.current : document.getElementById("targetElement");
+
+      // create references to the target's height, width, and location
+      let targetHeight = targetElement?.clientHeight !== undefined ? targetElement?.clientHeight : 50;
+      let targetWidth = targetElement?.clientWidth !== undefined ? targetElement?.clientWidth : 50;
+      let targetX = targetElement?.offsetLeft !== undefined ? targetElement?.offsetLeft : 200;
+      let targetY = targetElement?.offsetTop !== undefined ? targetElement?.offsetTop : 200;
+
+      ////////console.log(prev.x, prev.y, target.x, target.y)
 
       // set up replacement object
       const replacement = {
@@ -139,7 +145,52 @@ function isColliding(element1, element2) {
         yVel: prev.yVel
       };
 
-      console.log("inMovePlayer", playerHeight, playerWidth, gameBoardHeight, gameBoardWidth);
+      // check if the player has touched the target
+      if (!(targetY >= prev.y + playerHeight || targetX + targetWidth <= prev.x || targetY + targetHeight <= prev.y || targetX >= prev.x + playerWidth)) {
+
+        // if so, then increase the score by 1
+        setScore(prev => prev + 1);
+
+        // // 50/50 chance of the new target location either being unable to be on the very
+        // // left of the board or the very top of the board. (Makes sure that player doesn't
+        // // instantly touch the target.)
+        // if (Math.floor(Math.random() * 1)) {
+
+        // }
+
+        // create new x and y values for randomly placing the target somewhere else on the board
+        let newTargetCoords: number[] = [Math.floor(Math.random() * (gameBoardWidth - targetWidth)), Math.floor(Math.random() * (gameBoardHeight - targetHeight))];
+
+        // make sure that the new location isn't the same as the player's starting area
+        if (newTargetCoords[0] <= playerWidth && newTargetCoords[1] <= playerHeight) {
+          // if the target and player would already be touching, then reassign the newTargetCoords to new random coords
+          // that don't include any x or y coords that would intersect with the x or y coords of the player's starting area
+          newTargetCoords[0] = Math.floor(Math.random() * (gameBoardWidth - targetWidth - playerWidth)) + playerWidth;
+          newTargetCoords[1] = Math.floor(Math.random() * (gameBoardHeight - targetHeight - playerHeight)) + playerHeight;
+        }
+
+        // randomly place the target somewhere else on the board
+        setTarget({
+          x: newTargetCoords[0],
+          y: newTargetCoords[1],
+          xVel: 0,
+          yVel: 0
+        })
+
+        // bring the player back to the top-left of the board
+        replacement.x = 0;
+        replacement.y = 0;
+        return replacement;
+      }
+
+      /*
+      rect1.top > rect2.bottom ||
+        rect1.right < rect2.left ||
+        rect1.bottom < rect2.top ||
+        rect1.left > rect2.right
+      */
+
+      ////////console.log("inMovePlayer", playerHeight, playerWidth, gameBoardHeight, gameBoardWidth);
 
       // prevent going out of bounds
       // horizontal handling
@@ -163,11 +214,11 @@ function isColliding(element1, element2) {
 
   return (
     <Container>
-      <Typography>Score: {score} / 10</Typography>
-      <Box id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "70vh" }}>
+      <Typography>Score: {score} / 3</Typography>
+      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "70vh" }}>
         {/* <GamePlayer /> */}
-        <Box id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: 30, height: 30 }}></Box>
-        <Box id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: 50, height: 50 }}></Box>
+        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: 30, height: 30 }}></Box>
+        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: 50, height: 50 }}></Box>
       </Box>
       <Box>
         <GameControls player={player} setPlayer={setPlayer}/>
