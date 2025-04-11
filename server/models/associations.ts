@@ -18,8 +18,7 @@ User.belongsToMany(Category, { through: 'UserCategories', foreignKey: 'userId' }
 Category.belongsToMany(User, { through: 'UserCategories', foreignKey: 'categoryId' });
 
 // Event with Vendor
-// Vendor.hasMany(Event, { foreignKey: "vendor_id", onDelete: "CASCADE" });
-// Event.belongsTo(Vendor, { foreignKey: "vendor_id" });
+
 Vendor.hasMany(Event, { foreignKey: 'vendor_id', as: 'events', onDelete: 'CASCADE' });
 Event.belongsTo(Vendor, { foreignKey: 'vendor_id', as: 'vendor' });
 
@@ -31,6 +30,12 @@ Category.belongsToMany(Event, { through: 'EventCategories', foreignKey: 'categor
 // preferences
 User.belongsToMany(Category, { through: 'Preferences', foreignKey: 'userId', });
 Category.belongsToMany(User, { through: 'Preferences', foreignKey: 'categoryId', });
+
+// Associate review to vendor
+Review.belongsTo(User, { foreignKey: 'user_id' });
+User.hasMany(Review, { foreignKey: 'user_id' });
+Review.belongsTo(Vendor, { foreignKey: 'vendorId' });
+Vendor.hasMany(Review, { foreignKey: 'vendorId' });
 
 
 // user follows vendor
