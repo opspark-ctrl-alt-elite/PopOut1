@@ -14,7 +14,6 @@ import EventsFeed from "./components/EventsFeed";
 import GameApp from "./components/gameComponents/GameApp";
 import { registerServiceWorker } from "./firebase/sw-registration";
 import { requestNotificationPermission } from "./firebase/requestPermission";
-import VendorReviewForm from "./components/vendorReviewForm";
 import PublicVendorProfile from "./components/PublicVendorProfile";
 
 type User = {
@@ -92,7 +91,8 @@ const App: React.FC = () => {
       <Route path="/events" element={<EventsFeed />} />
       
       <Route path="/game" element={<GameApp />} />
-      <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} />
+      /* <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} /> */
+
     </Routes>
   );
 };
