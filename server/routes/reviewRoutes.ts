@@ -2,8 +2,6 @@ import { Router, Request, Response, NextFunction } from 'express';
 import Review from '../models/Review';
 import Vendor from '../models/Vendor';
 import User from '../models/User';
-import sequelize from '../models/index';
-import { QueryTypes } from 'sequelize';
 
 const router = Router();
 
@@ -49,40 +47,29 @@ router.post('/debug/create-test-vendor', async (req: Request, res: Response) => 
 
 // Authentication middleware
 const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.isAuthenticated() || !req.user) {
+  if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   next();
 };
 
 // Submit a review
-router.post('/vendors/:vendorId/reviews', isAuthenticated, async (req: Request, res: Response) => {
-  console.log("REACHED THE ROUTE"); 
+router.post('/:vendorId/reviews', isAuthenticated, async (req: Request, res: Response) => {
   const { vendorId } = req.params;
   const { rating, comment } = req.body;
   const userId = (req.user as any).id;
 
   try {
-    // Case-sensitive lookup
-    const vendor = await Vendor.findOne({
-      where: { id: vendorId }
-    });
-
+    // Check if vendor exists
+    const vendor = await Vendor.findOne({ where: { id: vendorId } });
     if (!vendor) {
       return res.status(404).json({ 
         error: 'Vendor not found',
         receivedId: vendorId
       });
     }
-
     // Create review
-    const review = await Review.create({
-      rating,
-      comment,
-      userId,
-      vendorId
-    });
-
+    const review = await Review.create({ rating, comment, userId, vendorId });
     return res.status(201).json(review);
   } catch (error) {
     console.error('Review creation error:', error);
@@ -94,19 +81,18 @@ router.post('/vendors/:vendorId/reviews', isAuthenticated, async (req: Request, 
 });
 
 // Get reviews
-router.get('/vendors/:vendorId/reviews', async (req: Request, res: Response) => {
+router.get('/:vendorId/reviews', async (req: Request, res: Response) => {
   const { vendorId } = req.params;
-
   try {
     const reviews = await Review.findAll({
       where: { vendorId },
       include: [{
         model: User,
-        attributes: ['id', 'name', 'profilePicture']
+        // Updated attribute to match the database column name.
+        attributes: ['id', 'name', 'profile_picture']
       }],
       order: [['createdAt', 'DESC']]
     });
-
     return res.json(reviews);
   } catch (error) {
     console.error('Error fetching reviews:', error);
@@ -116,23 +102,18 @@ router.get('/vendors/:vendorId/reviews', async (req: Request, res: Response) => 
     });
   }
 });
+
 // Update a review
-router.put('/vendors/:vendorId/reviews/:reviewId', isAuthenticated, async (req: Request, res: Response) => {
+router.put('/:vendorId/reviews/:reviewId', isAuthenticated, async (req: Request, res: Response) => {
   const { vendorId, reviewId } = req.params;
   const { rating, comment } = req.body;
   const userId = (req.user as any).id;
 
   try {
-    const review = await Review.findOne({
-      where: { id: reviewId, vendorId, userId }
-    });
-
+    const review = await Review.findOne({ where: { id: reviewId, vendorId, userId } });
     if (!review) {
-      return res.status(404).json({ 
-        error: 'Review not found or unauthorized' 
-      });
+      return res.status(404).json({ error: 'Review not found or unauthorized' });
     }
-
     await review.update({ rating, comment });
     return res.json(review);
   } catch (error) {
@@ -145,21 +126,14 @@ router.put('/vendors/:vendorId/reviews/:reviewId', isAuthenticated, async (req: 
 });
 
 // Delete a review
-router.delete('/vendors/:vendorId/reviews/:reviewId', isAuthenticated, async (req: Request, res: Response) => {
+router.delete('/:vendorId/reviews/:reviewId', isAuthenticated, async (req: Request, res: Response) => {
   const { vendorId, reviewId } = req.params;
   const userId = (req.user as any).id;
-
   try {
-    const review = await Review.findOne({
-      where: { id: reviewId, vendorId, userId }
-    });
-
+    const review = await Review.findOne({ where: { id: reviewId, vendorId, userId } });
     if (!review) {
-      return res.status(404).json({ 
-        error: 'Review not found or unauthorized' 
-      });
+      return res.status(404).json({ error: 'Review not found or unauthorized' });
     }
-
     await review.destroy();
     return res.status(204).end();
   } catch (error) {
@@ -170,4 +144,5 @@ router.delete('/vendors/:vendorId/reviews/:reviewId', isAuthenticated, async (re
     });
   }
 });
+
 export default router;
