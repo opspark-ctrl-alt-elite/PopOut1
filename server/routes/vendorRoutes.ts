@@ -182,7 +182,8 @@ vendorRouter.get('/public/:vendorId', async (req, res) => {
         'profilePicture',
         'facebook',
         'instagram',
-        'website'
+        'website',
+        'email'
       ]
     });
     if (!vendor) return res.status(404).json({ error: 'vendor not found' });

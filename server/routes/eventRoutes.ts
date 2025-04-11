@@ -198,7 +198,14 @@ router.get('/vendor/:vendorId', async (req: Request, res: Response) => {
   try {
     const events = await EventModel.findAll({
       where: { vendor_id: req.params.vendorId },
-      order: [['startDate', 'ASC']]
+      order: [['startDate', 'ASC']],
+      include: [
+        {
+          model: Category,
+          attributes: ['name'],
+          through: { attributes: [] },
+        },
+      ],
     });
 
     res.json(events);
