@@ -75,8 +75,17 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     };
 
     const checkFollowStatus = async () => {
-      // axios
-      setIsFollowing(false);
+      if (!user) return;
+    
+      try {
+        const res = await axios.get(`/users/${user.id}/follows/${vendorId}`);
+        const { isFollowing } = res.data;
+        console.log("Follow status check:", isFollowing);
+        setIsFollowing(isFollowing);
+      } catch (err) {
+        console.error("Error checking follow status", err);
+        setIsFollowing(false);
+      }
     };
 
     if (vendorId) {
