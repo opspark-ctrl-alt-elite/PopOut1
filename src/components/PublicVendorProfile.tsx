@@ -75,8 +75,17 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     };
 
     const checkFollowStatus = async () => {
-      // axios
-      setIsFollowing(false);
+      if (!user) return;
+    
+      try {
+        const res = await axios.get(`/users/${user.id}/follows/${vendorId}`);
+        const { isFollowing } = res.data;
+        console.log("Follow status check:", isFollowing);
+        setIsFollowing(isFollowing);
+      } catch (err) {
+        console.error("Error checking follow status", err);
+        setIsFollowing(false);
+      }
     };
 
     if (vendorId) {
@@ -90,13 +99,25 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
 
   const handleFollowToggle = () => {
     if (!user) return;
-
+  
     if (isFollowing) {
-      //axios
-      setIsFollowing(false);
+      // unfollow bih 
+      axios
+        .post(`/users/${user.id}/unfollow/${vendorId}`)
+        .then((res) => {
+          console.log("Vendor unfollowed successfully:", res.data);
+          setIsFollowing(false);
+        })
+        .catch((err) => console.error("Error unfollowing vendor", err));
     } else {
-      // axios
-      setIsFollowing(true);
+      // follow
+      axios
+        .post(`/users/${user.id}/follow/${vendorId}`)
+        .then((res) => {
+          console.log("Vendor followed successfully:", res.data);
+          setIsFollowing(true);
+        })
+        .catch((err) => console.error("Error following vendor", err));
     }
   };
 

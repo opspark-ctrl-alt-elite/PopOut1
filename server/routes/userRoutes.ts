@@ -456,5 +456,27 @@ router.post('/users/:userId/unfollow/:vendorId', async (req, res) => {
     res.status(500).json({ error: 'Failed to unfollow vendor' });
   }
 });
-// G
+
+
+// check follow status bih 
+router.get('/users/:userId/follows/:vendorId', async (req, res) => {
+  const { userId, vendorId } = req.params;
+
+  try {
+    const user = await User.findByPk(userId, {
+      include: {
+        model: Vendor,
+        as: 'followedVendors',
+        where: { id: vendorId },
+        required: false,
+      },
+    });
+
+    const isFollowing = user && (user as any).followedVendors && (user as any).followedVendors.length > 0;
+    res.status(200).json({ isFollowing }); 
+  } catch (err) {
+    console.error('Error checking follow status:', err);
+    res.status(500).json({ error: 'Failed to check follow status' });
+  }
+});
 export default router;
