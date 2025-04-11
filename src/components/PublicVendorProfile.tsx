@@ -74,7 +74,12 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     const fetchVendorEvents = async () => {
       try {
         const res = await axios.get(`/api/events/vendor/${vendorId}`);
-        setEvents(res.data);
+        const sortedEvents = res.data.sort((a: Event, b: Event) => {
+          return (
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          );
+        });
+        setEvents(sortedEvents);
       } catch (err) {
         console.error("err fetching vendor events", err);
         setEvents([]);
