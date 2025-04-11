@@ -1,3 +1,4 @@
+// src/components/PublicVendorProfile.tsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
@@ -11,7 +12,7 @@ import {
 } from '@mui/material';
 
 import Navbar from './NavBar';
-
+import ReviewComponent from './Review';
 
 type Props = {
   user: {
@@ -55,7 +56,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   return (
     <>
       <Navbar user={user} />
-
       <Box sx={{ p: 4 }}>
         <Typography variant="h4" gutterBottom>
           Vendor Events
@@ -86,6 +86,23 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
             ))}
           </Stack>
         )}
+
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Reviews
+          </Typography>
+          {vendorId && (
+            <>
+              {user ? (
+                <ReviewComponent vendorId={vendorId} currentUserId={user.id} />
+              ) : (
+                <Typography variant="body1">
+                  Please sign in to add your review.
+                </Typography>
+              )}
+            </>
+          )}
+        </Box>
       </Box>
     </>
   );
