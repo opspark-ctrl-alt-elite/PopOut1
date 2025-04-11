@@ -3,37 +3,59 @@ import sequelize from './index';
 import User from './User';
 import Vendor from './Vendor';
 
-class Review extends Model {}
+class Review extends Model {
+  declare id: string;
+  declare rating: number;
+  declare comment: string | null;
+  declare userId: string;
+  declare vendorId: string;
+}
 
 Review.init(
   {
+    id: {
+      type: DataTypes.UUID,
+      defaultValue: DataTypes.UUIDV4,
+      primaryKey: true,
+    },
     rating: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: { min: 1, max: 5 },
+      validate: {
+        min: 1,
+        max: 5
+      }
     },
     comment: {
       type: DataTypes.TEXT,
-      allowNull: true,
+      allowNull: true
     },
-    // Associate review to a vendor.
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: false,
+      references: {
+        model: User,
+        key: 'id'
+      }
+    },
     vendorId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: 'vendors',
-        key: 'id',
-      },
-      onDelete: 'CASCADE',
-    },
+        model: Vendor,
+        key: 'id'
+      }
+    }
   },
   {
     sequelize,
     modelName: 'review',
+    tableName: 'reviews',
+    timestamps: true
   }
 );
 
-// Associations: Reviews are created by Users and belong to Vendors.
-
+// Associations
+;
 
 export default Review;
