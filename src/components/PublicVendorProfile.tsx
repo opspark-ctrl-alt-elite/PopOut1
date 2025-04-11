@@ -51,6 +51,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const { vendorId } = useParams<{ vendorId: string }>();
   const [events, setEvents] = useState<Event[]>([]);
   const [vendor, setVendor] = useState<Vendor | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
 
@@ -75,6 +76,17 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       }
     };
 
+    const fetchVendorImage = async () => {
+      try {
+        const res = await axios.get(`/api/images/vendorId/${vendorId}`);
+        if (res.data?.length > 0) {
+          setUploadedImage(res.data[0].referenceURL);
+        }
+      } catch (err) {
+        console.error("err fetching vendor image", err);
+      }
+    };
+
     const checkFollowStatus = async () => {
       // axios
       setIsFollowing(false);
@@ -83,6 +95,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     if (vendorId) {
       fetchVendorEvents();
       fetchVendorInfo();
+      fetchVendorImage();
       if (user) checkFollowStatus();
       setLoading(true);
       setTimeout(() => setLoading(false), 300);
@@ -117,7 +130,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
           >
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar
-                src={vendor.profilePicture}
+                src={uploadedImage || vendor.profilePicture || ""}
                 alt={vendor.businessName}
                 sx={{ width: 56, height: 56 }}
               />
