@@ -37,6 +37,7 @@ User.hasMany(Review, { foreignKey: 'user_id' });
 Review.belongsTo(Vendor, { foreignKey: 'vendorId' });
 Vendor.hasMany(Review, { foreignKey: 'vendorId' });
 
+
 // user follows vendor
 User.belongsToMany(Vendor, { through: UserFollowsVendor, foreignKey: 'userId', as: 'followedVendors' });
 Vendor.belongsToMany(User, { through: UserFollowsVendor, foreignKey: 'vendorId', as: 'followers' });
