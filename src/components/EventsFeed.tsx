@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import formatDate from "../utils/formatDate";
 
 import {
   Box,
@@ -241,8 +242,7 @@ const EventsFeed: React.FC = () => {
 
                 <Typography variant="body2">{event.venue_name}</Typography>
                 <Typography variant="body2">
-                  {new Date(event.startDate).toLocaleString()} —{" "}
-                  {new Date(event.endDate).toLocaleString()}
+                  {formatDate(event.startDate, event.endDate)}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 1 }}>
                   {event.isFree && "Free "}
