@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GamePlayer from "./GamePlayer";
 import GameControls from "./GameControls";
+import axios from "axios";
 
 import {
   Box,
@@ -240,8 +241,8 @@ function isColliding(element1, element2) {
       <Typography>Score: {score} / 3</Typography>
       <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "70vh" }}>
         {/* <GamePlayer /> */}
-        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: 30, height: 30 }}></Box>
-        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: 50, height: 50 }}></Box>
+        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: "5vh", height: "5vh" }}></Box>
+        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: "8vh", height: "8vh" }}></Box>
       </Box>
       <Box>
         <GameControls player={player} setPlayer={setPlayer}/>
@@ -258,7 +259,7 @@ function isColliding(element1, element2) {
       <Modal open={open}>
         <Box sx={style}>
           <Typography variant="h6" component="h2">
-            Yoj ar winnr1!
+            Good Job!
           </Typography>
           <Button
             onClick={() => {
@@ -278,6 +279,7 @@ function isColliding(element1, element2) {
           </Button>
         </Box>
       </Modal>
+      <iframe width="560" height="315" src="https://www.youtube.com/embed/B7gGacb8cO4"></iframe>
     </Container>
   );
 };
