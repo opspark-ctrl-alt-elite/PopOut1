@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import GamePlayer from "./GamePlayer";
 import GameControls from "./GameControls";
 
@@ -46,6 +46,22 @@ const GameApp: React.FC = () => {
   const targetRef = useRef(null);
   const playerRef = useRef(null);
 
+  // create navigate function to allow for on-demand redirects to different pages
+  const navigate = useNavigate();
+
+  // create a style for the box that the modal holds
+  const style = {
+    position: "absolute",
+    top: "50%",
+    left: "50%",
+    transform: "translate(-50%, -50%)",
+    width: 400,
+    bgcolor: "background.paper",
+    border: "2px solid #000",
+    boxShadow: 24,
+    p: 4,
+  };
+
 //   // create state to represent the game board
 //   const [board, setBoard] = useState<Board>({
 //     height: document.documentElement.clientHeight,
@@ -70,6 +86,8 @@ function isColliding(element1, element2) {
 
 */
 
+  // create state to determine if the ending modal should be open or closed
+  const [open, setOpen] = useState(false);
 
   // create state to represent the player
   const [player, setPlayer] = useState<Player>({
@@ -97,45 +115,48 @@ function isColliding(element1, element2) {
   // create an interval only on the first time this component is rendered
   useEffect(() => {
 
-    // call the movePlayer function every 30 ms
-    setInterval(movePlayer, 30);
+    // call the masterUpdate function every 30 ms
+    setInterval(masterUpdate, 30);
   }, []);
 
-  // update the player's position using said player's current position and velocity
-  const movePlayer = () => {
-    console.log("fug");
+  // update every element on every "frame" to keep things consistent
+  const masterUpdate = () => {
+    // console.log("fug");
+
+    // console.log(boardRef);
+    // console.log(targetRef);
+    // console.log(playerRef);
+
+    // get a reference to the current game board HTML element
+    let gameBoard = boardRef.current !== undefined ? boardRef.current : document.getElementById("gameBoard");
+
+    // create references to the gameBoard's height and width
+    let gameBoardHeight = gameBoard?.clientHeight !== undefined ? gameBoard?.clientHeight : 448;
+    let gameBoardWidth = gameBoard?.clientWidth !== undefined ? gameBoard?.clientWidth : 600;
+
+    // get a reference to the current player HTML element
+    let playerElement = playerRef.current !== undefined ? playerRef.current : document.getElementById("playerElement");
+
+    // create references to the player's height and width
+    let playerHeight = playerElement?.clientHeight !== undefined ? playerElement?.clientHeight : 50;
+    let playerWidth = playerElement?.clientWidth !== undefined ? playerElement?.clientWidth : 50;
+
+    // get a reference to the current target HTML element
+    let targetElement = targetRef.current !== undefined ? targetRef.current : document.getElementById("targetElement");
+
+    // create references to the target's height, width, and location
+    let targetHeight = targetElement?.clientHeight !== undefined ? targetElement?.clientHeight : 50;
+    let targetWidth = targetElement?.clientWidth !== undefined ? targetElement?.clientWidth : 50;
+    let targetX = targetElement?.offsetLeft !== undefined ? targetElement?.offsetLeft : 200;
+    let targetY = targetElement?.offsetTop !== undefined ? targetElement?.offsetTop : 200;
+
+
+    // update the player's position using said player's current position and velocity
     setPlayer(prev => {
 
       //TODO: just gotta replace the numbers with actaul widths and stuff and make the elements get their widths off of "5vh" or something of the like (and use useRef instead of getElementById)
-      
-      console.log(boardRef);
-      console.log(targetRef);
-      console.log(playerRef);
+      // console.log(score)
 
-      // get a reference to the current game board HTML element
-      let gameBoard = boardRef.current !== undefined ? boardRef.current : document.getElementById("gameBoard");
-
-      // create references to the gameBoard's height and width
-      let gameBoardHeight = gameBoard?.clientHeight !== undefined ? gameBoard?.clientHeight : 448;
-      let gameBoardWidth = gameBoard?.clientWidth !== undefined ? gameBoard?.clientWidth : 600;
-
-      // get a reference to the current player HTML element
-      let playerElement = playerRef.current !== undefined ? playerRef.current : document.getElementById("playerElement");
-
-      // create references to the player's height and width
-      let playerHeight = playerElement?.clientHeight !== undefined ? playerElement?.clientHeight : 50;
-      let playerWidth = playerElement?.clientWidth !== undefined ? playerElement?.clientWidth : 50;
-
-      // get a reference to the current target HTML element
-      let targetElement = targetRef.current !== undefined ? targetRef.current : document.getElementById("targetElement");
-
-      // create references to the target's height, width, and location
-      let targetHeight = targetElement?.clientHeight !== undefined ? targetElement?.clientHeight : 50;
-      let targetWidth = targetElement?.clientWidth !== undefined ? targetElement?.clientWidth : 50;
-      let targetX = targetElement?.offsetLeft !== undefined ? targetElement?.offsetLeft : 200;
-      let targetY = targetElement?.offsetTop !== undefined ? targetElement?.offsetTop : 200;
-
-      ////////console.log(prev.x, prev.y, target.x, target.y)
 
       // set up replacement object
       const replacement = {
@@ -149,14 +170,16 @@ function isColliding(element1, element2) {
       if (!(targetY >= prev.y + playerHeight || targetX + targetWidth <= prev.x || targetY + targetHeight <= prev.y || targetX >= prev.x + playerWidth)) {
 
         // if so, then increase the score by 1
-        setScore(prev => prev + 1);
+        setScore(prev => {
+          prev++;
 
-        // // 50/50 chance of the new target location either being unable to be on the very
-        // // left of the board or the very top of the board. (Makes sure that player doesn't
-        // // instantly touch the target.)
-        // if (Math.floor(Math.random() * 1)) {
-
-        // }
+          // if the score is at the goal score
+          if (prev === 3) {
+            // then give access to app and display winning modal
+            setOpen(true);
+          }
+          return prev;
+        });
 
         // create new x and y values for randomly placing the target somewhere else on the board
         let newTargetCoords: number[] = [Math.floor(Math.random() * (gameBoardWidth - targetWidth)), Math.floor(Math.random() * (gameBoardHeight - targetHeight))];
@@ -232,6 +255,29 @@ function isColliding(element1, element2) {
           Back to Home
         </Button>
       </Link>
+      <Modal open={open}>
+        <Box sx={style}>
+          <Typography variant="h6" component="h2">
+            Yoj ar winnr1!
+          </Typography>
+          <Button
+            onClick={() => {
+              navigate('/');
+            }}
+            variant="outlined"
+          >
+            Go To Home Page
+          </Button>
+          <Button
+            onClick={() => {
+              setOpen(false);
+            }}
+            variant="outlined"
+          >
+            Return To Game
+          </Button>
+        </Box>
+      </Modal>
     </Container>
   );
 };
