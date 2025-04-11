@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import {
@@ -15,6 +15,8 @@ import {
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import LanguageIcon from "@mui/icons-material/Language";
+import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import Navbar from "./NavBar";
 import formatDate from "../utils/formatDate";
@@ -56,6 +58,18 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
 
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const scroll = (dir: "left" | "right") => {
+    const scrollAmount = 320;
+    if (scrollRef.current) {
+      scrollRef.current.scrollBy({
+        left: dir === "left" ? -scrollAmount : scrollAmount,
+        behavior: "smooth",
+      });
+    }
+  };
+
   useEffect(() => {
     const fetchVendorEvents = async () => {
       try {
@@ -89,8 +103,15 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     };
 
     const checkFollowStatus = async () => {
-      // axios
-      setIsFollowing(false);
+      if (!user) return;
+      try {
+        const res = await axios.get(`/users/${user.id}/follows/${vendorId}`);
+        const { isFollowing } = res.data;
+        setIsFollowing(isFollowing);
+      } catch (err) {
+        console.error("Error checking follow status", err);
+        setIsFollowing(false);
+      }
     };
 
     if (vendorId) {
@@ -105,14 +126,16 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
 
   const handleFollowToggle = () => {
     if (!user) return;
-
-    if (isFollowing) {
-      // axios
-      setIsFollowing(false);
-    } else {
-      // axios
-      setIsFollowing(true);
-    }
+    const route = isFollowing
+      ? `/users/${user.id}/unfollow/${vendorId}`
+      : `/users/${user.id}/follow/${vendorId}`;
+    axios
+      .post(route)
+      .then((res) => {
+        console.log(res.data.message);
+        setIsFollowing(!isFollowing);
+      })
+      .catch((err) => console.error("Error toggling follow", err));
   };
 
   return (
@@ -195,30 +218,83 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         ) : events.length === 0 ? (
           <Typography>No events</Typography>
         ) : (
-          <Stack spacing={2}>
-            {events.map((event) => (
-              <Card key={event.id}>
-                <CardContent>
-                  <Typography variant="h6">{event.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {event.venue_name}
-                  </Typography>
-                  <Typography variant="body2">
-                    {formatDate(event.startDate, event.endDate)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ mt: 1 }}>
-                    {event.description}
-                  </Typography>
-                  {event.Categories && event.Categories.length > 0 && (
-                    <Typography variant="body2" sx={{ mt: 1 }}>
-                      Categories:{" "}
-                      {event.Categories.map((cat) => cat.name).join(", ")}
+          <Box sx={{ position: "relative", mt: 2 }}>
+            {/* Arrows */}
+            <IconButton
+              onClick={() => scroll("left")}
+              sx={{
+                position: "absolute",
+                top: "35%",
+                left: 0,
+                zIndex: 2,
+                bgcolor: "#fff",
+                boxShadow: 2,
+                "&:hover": { bgcolor: "#f0f0f0" },
+              }}
+            >
+              <ArrowBackIosIcon />
+            </IconButton>
+
+            <IconButton
+              onClick={() => scroll("right")}
+              sx={{
+                position: "absolute",
+                top: "35%",
+                right: 0,
+                zIndex: 2,
+                bgcolor: "#fff",
+                boxShadow: 2,
+                "&:hover": { bgcolor: "#f0f0f0" },
+              }}
+            >
+              <ArrowForwardIosIcon />
+            </IconButton>
+
+            {/* events */}
+            <Box
+              ref={scrollRef}
+              sx={{
+                display: "flex",
+                gap: 3,
+                py: 2,
+                px: 5,
+                overflowX: "scroll",
+                scrollbarWidth: "none",
+                "&::-webkit-scrollbar": { display: "none" },
+              }}
+            >
+              {events.map((event) => (
+                <Card
+                  key={event.id}
+                  sx={{
+                    minWidth: 300,
+                    maxWidth: 300,
+                    flex: "0 0 auto",
+                    boxShadow: 3,
+                  }}
+                >
+                  <CardContent>
+                    <Typography variant="h6">{event.title}</Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {event.venue_name}
                     </Typography>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
-          </Stack>
+                    <Typography variant="body2">
+                      {formatDate(event.startDate, event.endDate)}
+                    </Typography>
+                    <Typography variant="body2" sx={{ mt: 1 }}>
+                      {event.description}
+                    </Typography>
+                    {event.Categories && event.Categories.length > 0 && (
+                      <Typography variant="body2" sx={{ mt: 1 }}>
+                        Categories:{" "}
+                        {event.Categories.map((cat) => cat.name).join(", ")}
+                      </Typography>
+                    )}
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
+          </Box>
         )}
       </Box>
     </>
