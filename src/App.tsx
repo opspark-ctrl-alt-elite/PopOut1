@@ -15,6 +15,7 @@ import GameApp from "./components/gameComponents/GameApp";
 import { registerServiceWorker } from "./firebase/sw-registration";
 import { requestNotificationPermission } from "./firebase/requestPermission";
 import PublicVendorProfile from "./components/PublicVendorProfile";
+import TopVendorSpotlight from "./components/TopVendorSpotlight";
 
 type User = {
   id: string;
@@ -89,10 +90,12 @@ const App: React.FC = () => {
       <Route path="/edit-event/:id" element={<EditEvent />} />
       <Route path="/active-events" element={<ActiveEvents user={user} />} />
       <Route path="/events" element={<EventsFeed />} />
-      
       <Route path="/game" element={<GameApp />} />
-      /* <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} /> */
-
+      {/* Vendor Spotlight route */}
+      <Route path="/vendor-spotlight" element={<TopVendorSpotlight />} />
+      
+      {/* Public Vendor Profile Route (Uncommented) */}
+      <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} />
     </Routes>
   );
 };
