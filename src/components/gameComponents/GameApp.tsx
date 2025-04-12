@@ -151,6 +151,11 @@ function isColliding(element1, element2) {
     let targetX = targetElement?.offsetLeft !== undefined ? targetElement?.offsetLeft : 200;
     let targetY = targetElement?.offsetTop !== undefined ? targetElement?.offsetTop : 200;
 
+    // make sure that the target is still inbounds
+    setTarget(prev => {
+      return checkOutOfBounds(prev, gameBoardWidth, gameBoardHeight, targetWidth, targetHeight);
+    })
+
 
     // update the player's position using said player's current position and velocity
     setPlayer(prev => {
@@ -232,8 +237,30 @@ function isColliding(element1, element2) {
       }
 
       // set new state for player
-      return replacement;
+      return checkOutOfBounds(replacement, gameBoardWidth, gameBoardHeight, playerWidth, playerHeight);
     })
+  }
+
+  // takes in an element object with x (left) and y (top) properties and makes sure that the number values
+  // of said properties stay within the game board
+  const checkOutOfBounds = (replacement: Player, gameBoardWidth: number, gameBoardHeight: number, entWidth: number, entHeight: number) => {
+    // prevent going out of bounds
+      // horizontal handling
+      if (replacement.x < 0) {
+        replacement.x = 0;
+      } else if (replacement.x + entWidth > gameBoardWidth) {
+        replacement.x = gameBoardWidth - entWidth;
+      }
+
+      // vertical handling
+      if (replacement.y < 0) {
+        replacement.y = 0;
+      } else if (replacement.y + entHeight > gameBoardHeight) {
+        replacement.y = gameBoardHeight - entHeight;
+      }
+
+      // set new state for player
+      return replacement;
   }
 
   return (
