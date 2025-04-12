@@ -170,4 +170,28 @@ vendorRouter.delete("/:userId", async (req, res) => {
   }
 });
 
+// GET pubic vendor profile
+vendorRouter.get('/public/:vendorId', async (req, res) => {
+  const { vendorId } = req.params;
+  try {
+    const vendor = await Vendor.findByPk(vendorId, {
+      attributes: [
+        'id',
+        'businessName',
+        'description',
+        'profilePicture',
+        'facebook',
+        'instagram',
+        'website',
+        'email'
+      ]
+    });
+    if (!vendor) return res.status(404).json({ error: 'vendor not found' });
+    res.status(200).json(vendor);
+  } catch (err) {
+    console.error('err fetching public vendor profile', err);
+    res.status(500);
+  }
+});
+
 export default vendorRouter;
