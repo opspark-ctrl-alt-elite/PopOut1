@@ -113,16 +113,8 @@ function isColliding(element1, element2) {
   // create state to represent the current score
   const [score, setScore] = useState(0);
 
-  // // create state to handle shutting off the interval when leaving game page
-  // const [isRunning, setIsRunning] = useState(true);
-
   // create an interval only on the first time this component is rendered
   useEffect(() => {
-
-    // end the useEffect callback func early if the interval isn't supposed to be running
-    // if (!isRunning) {
-    //   return;
-    // }
 
     // create an interval to call the masterUpdate function every 30 ms
     const interval = setInterval(masterUpdate, 30);
@@ -135,8 +127,6 @@ function isColliding(element1, element2) {
 
   // update every element on every "frame" to keep things consistent
   const masterUpdate = () => {
-    // console.log("fug");
-
     // console.log(boardRef);
     // console.log(targetRef);
     // console.log(playerRef);
@@ -282,8 +272,8 @@ function isColliding(element1, element2) {
       <Typography>Score: {score} / 3</Typography>
       <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "70vh" }}>
         {/* <GamePlayer /> */}
-        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: "5vh", height: "5vh" }}></Box>
-        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: "8vh", height: "8vh" }}></Box>
+        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
+        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>
       </Box>
       <Box>
         <GameControls player={player} setPlayer={setPlayer}/>

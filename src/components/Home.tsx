@@ -90,7 +90,6 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
   
     // set the game button color index in state to the next index in the color array
     const changeColorInd = () => {
-      console.log("tug");
       setGameButtonColorInd(prev => {
         prev++;
         // reset index to 0 if the game button color index goes past the last color index in the color array
