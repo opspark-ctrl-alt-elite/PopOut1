@@ -105,8 +105,10 @@ const App: React.FC = () => {
       <Route path="/edit-event/:id" element={<EditEvent />} />
       <Route path="/active-events" element={<ActiveEvents user={user} />} />
       <Route path="/events" element={<EventsFeed />} />
+      
       <Route path="/game" element={<GameApp />} />
-      <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} />
+      /* <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} /> */
+
     </Routes>
   );
 };
