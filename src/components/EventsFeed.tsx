@@ -68,15 +68,13 @@ const EventsFeed: React.FC = () => {
       if (filters.isSober) params.isSober = true;
 
       const res = await axios.get("/api/events", { params });
-      const data = res.data;
-
-      if (Array.isArray(data)) {
-        setEvents(data);
-      } else if (Array.isArray(data.events)) {
-        setEvents(data.events);
-      } else {
-        setEvents([]);
-      }
+      const data = Array.isArray(res.data) ? res.data : res.data.events;
+      const now = new Date();
+      const upcomingEvents = data.filter((event: Event) => {
+        const eventEnd = new Date(event.endDate);
+        return eventEnd >= now;
+      });
+      setEvents(upcomingEvents);
     } catch (err) {
       console.error("Error fetching public events:", err);
       setEvents([]);
