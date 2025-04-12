@@ -25,9 +25,10 @@ type User = {
 
 type Props = {
   user: User | null;
+  getUser: Function;
 };
 
-const VendorSignupForm: React.FC<Props> = ({ user }) => {
+const VendorSignupForm: React.FC<Props> = ({ user, getUser }) => {
   const [formData, setFormData] = useState({
     businessName: "",
     description: "",
@@ -84,6 +85,10 @@ const VendorSignupForm: React.FC<Props> = ({ user }) => {
 
       const result = await res.json();
       console.log(result);
+      
+      // update the user in state to reflect vendor status
+      await getUser();
+
       // open success modal;
       setOpenAlertS(true);
     } catch (err) {

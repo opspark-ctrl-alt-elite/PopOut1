@@ -22,6 +22,7 @@ type User = {
   name: string;
   email: string;
   profile_picture?: string;
+  is_vendor: boolean;
 };
 
 type Vendors = {
@@ -53,6 +54,7 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
       setNotifications((prev) => [payload.notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
     });
+    console.log(user);
   }, []);
 
   const handleBellClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -184,7 +186,7 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
         <EventsFeed />
 
         {/* become vendor */}
-        {user && (
+        {(user && !user.is_vendor) && (
           <Box mt={5} textAlign="center">
             <Button
               component={Link}

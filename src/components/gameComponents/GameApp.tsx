@@ -265,6 +265,7 @@ function isColliding(element1, element2) {
 
   return (
     <Container>
+      <Typography variant="h4">Score: {score} / 3</Typography>
       <Typography>Score: {score} / 3</Typography>
       <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "70vh" }}>
         {/* <GamePlayer /> */}
