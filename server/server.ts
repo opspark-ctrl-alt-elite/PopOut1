@@ -16,6 +16,7 @@ import eventRoutes from './routes/eventRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import imageRoutes from './routes/imageRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import reviewRoutes from './routes/reviewRoutes';
 
 dotenv.config();
 const app = express();
@@ -52,6 +53,8 @@ app.use('/api/events', eventRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api', reviewRoutes);
+app.use('/vendors', reviewRoutes);
 
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);

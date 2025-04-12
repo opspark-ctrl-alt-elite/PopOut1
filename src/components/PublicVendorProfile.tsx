@@ -20,6 +20,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import Navbar from "./NavBar";
 import formatDate from "../utils/formatDate";
+import ReviewComponent from './Review';
 
 type Props = {
   user: {
@@ -141,7 +142,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   return (
     <>
       <Navbar user={user} />
-
       <Box sx={{ p: 4 }}>
         {vendor && (
           <Stack
@@ -296,6 +296,23 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
             </Box>
           </Box>
         )}
+
+        <Box sx={{ mt: 4 }}>
+          <Typography variant="h4" gutterBottom>
+            Reviews
+          </Typography>
+          {vendorId && (
+            <>
+              {user ? (
+                <ReviewComponent vendorId={vendorId} currentUserId={user.id} />
+              ) : (
+                <Typography variant="body1">
+                  Please sign in to add your review.
+                </Typography>
+              )}
+            </>
+          )}
+        </Box>
       </Box>
     </>
   );
