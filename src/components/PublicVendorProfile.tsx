@@ -171,7 +171,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               <Avatar
                 src={uploadedImage || vendor.profilePicture || ""}
                 alt={vendor.businessName}
-                sx={{ width: 56, height: 56 }}
+                sx={{ width: 70, height: 70 }}
               />
               <Box>
                 <Typography variant="h6" fontWeight="bold">
