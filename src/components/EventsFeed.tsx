@@ -13,8 +13,7 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Checkbox,
-  FormControlLabel,
+  Chip,
   IconButton,
   Button,
 } from "@mui/material";
@@ -96,6 +95,10 @@ const EventsFeed: React.FC = () => {
     }
   };
 
+  const toggleChip = (key: keyof typeof filters) => {
+    setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
+
   return (
     <Box sx={{ mt: 4, px: 2 }}>
       {/* filters */}
@@ -106,7 +109,7 @@ const EventsFeed: React.FC = () => {
             value={filters.category}
             label="Category"
             onChange={(event) =>
-              setFilters((f) => ({ ...f, category: event.target.value }))
+              setFilters((fil) => ({ ...fil, category: event.target.value }))
             }
           >
             <MenuItem value="">All</MenuItem>
@@ -118,41 +121,26 @@ const EventsFeed: React.FC = () => {
           </Select>
         </FormControl>
 
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filters.isFree}
-              onChange={(event) =>
-                setFilters((fil) => ({ ...fil, isFree: event.target.checked }))
-              }
-              size="small"
-            />
-          }
+        <Chip
           label="Free"
+          clickable
+          color={filters.isFree ? "primary" : "default"}
+          variant={filters.isFree ? "filled" : "outlined"}
+          onClick={() => toggleChip("isFree")}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filters.isKidFriendly}
-              onChange={(event) =>
-                setFilters((fil) => ({ ...fil, isKidFriendly: event.target.checked }))
-              }
-              size="small"
-            />
-          }
+        <Chip
           label="Kid-Friendly"
+          clickable
+          color={filters.isKidFriendly ? "primary" : "default"}
+          variant={filters.isKidFriendly ? "filled" : "outlined"}
+          onClick={() => toggleChip("isKidFriendly")}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filters.isSober}
-              onChange={(event) =>
-                setFilters((fil) => ({ ...fil, isSober: event.target.checked }))
-              }
-              size="small"
-            />
-          }
+        <Chip
           label="Sober"
+          clickable
+          color={filters.isSober ? "primary" : "default"}
+          variant={filters.isSober ? "filled" : "outlined"}
+          onClick={() => toggleChip("isSober")}
         />
       </Stack>
 
