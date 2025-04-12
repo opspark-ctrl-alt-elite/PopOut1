@@ -11,6 +11,8 @@ import {
   Avatar,
   IconButton,
   Button,
+  Tabs,
+  Tab,
 } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -57,6 +59,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [tabIndex, setTabIndex] = useState(0);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -143,6 +146,12 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       .catch((err) => console.error("Error toggling follow", err));
   };
 
+  const now = new Date();
+  const filteredEvents =
+    tabIndex === 0
+      ? events.filter((e) => new Date(e.endDate) >= now)
+      : events.filter((e) => new Date(e.endDate) < now);
+
   return (
     <>
       <Navbar user={user} />
@@ -214,17 +223,21 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
           </Typography>
         )}
 
-        <Typography variant="h4" gutterBottom>
-          Upcoming Events
-        </Typography>
+        <Tabs
+          value={tabIndex}
+          onChange={(_, newValue) => setTabIndex(newValue)}
+          sx={{ mb: 2 }}
+        >
+          <Tab label="Upcoming Popups" />
+          <Tab label="Past Popups" />
+        </Tabs>
 
         {loading ? (
           <CircularProgress />
-        ) : events.length === 0 ? (
-          <Typography>No events</Typography>
+        ) : filteredEvents.length === 0 ? (
+          <Typography>No {tabIndex === 0 ? "Upcoming" : "Past"} Popups</Typography>
         ) : (
           <Box sx={{ position: "relative", mt: 2 }}>
-            {/* Arrows */}
             <IconButton
               onClick={() => scroll("left")}
               sx={{
@@ -255,7 +268,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               <ArrowForwardIosIcon />
             </IconButton>
 
-            {/* events */}
             <Box
               ref={scrollRef}
               sx={{
@@ -268,7 +280,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                 "&::-webkit-scrollbar": { display: "none" },
               }}
             >
-              {events.map((event) => (
+              {filteredEvents.map((event) => (
                 <Card
                   key={event.id}
                   sx={{
