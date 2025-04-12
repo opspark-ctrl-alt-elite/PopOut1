@@ -42,3 +42,6 @@ Vendor.hasMany(Review, { foreignKey: 'vendorId' });
 User.belongsToMany(Vendor, { through: UserFollowsVendor, foreignKey: 'userId', as: 'followedVendors' });
 Vendor.belongsToMany(User, { through: UserFollowsVendor, foreignKey: 'vendorId', as: 'followers' });
 
+// bookmark
+User.belongsToMany(Event, { through: 'UserBookmarksEvent', foreignKey: 'userId', as: 'bookmarkedEvents' });
+Event.belongsToMany(User, {through: 'UserBookmarksEvent', foreignKey: 'eventId', as: 'usersWhoBookmarked' });
