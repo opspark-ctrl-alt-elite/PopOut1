@@ -105,6 +105,35 @@ const Map: React.FC<Props> = ({ user }) => {
     libraries,
   });
 
+  // geolocation
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const { latitude, longitude } = position.coords;
+        setSelected({ lat: latitude, lng: longitude });
+      },
+      (error) => {
+        console.warn("geolocation err", error);
+        setSelected(center);
+      }
+    );
+  }, []);
+
+  // fetch all events
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const res = await fetch(`${window.location.origin}/api/map/events`);
+        const data = await res.json();
+        setEvents(data);
+      } catch (err) {
+        console.error("err fetching all events", err);
+      }
+    };
+
+    fetchEvents();
+  }, []);
+
   useEffect(() => {
     if (!selected) {
       navigator.geolocation.getCurrentPosition((position) => {
@@ -114,35 +143,35 @@ const Map: React.FC<Props> = ({ user }) => {
     }
   }, []);
 
-  useEffect(() => {
-    if (!selected) return;
+  // useEffect(() => {
+  //   if (!selected) return;
 
-    // const fetchEvents = async () => {
-    //   try {
-    //     const res = await fetch(
-    //       `/map/events/nearby?lat=${selected.lat}&lng=${selected.lng}`
-    //     );
-    //     const data = await res.json();
-    //     setEvents(data);
-    //   } catch (err) {
-    //     console.error("err fetching nearby events", err);
-    //   }
-    // };
+  //   // const fetchEvents = async () => {
+  //   //   try {
+  //   //     const res = await fetch(
+  //   //       /map/events/nearby?lat=${selected.lat}&lng=${selected.lng}
+  //   //     );
+  //   //     const data = await res.json();
+  //   //     setEvents(data);
+  //   //   } catch (err) {
+  //   //     console.error("err fetching nearby events", err);
+  //   //   }
+  //   // };
 
-    const fetchEvents = async () => {
-      try {
-        const res = await fetch(
-          `${window.location.origin}/api/map/events/nearby?lat=${selected.lat}&lng=${selected.lng}`
-        );
-        const data = await res.json();
-        setEvents(data);
-      } catch (err) {
-        console.error("err fetching nearby events", err);
-      }
-    };
+  //   const fetchEvents = async () => {
+  //     try {
+  //       const res = await fetch(
+  //         ${window.location.origin}/api/map/events/nearby?lat=${selected.lat}&lng=${selected.lng}
+  //       );
+  //       const data = await res.json();
+  //       setEvents(data);
+  //     } catch (err) {
+  //       console.error("err fetching nearby events", err);
+  //     }
+  //   };
 
-    fetchEvents();
-  }, [selected]);
+  //   fetchEvents();
+  // }, [selected]);
 
   if (!isLoaded) return <div>Loading...</div>;
 
@@ -264,20 +293,20 @@ const Map: React.FC<Props> = ({ user }) => {
         zoom={12}
       >
         {events
-          .filter(
-            (event) => !activeCategory || event.category_name === activeCategory
-          )
+          .filter((event) => {
+            const category = event.category_name || event.Categories?.[0]?.name;
+            return !activeCategory || category === activeCategory;
+          })
           .map((event, i) => {
-            const category = event.category_name || "Unknown";
+            const category =
+              event.category_name || event.Categories?.[0]?.name || "Unknown";
             return (
               <Marker
                 key={i}
                 position={{ lat: event.latitude, lng: event.longitude }}
                 title={event.title}
                 onClick={() => setActiveEvent(event)}
-                icon={{
-                  url: getMarkerIcon(category),
-                }}
+                icon={{ url: getMarkerIcon(category) }}
               />
             );
           })}
@@ -300,7 +329,6 @@ const Map: React.FC<Props> = ({ user }) => {
                   timeStyle: "short",
                 })}
               </p>
-
               <p
                 style={{
                   margin: "4px 0 0",
@@ -311,8 +339,14 @@ const Map: React.FC<Props> = ({ user }) => {
                   gap: "4px",
                 }}
               >
-                {getCategoryIcon(activeEvent.category_name)}{" "}
-                {activeEvent.category_name}
+                {getCategoryIcon(
+                  activeEvent.category_name ||
+                    activeEvent.Categories?.[0]?.name ||
+                    "Unknown"
+                )}{" "}
+                {activeEvent.category_name ||
+                  activeEvent.Categories?.[0]?.name ||
+                  "Unknown"}
               </p>
             </div>
           </InfoWindow>
