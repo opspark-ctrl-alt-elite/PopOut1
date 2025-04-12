@@ -16,6 +16,7 @@ import eventRoutes from './routes/eventRoutes';
 import categoryRoutes from './routes/categoryRoutes';
 import imageRoutes from './routes/imageRoutes';
 import notificationRoutes from './routes/notificationRoutes';
+import vendorSpotlightRouter from './routes/vendorSpotlightRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import userBookmarkRoutes from './routes/userBookmarkRoutes';
 
@@ -49,6 +50,7 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 app.use(authRoutes);
 app.use("/api/map", mapRoutes);
 app.use("/api/vendor", vendorRoutes);
+app.use('/vendors', vendorSpotlightRouter); 
 app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/categories', categoryRoutes);
