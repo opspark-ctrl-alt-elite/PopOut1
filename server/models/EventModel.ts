@@ -82,15 +82,5 @@ Event.init(
   }
 );
 
-// Event with Vendor
-// Vendor.hasMany(Event, { foreignKey: "vendor_id", onDelete: "CASCADE" });
-// Event.belongsTo(Vendor, { foreignKey: "vendor_id" });
-
-// event with category
-// Event.belongsToMany(Category, { through: 'EventCategories', foreignKey: 'eventId' });
-// Category.belongsToMany(Event, { through: 'EventCategories', foreignKey: 'categoryId' });
-
-// Event.belongsTo(Category, { foreignKey: "category_id" });
-// Category.hasMany(Event, { foreignKey: "category_id" });
 
 export default Event;
