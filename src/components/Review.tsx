@@ -3,7 +3,6 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import axios from 'axios';
 import Rating from '@mui/material/Rating';
 
-//easter egg 🥚
 // Define the Review type based on the API response structure.
 export interface Review {
   id?: string;
@@ -33,7 +32,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
   const [reviews, setReviews] = useState<Review[]>(initialReviews);
   const [userReview, setUserReview] = useState<Review | null>(null);
   const [rating, setRating] = useState<number | null>(null);
-  const [comment, setComment] = useState<string>('');
+  const [comment, setComment] = useState<string>(''); // Allow empty comment.
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -49,9 +48,6 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
       } else if (response.data && Array.isArray(response.data.reviews)) {
         reviewsArray = response.data.reviews;
       }
-      
-      // Optionally, if you want to filter out test reviews, for example, those having a specific comment:
-      // reviewsArray = reviewsArray.filter(r => r.comment !== 'Test comment');
 
       setReviews(reviewsArray);
 
@@ -86,6 +82,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
     setLoading(true);
     setError(null);
 
+    // The payload always includes the rating and the comment (which may be an empty string).
     const payload = { rating, comment };
 
     try {
@@ -107,10 +104,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
         }
       } else {
         // Create new review via POST.
-        const response = await axios.post(
-          `/vendors/${vendorId}/reviews`,
-          payload
-        );
+        const response = await axios.post(`/vendors/${vendorId}/reviews`, payload);
         const newReview: Review = response.data;
         setUserReview(newReview);
         setReviews((prevReviews) => [newReview, ...prevReviews]);
@@ -183,14 +177,13 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
             htmlFor="comment"
             style={{ display: 'block', marginBottom: '0.25rem' }}
           >
-            Comment:
+            Comment (optional):
           </label>
           <textarea
             id="comment"
             name="comment"
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            required
             rows={4}
             cols={50}
           />
@@ -244,7 +237,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
                     : ''}
                 </span>
               </p>
-              <p>{review.comment}</p>
+              {review.comment && <p>{review.comment}</p>}
             </div>
           ))
         ) : (
