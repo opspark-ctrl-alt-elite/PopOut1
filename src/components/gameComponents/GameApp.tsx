@@ -113,11 +113,24 @@ function isColliding(element1, element2) {
   // create state to represent the current score
   const [score, setScore] = useState(0);
 
+  // // create state to handle shutting off the interval when leaving game page
+  // const [isRunning, setIsRunning] = useState(true);
+
   // create an interval only on the first time this component is rendered
   useEffect(() => {
 
-    // call the masterUpdate function every 30 ms
-    setInterval(masterUpdate, 30);
+    // end the useEffect callback func early if the interval isn't supposed to be running
+    // if (!isRunning) {
+    //   return;
+    // }
+
+    // create an interval to call the masterUpdate function every 30 ms
+    const interval = setInterval(masterUpdate, 30);
+
+    // return a callback function that cleans up (destroys) the interval
+    return () => {
+      clearInterval(interval);
+    }
   }, []);
 
   // update every element on every "frame" to keep things consistent

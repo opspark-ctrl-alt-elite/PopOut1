@@ -72,20 +72,25 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
 
 
   // create array of colors to loop through
-  const colorArray = ["red", "orange", "yellow", "green", "cyan", "blue", "violet", "purple", "maroon"];
+  const colorArray = ["red", "orange", "darkgoldenrod", "green", "blue", "darkblue", "violet", "purple", "maroon"];
 
   // create index in state for current color for game button
   const [gameButtonColorInd, setGameButtonColorInd] = useState(0);
 
   // set interval on first render
   useEffect(() => {
-    // call changeColorInd every half second
-      setInterval(changeColorInd, 500);
+    // create an interval to call changeColorInd every half second
+    const interval = setInterval(changeColorInd, 500);
+
+    // return a callback function that cleans up (destroys) the interval
+    return () => {
+      clearInterval(interval);
+    }
     }, []);
   
     // set the game button color index in state to the next index in the color array
     const changeColorInd = () => {
-      // console.log("tug");
+      console.log("tug");
       setGameButtonColorInd(prev => {
         prev++;
         // reset index to 0 if the game button color index goes past the last color index in the color array
