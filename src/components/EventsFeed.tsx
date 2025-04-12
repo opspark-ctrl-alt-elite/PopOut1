@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import formatDate from "../utils/formatDate";
@@ -15,8 +15,8 @@ import {
   InputLabel,
   Checkbox,
   FormControlLabel,
-  Button,
   IconButton,
+  Button,
 } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -49,17 +49,12 @@ const EventsFeed: React.FC = () => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetchCategories();
-    fetchEvents();
-  }, []);
-
   const fetchCategories = async () => {
     const res = await axios.get("/api/categories");
     setCategories(res.data.map((cat: any) => cat.name));
   };
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       const params: any = {};
       if (filters.category) params.category = filters.category;
@@ -69,17 +64,27 @@ const EventsFeed: React.FC = () => {
 
       const res = await axios.get("/api/events", { params });
       const data = Array.isArray(res.data) ? res.data : res.data.events;
+
       const now = new Date();
       const upcomingEvents = data.filter((event: Event) => {
         const eventEnd = new Date(event.endDate);
         return eventEnd >= now;
       });
+
       setEvents(upcomingEvents);
     } catch (err) {
       console.error("Error fetching public events:", err);
       setEvents([]);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const scroll = (dir: "left" | "right") => {
     const scrollAmount = 320;
@@ -100,8 +105,8 @@ const EventsFeed: React.FC = () => {
           <Select
             value={filters.category}
             label="Category"
-            onChange={(e) =>
-              setFilters((f) => ({ ...f, category: e.target.value }))
+            onChange={(event) =>
+              setFilters((f) => ({ ...f, category: event.target.value }))
             }
           >
             <MenuItem value="">All</MenuItem>
@@ -117,8 +122,8 @@ const EventsFeed: React.FC = () => {
           control={
             <Checkbox
               checked={filters.isFree}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, isFree: e.target.checked }))
+              onChange={(event) =>
+                setFilters((fil) => ({ ...fil, isFree: event.target.checked }))
               }
               size="small"
             />
@@ -129,8 +134,8 @@ const EventsFeed: React.FC = () => {
           control={
             <Checkbox
               checked={filters.isKidFriendly}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, isKidFriendly: e.target.checked }))
+              onChange={(event) =>
+                setFilters((fil) => ({ ...fil, isKidFriendly: event.target.checked }))
               }
               size="small"
             />
@@ -141,23 +146,14 @@ const EventsFeed: React.FC = () => {
           control={
             <Checkbox
               checked={filters.isSober}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, isSober: e.target.checked }))
+              onChange={(event) =>
+                setFilters((fil) => ({ ...fil, isSober: event.target.checked }))
               }
               size="small"
             />
           }
           label="Sober"
         />
-
-        <Button
-          onClick={fetchEvents}
-          variant="contained"
-          size="small"
-          sx={{ height: 30 }}
-        >
-          Filter
-        </Button>
       </Stack>
 
       {/* events */}
