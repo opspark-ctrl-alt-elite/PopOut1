@@ -1,5 +1,6 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import axios from "axios";
 import {
   AppBar,
   Toolbar,
@@ -11,12 +12,23 @@ import {
   Container,
   Button,
   Divider,
+  Card,
+  CardContent,
 } from "@mui/material";
 
-// category and User types
+// types
 type Category = {
   id: number;
   name: string;
+};
+
+type Event = {
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  venue_name: string;
 };
 
 type User = {
@@ -34,6 +46,7 @@ type Props = {
 
 const UserProfile: React.FC<Props> = ({ user }) => {
   const navigate = useNavigate();
+  const [bookmarkedEvents, setBookmarkedEvents] = useState<Event[]>([]);
 
   const handleDeleteUser = () => {
     if (!user) return;
@@ -57,17 +70,40 @@ const UserProfile: React.FC<Props> = ({ user }) => {
       });
   };
 
+  const handleViewBookmarkedEvents = () => {
+    if (!user) return;
+
+    axios
+      .get(`/users/${user.id}/bookmarked-events`)
+      .then((res) => {
+        console.log("Bookmarked events:", res.data);
+        setBookmarkedEvents(res.data);
+      })
+      .catch((err) => {
+        console.error("Error fetching bookmarked events:", err);
+      });
+  };
+
+  const handleUnbookmarkEvent = (eventId: string) => {
+    if (!user) return;
+
+    axios
+      .delete(`/users/${user.id}/unbookmark/${eventId}`)
+      .then(() => {
+        setBookmarkedEvents((prev) =>
+          prev.filter((event) => event.id !== eventId)
+        );
+      })
+      .catch((err) => {
+        console.error("Failed to unbookmark event", err);
+      });
+  };
+
   return (
     <Box>
       {/* HEADER */}
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
-        <Toolbar
-          sx={{
-            justifyContent: "space-between",
-            px: 2,
-            py: 1,
-          }}
-        >
+        <Toolbar sx={{ justifyContent: "space-between", px: 2, py: 1 }}>
           <Typography
             component={Link}
             to="/"
@@ -98,7 +134,6 @@ const UserProfile: React.FC<Props> = ({ user }) => {
       <Container maxWidth="md" sx={{ mt: 6 }}>
         {user ? (
           <Box>
-            {/* Top: Avatar, Name, Email, Edit */}
             <Stack
               direction="row"
               alignItems="center"
@@ -122,7 +157,6 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                   </Typography>
                 </Box>
               </Stack>
-
               <Button
                 variant="outlined"
                 size="small"
@@ -165,8 +199,7 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                 variant="contained"
                 color="secondary"
                 fullWidth
-                component={Link}
-                to="/bookmarks"
+                onClick={handleViewBookmarkedEvents}
               >
                 Bookmarked / Upcoming Events
               </Button>
@@ -192,7 +225,7 @@ const UserProfile: React.FC<Props> = ({ user }) => {
 
               <Divider />
 
-              {(user && user.is_vendor) ? (
+              {user.is_vendor ? (
                 <Button
                   component={Link}
                   to="/vendorprofile"
@@ -223,6 +256,41 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                 Delete My Account
               </Button>
             </Stack>
+
+            {/* Render Bookmarked Events */}
+            {bookmarkedEvents.length > 0 && (
+              <Box mt={6}>
+                <Typography variant="h6" gutterBottom>
+                  Your Bookmarked Events:
+                </Typography>
+                <Stack spacing={2}>
+                  {bookmarkedEvents.map((event) => (
+                    <Card key={event.id}>
+                      <CardContent>
+                        <Typography variant="h6">{event.title}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                          {event.venue_name}
+                        </Typography>
+                        <Typography variant="body2">
+                          {new Date(event.startDate).toLocaleString()} -{" "}
+                          {new Date(event.endDate).toLocaleString()}
+                        </Typography>
+                        <Typography variant="body2" sx={{ mb: 2 }}>
+                          {event.description}
+                        </Typography>
+                        <Button
+                          variant="outlined"
+                          color="error"
+                          onClick={() => handleUnbookmarkEvent(event.id)}
+                        >
+                          Remove Bookmark
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </Stack>
+              </Box>
+            )}
           </Box>
         ) : (
           <Typography textAlign="center" mt={4}>
