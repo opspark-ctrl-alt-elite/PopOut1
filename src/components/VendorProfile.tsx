@@ -68,9 +68,10 @@ type UploadedImage = {
 
 type Props = {
   user: User | null;
+  getUser: Function;
 };
 
-const VendorProfile: React.FC<Props> = ({ user }) => {
+const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [fields, setFields] = useState<Fields>({
     businessName: "",
@@ -167,6 +168,10 @@ const VendorProfile: React.FC<Props> = ({ user }) => {
       await axios.delete(`/api/vendor/${user?.id}`, {
         withCredentials: true,
       });
+
+      // update the user in state to reflect vendor status
+      await getUser();
+      
       getVendor();
     } catch (err) {
       console.error("Error deleting vendor record: ", err);
