@@ -13,6 +13,7 @@ import {
   Button,
   Tabs,
   Tab,
+  Chip,
 } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -22,7 +23,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import Navbar from "./NavBar";
 import formatDate from "../utils/formatDate";
-import ReviewComponent from './Review';
+import ReviewComponent from "./Review";
 
 type Props = {
   user: {
@@ -235,7 +236,9 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         {loading ? (
           <CircularProgress />
         ) : filteredEvents.length === 0 ? (
-          <Typography>No {tabIndex === 0 ? "Upcoming" : "Past"} Popups</Typography>
+          <Typography>
+            No {tabIndex === 0 ? "Upcoming" : "Past"} Popups
+          </Typography>
         ) : (
           <Box sx={{ position: "relative", mt: 2 }}>
             <IconButton
@@ -302,10 +305,21 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                       {event.description}
                     </Typography>
                     {event.Categories && event.Categories.length > 0 && (
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Categories:{" "}
-                        {event.Categories.map((cat) => cat.name).join(", ")}
-                      </Typography>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{ mt: 1, flexWrap: "wrap" }}
+                      >
+                        {event.Categories.map((cat) => (
+                          <Chip
+                            key={cat.name}
+                            label={cat.name}
+                            variant="outlined"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        ))}
+                      </Stack>
                     )}
                   </CardContent>
                 </Card>
