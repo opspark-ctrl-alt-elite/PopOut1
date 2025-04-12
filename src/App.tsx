@@ -16,6 +16,7 @@ import { registerServiceWorker } from "./firebase/sw-registration";
 import { requestNotificationPermission } from "./firebase/requestPermission";
 import PublicVendorProfile from "./components/PublicVendorProfile";
 import TopVendorSpotlight from "./components/TopVendorSpotlight";
+import axios from "axios";
 
 type User = {
   id: string;
@@ -42,6 +43,21 @@ type Vendor = {
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [vendors, setVendors] = useState<Vendor[] | null>(null);
+
+  // a passed-down function to get and update the user state from children components
+  let getUser = async () => {
+    try {
+      const userObj = await axios.get(`/user/me`, {
+        withCredentials: true,
+      });
+      // set state's user value
+      setUser(userObj.data);
+    } catch (err) {
+      // set user to null when no vendor can be found
+      setUser(null);
+      console.error("Error retrieving user record: ", err);
+    }
+  }
 
   useEffect(() => {
     registerServiceWorker();
@@ -83,8 +99,8 @@ const App: React.FC = () => {
       <Route path="/map" element={<Map user={user} />} />
       <Route path="/userprofile" element={<UserProfile user={user} />} />
       <Route path="/edit-profile" element={<EditProfile user={user} />} />
-      <Route path="/vendorprofile" element={<VendorProfile user={user} />} />
-      <Route path="/vendor-signup" element={<VendorSignupForm user={user} />} />
+      <Route path="/vendorprofile" element={<VendorProfile user={user} getUser={getUser} />} />
+      <Route path="/vendor-signup" element={<VendorSignupForm user={user} getUser={getUser} />} />
       <Route path="/preferences" element={<Preferences setUser={setUser} />} />
       <Route path="/create-event" element={<CreateEvent />} />
       <Route path="/edit-event/:id" element={<EditEvent />} />
