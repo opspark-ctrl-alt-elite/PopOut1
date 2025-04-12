@@ -3,10 +3,9 @@ import { Link } from "react-router-dom";
 import axios from "axios";
 import ImageUpload from "./ImageUpload";
 
-// img imports
-import facebookImg from "../../public/includedImages/facebook.png";
-import instagramImg from "../../public/includedImages/instagram.png";
-import websiteImg from "../../public/includedImages/website.png";
+import FacebookIcon from "@mui/icons-material/Facebook";
+import InstagramIcon from "@mui/icons-material/Instagram";
+import LanguageIcon from "@mui/icons-material/Language";
 
 import {
   Box,
@@ -64,7 +63,7 @@ type UploadedImage = {
   referenceURL: string;
   vendorId?: string | null;
   eventId?: string | null;
-}
+};
 
 type Props = {
   user: User | null;
@@ -82,7 +81,9 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     instagram: "",
     facebook: "",
   });
-  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(null);
+  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
+    null
+  );
 
   // states used to toggle the modals
   const [openDelete, setOpenDelete] = React.useState(false);
@@ -171,24 +172,24 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
 
       // update the user in state to reflect vendor status
       await getUser();
-      
+
       getVendor();
     } catch (err) {
       console.error("Error deleting vendor record: ", err);
     }
   };
 
-   // deletes the uploaded Image
-   const deleteUploadedImage = async () => {
+  // deletes the uploaded Image
+  const deleteUploadedImage = async () => {
     // create config object so that the delete request can have a body
     const config = {
-      method: 'delete',
-      url: '/api/images/',
+      method: "delete",
+      url: "/api/images/",
       withCredentials: true,
       data: {
-        publicIds: [ uploadedImage?.publicId ]
-      }
-      };
+        publicIds: [uploadedImage?.publicId],
+      },
+    };
     try {
       await axios(config);
       getUploadedImage();
@@ -196,7 +197,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
       console.error("Error deleting vendor record: ", err);
     }
   };
-
 
   // handle inputs to the fields by saving them to the state
   const handleUpdateFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,12 +252,17 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               <Stack direction="row" spacing={2} alignItems="center">
                 <Box>
                   <Avatar
-                    src={uploadedImage ? uploadedImage.referenceURL : vendor.profilePicture}
+                    src={
+                      uploadedImage
+                        ? uploadedImage.referenceURL
+                        : vendor.profilePicture
+                    }
                     alt={vendor.businessName}
                     sx={{ width: 56, height: 56 }}
                   />
                   <Typography variant="body2" color="text.secondary">
-                    Uploaded Images override a vendor's url image until they are deleted
+                    Uploaded Images override a vendor's url image until they are
+                    deleted
                   </Typography>
                   <ImageUpload
                     foreignKeyName="vendorId"
@@ -293,75 +298,53 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               </Button>
             </Stack>
 
-            <Grid2 container spacing={2} sx={{ mb: 4 }}>
-              <Grid2 size={8}>
-                <Typography variant="body2" fontWeight="bold">Description:</Typography>
-                <Typography variant="body2">{vendor.description}</Typography>
-              </Grid2>
-              <Grid2 container size={4} justifyContent="center">
-                {/* <Grid2 size={{ xs: 3, sm: 0 }}>
-                  filler grid that changes size to better fit elements on phone screen
-                </Grid2> */}
-                <Grid2 size={12}>
-                  <a href={vendor.facebook}>
-                    {/* <Typography>Facebook</Typography> */}
-                    <Avatar
-                      src={facebookImg}
-                      alt={vendor.facebook}
-                      sx={{ width: 40, height: 40 }}
-                    />
-                  </a>
+            <Grid2 container size={4} justifyContent="center" spacing={2}>
+              {vendor.facebook && (
+                <Grid2>
+                  <Tooltip title="Facebook">
+                    <IconButton
+                      component="a"
+                      href={vendor.facebook}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ color: "#1877F2" }}
+                    >
+                      <FacebookIcon fontSize="large" />
+                    </IconButton>
+                  </Tooltip>
                 </Grid2>
-                <Grid2 size={12}>
-                  <a href={vendor.instagram}>
-                    {/* <Typography>Instagram</Typography> */}
-                    <Avatar
-                      src={instagramImg}
-                      alt={vendor.instagram}
-                      sx={{ width: 40, height: 40 }}
-                    />
-                  </a>
+              )}
+              {vendor.instagram && (
+                <Grid2>
+                  <Tooltip title="Instagram">
+                    <IconButton
+                      component="a"
+                      href={vendor.instagram}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ color: "#E4405F" }}
+                    >
+                      <InstagramIcon fontSize="large" />
+                    </IconButton>
+                  </Tooltip>
                 </Grid2>
-                <Grid2 size={12}>
-                  <a href={vendor.website}>
-                    <Typography>Website</Typography>
-                    <Avatar
-                      src={websiteImg}
-                      alt={vendor.website}
-                      sx={{ width: 40, height: 40 }}
-                    />
-                  </a>
+              )}
+              {vendor.website && (
+                <Grid2>
+                  <Tooltip title="Website">
+                    <IconButton
+                      component="a"
+                      href={vendor.website}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      sx={{ color: "#34A853" }}
+                    >
+                      <LanguageIcon fontSize="large" />
+                    </IconButton>
+                  </Tooltip>
                 </Grid2>
-              </Grid2>
+              )}
             </Grid2>
-
-            {/* <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              spacing={4}
-              sx={{ mb: 4 }}
-              flexWrap="wrap"
-            >
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Box>
-                  <Typography variant="h6" fontWeight="bold">
-                    {vendor.businessName}
-                  </Typography>
-                  <Typography variant="body2" color="text.primary">
-                    {vendor.description}
-                  </Typography>
-                </Box>
-              </Stack>
-
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => setOpenEdit(true)}
-              >
-                Edit Profile
-              </Button>
-            </Stack> */}
 
             {/* profile links */}
             <Stack spacing={2}>
@@ -430,21 +413,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                   value={fields.email}
                   onChange={handleUpdateFieldChange}
                 />
-                {/* Two different methods for adding a vendor profile */}
-                {/* <Box sx={{ outline: 5 }}>
-                  <Typography>
-                    Add image url or upload image
-                  </Typography>
-                  <TextField
-                    name="profilePicture"
-                    label="Profile Picture Link"
-                    fullWidth
-                    margin="normal"
-                    value={fields.profilePicture}
-                    onChange={handleUpdateFieldChange}
-                  />
-                  <ImageUpload setInputData={setFields} imageKeyName="profilePicture" multiple={false} />
-                </Box> */}
                 <TextField
                   name="profilePicture"
                   label="Profile Picture Link"
@@ -536,12 +504,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
             <Typography variant="h4" textAlign="center" mt={4}>
               No Vendor Found
             </Typography>
-            <Button
-              variant="outlined"
-              fullWidth
-              component={Link}
-              to="/"
-            >
+            <Button variant="outlined" fullWidth component={Link} to="/">
               Home
             </Button>
             <Button
