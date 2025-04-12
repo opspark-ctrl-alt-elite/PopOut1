@@ -3,6 +3,7 @@ import React, { useState, useEffect, FormEvent } from 'react';
 import axios from 'axios';
 import Rating from '@mui/material/Rating';
 
+//easter egg 🥚
 // Define the Review type based on the API response structure.
 export interface Review {
   id?: string;
