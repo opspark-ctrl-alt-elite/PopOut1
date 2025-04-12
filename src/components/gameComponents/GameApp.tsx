@@ -32,12 +32,11 @@ import {
 //   width: number;
 // }
 
-type Player = {
+type Mover = {
   x: number;
   y: number;
   xVel: number;
   yVel: number;
-  // size?: number;
 };
 
 const GameApp: React.FC = () => {
@@ -63,14 +62,6 @@ const GameApp: React.FC = () => {
     p: 4,
   };
 
-//   // create state to represent the game board
-//   const [board, setBoard] = useState<Board>({
-//     height: document.documentElement.clientHeight,
-//     width: document.documentElement.clientWidth
-//   });
-
-// console.log(document.documentElement.clientWidth)
-
 /*
 
 function isColliding(element1, element2) {
@@ -91,7 +82,7 @@ function isColliding(element1, element2) {
   const [open, setOpen] = useState(false);
 
   // create state to represent the player
-  const [player, setPlayer] = useState<Player>({
+  const [player, setPlayer] = useState<Mover>({
     x: 0,
     y: 0,
     xVel: 0,
@@ -102,7 +93,7 @@ function isColliding(element1, element2) {
   //console.log(player);
 
   // create state to represent the target
-  const [target, setTarget] = useState<Player>({
+  const [target, setTarget] = useState<Mover>({
     x: 200,
     y: 200,
     xVel: 0,
@@ -246,7 +237,7 @@ function isColliding(element1, element2) {
 
   // takes in an element object with x (left) and y (top) properties and makes sure that the number values
   // of said properties stay within the game board
-  const checkOutOfBounds = (replacement: Player, gameBoardWidth: number, gameBoardHeight: number, entWidth: number, entHeight: number) => {
+  const checkOutOfBounds = (replacement: Mover, gameBoardWidth: number, gameBoardHeight: number, entWidth: number, entHeight: number) => {
     // prevent going out of bounds
       // horizontal handling
       if (replacement.x < 0) {
@@ -268,7 +259,7 @@ function isColliding(element1, element2) {
 
   return (
     <Container>
-      <Typography variant="h4">Score: {score} / 3</Typography>
+      <Typography variant="h4">Make the big blue square touch the small red square.</Typography>
       <Typography>Score: {score} / 3</Typography>
       <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "70vh" }}>
         {/* <GamePlayer /> */}

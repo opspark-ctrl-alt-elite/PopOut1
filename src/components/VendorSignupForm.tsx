@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ImageUpload from "./ImageUpload";
 
@@ -23,12 +23,19 @@ type User = {
   profile_picture?: string;
 };
 
+type Captcha = {
+  beatCaptcha: boolean;
+  wantsToBeVendor: boolean;
+}
+
 type Props = {
   user: User | null;
   getUser: Function;
+  captcha: Captcha;
+  setCaptcha: Function;
 };
 
-const VendorSignupForm: React.FC<Props> = ({ user, getUser }) => {
+const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha }) => {
   const [formData, setFormData] = useState({
     businessName: "",
     description: "",
@@ -58,13 +65,29 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser }) => {
 
   const navigate = useNavigate();
 
+  // redirect to captcha game if not already beaten
+  useEffect(() => {
+    if (!captcha.beatCaptcha) {
+      // set the wantsToBeVendor state flag to true
+      setCaptcha({
+        beatCaptcha: false,
+        wantsToBeVendor: true
+      })
+    }
+  }, []);
+  useEffect(() => {
+    if (!captcha.beatCaptcha && captcha.wantsToBeVendor) {
+      // redirect to game
+      navigate("/game");
+    }
+  }, [ captcha ]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    console.log(formData); //TODO: ADVISE: TEMP TESTING
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
