@@ -54,7 +54,6 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
       setNotifications((prev) => [payload.notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
     });
-    console.log(user);
   }, []);
 
   const handleBellClick = (event: React.MouseEvent<HTMLElement>) => {
