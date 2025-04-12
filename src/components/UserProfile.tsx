@@ -25,6 +25,7 @@ type User = {
   email: string;
   profile_picture?: string;
   categories?: Category[];
+  is_vendor: boolean;
 };
 
 type Props = {
@@ -191,23 +192,25 @@ const UserProfile: React.FC<Props> = ({ user }) => {
 
               <Divider />
 
-              <Button
-                component={Link}
-                to="/vendor-signup"
-                variant="outlined"
-                fullWidth
-              >
-                Become a Vendor
-              </Button>
-
-              <Button
-                component={Link}
-                to="/vendorprofile"
-                variant="text"
-                fullWidth
-              >
-                View Vendor Profile
-              </Button>
+              {(user && user.is_vendor) ? (
+                <Button
+                  component={Link}
+                  to="/vendorprofile"
+                  variant="text"
+                  fullWidth
+                >
+                  View Vendor Profile
+                </Button>
+              ) : (
+                <Button
+                  component={Link}
+                  to="/vendor-signup"
+                  variant="outlined"
+                  fullWidth
+                >
+                  Become a Vendor
+                </Button>
+              )}
 
               <Divider />
 
