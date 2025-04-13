@@ -11,6 +11,9 @@ import {
   Avatar,
   IconButton,
   Button,
+  Tabs,
+  Tab,
+  Chip,
 } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -20,7 +23,7 @@ import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
 
 import Navbar from "./NavBar";
 import formatDate from "../utils/formatDate";
-import ReviewComponent from './Review';
+import ReviewComponent from "./Review";
 
 type Props = {
   user: {
@@ -58,6 +61,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [tabIndex, setTabIndex] = useState(0);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -75,7 +79,12 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     const fetchVendorEvents = async () => {
       try {
         const res = await axios.get(`/api/events/vendor/${vendorId}`);
-        setEvents(res.data);
+        const sortedEvents = res.data.sort((a: Event, b: Event) => {
+          return (
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+          );
+        });
+        setEvents(sortedEvents);
       } catch (err) {
         console.error("err fetching vendor events", err);
         setEvents([]);
@@ -138,6 +147,12 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       })
       .catch((err) => console.error("Error toggling follow", err));
   };
+
+  const now = new Date();
+  const filteredEvents =
+    tabIndex === 0
+      ? events.filter((e) => new Date(e.endDate) >= now)
+      : events.filter((e) => new Date(e.endDate) < now);
 
   return (
     <>
@@ -209,17 +224,23 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
           </Typography>
         )}
 
-        <Typography variant="h4" gutterBottom>
-          Upcoming Events
-        </Typography>
+        <Tabs
+          value={tabIndex}
+          onChange={(_, newValue) => setTabIndex(newValue)}
+          sx={{ mb: 2 }}
+        >
+          <Tab label="Upcoming Popups" />
+          <Tab label="Past Popups" />
+        </Tabs>
 
         {loading ? (
           <CircularProgress />
-        ) : events.length === 0 ? (
-          <Typography>No events</Typography>
+        ) : filteredEvents.length === 0 ? (
+          <Typography>
+            No {tabIndex === 0 ? "Upcoming" : "Past"} Popups
+          </Typography>
         ) : (
           <Box sx={{ position: "relative", mt: 2 }}>
-            {/* Arrows */}
             <IconButton
               onClick={() => scroll("left")}
               sx={{
@@ -250,7 +271,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               <ArrowForwardIosIcon />
             </IconButton>
 
-            {/* events */}
             <Box
               ref={scrollRef}
               sx={{
@@ -263,7 +283,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                 "&::-webkit-scrollbar": { display: "none" },
               }}
             >
-              {events.map((event) => (
+              {filteredEvents.map((event) => (
                 <Card
                   key={event.id}
                   sx={{
@@ -285,10 +305,21 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                       {event.description}
                     </Typography>
                     {event.Categories && event.Categories.length > 0 && (
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Categories:{" "}
-                        {event.Categories.map((cat) => cat.name).join(", ")}
-                      </Typography>
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{ mt: 1, flexWrap: "wrap" }}
+                      >
+                        {event.Categories.map((cat) => (
+                          <Chip
+                            key={cat.name}
+                            label={cat.name}
+                            variant="outlined"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        ))}
+                      </Stack>
                     )}
                   </CardContent>
                 </Card>

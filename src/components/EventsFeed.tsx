@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import formatDate from "../utils/formatDate";
@@ -14,10 +14,9 @@ import {
   MenuItem,
   FormControl,
   InputLabel,
-  Checkbox,
-  FormControlLabel,
-  Button,
+  Chip,
   IconButton,
+  Button,
 } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
@@ -64,17 +63,12 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    fetchCategories();
-    fetchEvents();
-  }, []);
-
   const fetchCategories = async () => {
     const res = await axios.get("/api/categories");
     setCategories(res.data.map((cat: Category) => cat.name));
   };
 
-  const fetchEvents = async () => {
+  const fetchEvents = useCallback(async () => {
     try {
       const params: any = {};
       if (filters.category) params.category = filters.category;
@@ -83,20 +77,28 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       if (filters.isSober) params.isSober = true;
 
       const res = await axios.get("/api/events", { params });
-      const data = res.data;
+      const data = Array.isArray(res.data) ? res.data : res.data.events;
 
-      if (Array.isArray(data)) {
-        setEvents(data);
-      } else if (Array.isArray(data.events)) {
-        setEvents(data.events);
-      } else {
-        setEvents([]);
-      }
+      const now = new Date();
+      const upcomingEvents = data.filter((event: Event) => {
+        const eventEnd = new Date(event.endDate);
+        return eventEnd >= now;
+      });
+
+      setEvents(upcomingEvents);
     } catch (err) {
       console.error("Error fetching public events:", err);
       setEvents([]);
     }
-  };
+  }, [filters]);
+
+  useEffect(() => {
+    fetchCategories();
+  }, []);
+
+  useEffect(() => {
+    fetchEvents();
+  }, [fetchEvents]);
 
   const scroll = (dir: "left" | "right") => {
     const scrollAmount = 320;
@@ -108,7 +110,9 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     }
   };
 
-  const bookmarkedEventIds = user?.bookmarkedEvents?.map((e) => e.id) || [];
+  const toggleChip = (key: keyof typeof filters) => {
+    setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
+  };
 
   return (
     <Box sx={{ mt: 4, px: 2 }}>
@@ -119,8 +123,8 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           <Select
             value={filters.category}
             label="Category"
-            onChange={(e) =>
-              setFilters((f) => ({ ...f, category: e.target.value }))
+            onChange={(event) =>
+              setFilters((fil) => ({ ...fil, category: event.target.value }))
             }
           >
             <MenuItem value="">All</MenuItem>
@@ -132,51 +136,27 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           </Select>
         </FormControl>
 
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filters.isFree}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, isFree: e.target.checked }))
-              }
-              size="small"
-            />
-          }
+        <Chip
           label="Free"
+          clickable
+          color={filters.isFree ? "primary" : "default"}
+          variant={filters.isFree ? "filled" : "outlined"}
+          onClick={() => toggleChip("isFree")}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filters.isKidFriendly}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, isKidFriendly: e.target.checked }))
-              }
-              size="small"
-            />
-          }
+        <Chip
           label="Kid-Friendly"
+          clickable
+          color={filters.isKidFriendly ? "primary" : "default"}
+          variant={filters.isKidFriendly ? "filled" : "outlined"}
+          onClick={() => toggleChip("isKidFriendly")}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={filters.isSober}
-              onChange={(e) =>
-                setFilters((f) => ({ ...f, isSober: e.target.checked }))
-              }
-              size="small"
-            />
-          }
+        <Chip
           label="Sober"
+          clickable
+          color={filters.isSober ? "primary" : "default"}
+          variant={filters.isSober ? "filled" : "outlined"}
+          onClick={() => toggleChip("isSober")}
         />
-
-        <Button
-          onClick={fetchEvents}
-          variant="contained"
-          size="small"
-          sx={{ height: 30 }}
-        >
-          Filter
-        </Button>
       </Stack>
 
       {/* events */}
