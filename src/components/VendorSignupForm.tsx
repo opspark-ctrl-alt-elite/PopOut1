@@ -65,19 +65,28 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
 
   const navigate = useNavigate();
 
-  // redirect to captcha game if not already beaten
+  // check the captcha state status flags
   useEffect(() => {
+    // if the captcha hasn't been beaten
     if (!captcha.beatCaptcha) {
-      // set the wantsToBeVendor state flag to true
+      // then set the wantsToBeVendor state status flag to true
       setCaptcha({
         beatCaptcha: false,
         wantsToBeVendor: true
       })
+    } // else, if the user just got back from beating the captcha to become a vendor
+    else if (captcha.beatCaptcha && captcha.wantsToBeVendor) {
+      // set "wantsToBeVendor" flag to false to allow for normal playing of the game
+      setCaptcha({
+        beatCaptcha: true,
+        wantsToBeVendor: false
+      })
     }
   }, []);
   useEffect(() => {
+    // if the user hasn't beaten the captcha yet and wants to be a vendor
     if (!captcha.beatCaptcha && captcha.wantsToBeVendor) {
-      // redirect to game
+      // then redirect to game
       navigate("/game");
     }
   }, [ captcha ]);

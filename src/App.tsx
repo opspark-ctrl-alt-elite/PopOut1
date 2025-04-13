@@ -105,7 +105,7 @@ const App: React.FC = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Home user={user} vendors={vendors} />} />
+      <Route path="/" element={<Home user={user} vendors={vendors} captcha={captcha} setCaptcha={setCaptcha}/>} />
       <Route path="/map" element={<Map user={user} />} />
       <Route path="/userprofile" element={<UserProfile user={user} />} />
       <Route path="/edit-profile" element={<EditProfile user={user} />} />
@@ -117,7 +117,7 @@ const App: React.FC = () => {
       <Route path="/active-events" element={<ActiveEvents user={user} />} />
       <Route path="/events" element={<EventsFeed />} />
       
-      <Route path="/game" element={<GameApp />} />
+      <Route path="/game" element={<GameApp captcha={captcha} setCaptcha={setCaptcha} />} />
       /* <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} /> */
 
     </Routes>

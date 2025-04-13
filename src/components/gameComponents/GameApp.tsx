@@ -39,7 +39,17 @@ type Mover = {
   yVel: number;
 };
 
-const GameApp: React.FC = () => {
+type Captcha = {
+  beatCaptcha: boolean;
+  wantsToBeVendor: boolean;
+}
+
+type Props = {
+  captcha: Captcha;
+  setCaptcha: Function;
+};
+
+const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
 
   // initiate references to the important elements
   const boardRef = useRef(null);
@@ -116,6 +126,15 @@ function isColliding(element1, element2) {
     }
   }, []);
 
+  // check for when captcha is updated
+  useEffect(() => {
+    // if someone who wanted to be a vendor beat the game
+    if (captcha.beatCaptcha && captcha.wantsToBeVendor) {
+      // then redirect them to the vendor signup form
+      navigate('/vendor-signup');
+    }
+  })
+
   // update every element on every "frame" to keep things consistent
   const masterUpdate = () => {
     // console.log(boardRef);
@@ -154,10 +173,6 @@ function isColliding(element1, element2) {
     // update the player's position using said player's current position and velocity
     setPlayer(prev => {
 
-      //TODO: just gotta replace the numbers with actaul widths and stuff and make the elements get their widths off of "5vh" or something of the like (and use useRef instead of getElementById)
-      // console.log(score)
-
-
       // set up replacement object
       const replacement = {
         x: prev.x + prev.xVel,
@@ -175,8 +190,17 @@ function isColliding(element1, element2) {
 
           // if the score is at the goal score
           if (prev === 3) {
-            // then give access to app and display winning modal
-            setOpen(true);
+            // check if this is for a captcha
+            if (captcha.wantsToBeVendor && !captcha.beatCaptcha) {
+              // if so, then set captcha.beatCaptcha to true and later redirect back to the vendor signup form
+              setCaptcha({
+                beatCaptcha: true,
+                wantsToBeVendor: true
+              });
+            } else {
+              // else, display winning modal
+              setOpen(true);
+            }
           }
           return prev;
         });
@@ -259,9 +283,10 @@ function isColliding(element1, element2) {
 
   return (
     <Container>
-      <Typography variant="h4">Make the big blue square touch the small red square.</Typography>
+      <Typography variant="h5">{captcha.wantsToBeVendor ? "Captcha" : "Touchin' Squares"}</Typography>
+      <Typography variant="body2">Make the big blue square touch the small red square.</Typography>
       <Typography>Score: {score} / 3</Typography>
-      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "70vh" }}>
+      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "60vh" }}>
         {/* <GamePlayer /> */}
         <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
         <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>

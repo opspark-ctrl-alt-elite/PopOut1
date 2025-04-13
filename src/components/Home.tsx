@@ -39,12 +39,19 @@ type Vendors = {
   updatedAt: any;
 }[];
 
+type Captcha = {
+  beatCaptcha: boolean;
+  wantsToBeVendor: boolean;
+}
+
 type Props = {
   user: User | null;
   vendors: Vendors | null;
+  captcha: Captcha;
+  setCaptcha: Function;
 };
 
-const Home: React.FC<Props> = ({ user, vendors }) => {
+const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [unreadCount, setUnreadCount] = useState(0);
@@ -54,6 +61,22 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
       setNotifications((prev) => [payload.notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
     });
+
+    // create an interval to call changeColorInd every half second
+    const interval = setInterval(changeColorInd, 500);
+
+    // set captcha's "wantsToBeVendor" flag to false to allow for cancelling out of the captcha game
+    setCaptcha((prev: Captcha) => {
+      return {
+        beatCaptcha: prev.beatCaptcha,
+        wantsToBeVendor: false
+      }
+    })
+
+    // return a callback function that cleans up (destroys) the interval
+    return () => {
+      clearInterval(interval);
+    }
   }, []);
 
   const handleBellClick = (event: React.MouseEvent<HTMLElement>) => {
@@ -77,17 +100,6 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
   // create index in state for current color for game button
   const [gameButtonColorInd, setGameButtonColorInd] = useState(0);
 
-  // set interval on first render
-  useEffect(() => {
-    // create an interval to call changeColorInd every half second
-    const interval = setInterval(changeColorInd, 500);
-
-    // return a callback function that cleans up (destroys) the interval
-    return () => {
-      clearInterval(interval);
-    }
-    }, []);
-  
     // set the game button color index in state to the next index in the color array
     const changeColorInd = () => {
       setGameButtonColorInd(prev => {
@@ -212,7 +224,7 @@ const Home: React.FC<Props> = ({ user, vendors }) => {
               size="large"
               sx={{ color: colorArray[gameButtonColorInd], borderColor: colorArray[gameButtonColorInd] }}
             >
-              Play Maze Game
+              Play Game
             </Button>
           </Box>
         )}
