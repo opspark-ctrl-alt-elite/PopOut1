@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
 import formatDate from "../utils/formatDate";
+import BookmarkButton from "./BookmarkButton";
 
 import {
   Box,
@@ -37,7 +38,21 @@ type Event = {
   };
 };
 
-const EventsFeed: React.FC = () => {
+type Category = {
+  id: number;
+  name: string;
+};
+
+type User = {
+  id: string;
+  bookmarkedEvents?: Event[];
+};
+
+type Props = {
+  user: User | null;
+};
+
+const EventsFeed: React.FC<Props> = ({ user }) => {
   const [events, setEvents] = useState<Event[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
   const [filters, setFilters] = useState({
@@ -56,7 +71,7 @@ const EventsFeed: React.FC = () => {
 
   const fetchCategories = async () => {
     const res = await axios.get("/api/categories");
-    setCategories(res.data.map((cat: any) => cat.name));
+    setCategories(res.data.map((cat: Category) => cat.name));
   };
 
   const fetchEvents = async () => {
@@ -92,6 +107,8 @@ const EventsFeed: React.FC = () => {
       });
     }
   };
+
+  const bookmarkedEventIds = user?.bookmarkedEvents?.map((e) => e.id) || [];
 
   return (
     <Box sx={{ mt: 4, px: 2 }}>
@@ -249,13 +266,25 @@ const EventsFeed: React.FC = () => {
                   {event.isKidFriendly && "· Kid-Friendly "}
                   {event.isSober && "· Sober"}
                 </Typography>
-                <Button
-                  variant="outlined"
-                  sx={{ mt: 2 }}
-                  onClick={() => alert(`TODO: Show details for ${event.title}`)}
-                >
-                  View Details
-                </Button>
+
+                <Stack direction="row" spacing={1} mt={2}>
+                  <Button
+                    variant="outlined"
+                    onClick={() =>
+                      alert(`TODO: Show details for ${event.title}`)
+                    }
+                  >
+                    View Details
+                  </Button>
+                  {user && (
+                    <BookmarkButton
+                      userId={user.id}
+                      eventId={event.id}
+                      isBookmarked={bookmarkedEventIds.includes(event.id)}
+                      onToggle={() => {}}
+                    />
+                  )}
+                </Stack>
               </CardContent>
             </Card>
           ))}
