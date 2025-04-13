@@ -52,7 +52,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         x: prev.x,
         y: prev.y,
         xVel: prev.xVel,
-        yVel: -5
+        yVel: -10
       };
     });
   }
@@ -80,7 +80,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         x: prev.x,
         y: prev.y,
         xVel: prev.xVel,
-        yVel: 5
+        yVel: 10
       };
     });
   }
@@ -107,7 +107,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
       return {
         x: prev.x,
         y: prev.y,
-        xVel: -5,
+        xVel: -10,
         yVel: prev.yVel
       };
     });
@@ -135,7 +135,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
       return {
         x: prev.x,
         y: prev.y,
-        xVel: 5,
+        xVel: 10,
         yVel: prev.yVel
       };
     });

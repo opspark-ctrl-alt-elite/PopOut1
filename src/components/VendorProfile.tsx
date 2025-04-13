@@ -171,7 +171,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
 
       // update the user in state to reflect vendor status
       await getUser();
-      
+
       getVendor();
     } catch (err) {
       console.error("Error deleting vendor record: ", err);
