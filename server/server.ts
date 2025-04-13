@@ -18,6 +18,7 @@ import imageRoutes from './routes/imageRoutes';
 import notificationRoutes from './routes/notificationRoutes';
 import vendorSpotlightRouter from './routes/vendorSpotlightRoutes';
 import reviewRoutes from './routes/reviewRoutes';
+import userBookmarkRoutes from './routes/userBookmarkRoutes';
 
 dotenv.config();
 const app = express();
@@ -57,6 +58,8 @@ app.use('/api/images', imageRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api', reviewRoutes);
 app.use('/vendors', reviewRoutes);
+app.use('/api', userBookmarkRoutes);
+app.use('/users', userBookmarkRoutes);
 
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);

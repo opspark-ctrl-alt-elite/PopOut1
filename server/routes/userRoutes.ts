@@ -3,6 +3,7 @@ import User from '../models/User';
 import { Category } from '../models/Category';
 import router from './authRoutes';
 import Vendor from '../models/Vendor';
+import Event from '../models/EventModel';
 
 const allowedCategories = [
   'Food & Drink',
@@ -160,94 +161,7 @@ router.patch("/:userId", (req, res) => {
     }
   });
 
-// POST /user/me - create a user if it doesnt exist (uses req.user from Google)
-// router.post('/user/me', (req, res) => {
-//   const user = req.user as User;
-//   if (!user) return res.status(401).send({ error: 'Not logged in' });
 
-//   const { categories, location, is_vendor } = req.body;
-
-//   // Validate categories and vendor type
-//   if (categories && !allowedCategories.includes(categories)) {
-//     return res.status(400).send({ error: 'Invalid category value.' });
-//   }
-
-//   if (is_vendor !== undefined && typeof is_vendor !== 'boolean') {
-//     return res.status(400).send({ error: '`is_vendor` must be a boolean.' });
-//   }
-
-//   // Find or create user
-//   User.findOne({ where: { email: user.email } })
-//     .then((existingUser: User | null) => {
-//       if (existingUser) {
-//         res
-//           .status(200)
-//           .send({ message: 'User already exists', user: existingUser });
-//         return;
-//       }
-
-//       return User.create({
-//         google_id: user.id,
-//         email: user.email,
-//         name: user.name,
-//         profile_picture: user.profile_picture ?? null,
-//         // categories,
-//         location,
-//         is_vendor: is_vendor ?? false
-//       }).then(newUser => {
-//         res.status(201).send({ message: 'User created', user: newUser });
-//       });
-//     })
-//     .catch(err => {
-//       res
-//         .status(500)
-//         .send({ error: 'Failed to create/find user', details: err });
-//     });
-// });
-
-// PATCH /user/me - update user preferences
-// router.patch('/user/me', (req, res) => {
-//   const user = req.user as User;
-//   if (!user) return res.status(401).send({ error: 'Not logged in' });
-
-//   const { categories, location, is_vendor } = req.body;
-
-//   if (categories && !allowedCategories.includes(categories)) {
-//     return res.status(400).send({ error: 'Invalid category value.' });
-//   }
-
-//   if (is_vendor !== undefined && typeof is_vendor !== 'boolean') {
-//     return res.status(400).send({ error: '`is_vendor` must be a boolean.' });
-//   }
-
-//   User.findOne({ where: { email: user.email } })
-//     .then((dbUser: any) => {
-//       if (!dbUser) {
-//         res.status(404).send({ error: 'User not found in DB' });
-//         return;
-//       }
-
-//       return dbUser.update({
-//         ...(categories !== undefined && { categories }),
-//         ...(location !== undefined && { location }),
-//         ...(is_vendor !== undefined && { is_vendor })
-//       });
-//     })
-//     .then(updatedUser => {
-//       if (!updatedUser) return;
-//       res.status(200).send({
-//         message: 'User preferences updated.',
-//         updated: {
-//           categories: updatedUser?.categories,
-//           location: updatedUser?.location,
-//           is_vendor: updatedUser?.is_vendor
-//         }
-//       });
-//     })
-//     .catch(err => {
-//       res.status(500).send({ error: 'Failed to update user', details: err });
-//     });
-// });
 
 router.post('/user/me', (req, res) => {
   const user = req.user as User;
@@ -477,6 +391,23 @@ router.get('/users/:userId/follows/:vendorId', async (req, res) => {
   } catch (err) {
     console.error('Error checking follow status:', err);
     res.status(500).json({ error: 'Failed to check follow status' });
+  }
+});
+
+
+// bookmark an event
+router.post('/users/:userId/bookmark/:eventId', async (req, res) => {
+  const { userId, eventId } = req.params;
+  try {
+    const user = await User.findByPk(userId);
+    const event = await Event.findByPk(eventId);
+    if (!user || !event) return res.status(404).json({ error: 'Not found' });
+
+    await user.addBookmarkedEvent(event);
+    res.status(200).json({ message: 'Event bookmarked successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to bookmark event' });
   }
 });
 export default router;

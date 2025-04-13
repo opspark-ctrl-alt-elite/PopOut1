@@ -5,6 +5,7 @@ import sequelize from './index';
 import Category from './Category';
 import Vendor from './Vendor';
 import UserFollowsVendor from './UserFollowsVendor';
+import Event from '../models/EventModel';
 
 export class User extends Model<InferAttributes<User>, InferCreationAttributes<User>> {
   // addFollowedVendor(vendor: Vendor) {
@@ -40,6 +41,9 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare addFollowedVendor: BelongsToManyAddAssociationMixin<Vendor, string>;
   declare getFollowedVendors: BelongsToManyGetAssociationsMixin<Vendor>;
   declare removeFollowedVendor: BelongsToManyRemoveAssociationMixin<Vendor, string>;
+  declare addBookmarkedEvent: BelongsToManyAddAssociationMixin<Event, string>;
+  declare getBookmarkedEvents: BelongsToManyGetAssociationsMixin<Event>;
+  declare removeBookmarkedEvent: BelongsToManyRemoveAssociationMixin<Event, string>;
   //  FollowedVendors: any;
   
 
