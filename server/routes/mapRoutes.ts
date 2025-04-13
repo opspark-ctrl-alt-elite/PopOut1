@@ -7,7 +7,7 @@ import Category from "../models/Category";
 
 const router = Router();
 
-router.get("/api/map/events", async (req, res) => {
+router.get("/events", async (req, res) => {
   try {
     const events = await Event.findAll({
       attributes: [
@@ -55,7 +55,7 @@ router.get("/events/nearby", async (req, res) => {
   try {
     const events = await sequelize.query(
       `
-      SELECT 
+      SELECT
         e.id,
         e.title,
         e.latitude,
