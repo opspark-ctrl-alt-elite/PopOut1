@@ -113,6 +113,9 @@ function isColliding(element1, element2) {
   // create state to represent the current score
   const [score, setScore] = useState(0);
 
+  // // initiate reference to the score state
+  // const scoreRef = useRef(score);
+
   // create an interval only on the first time this component is rendered
   useEffect(() => {
 
@@ -132,7 +135,7 @@ function isColliding(element1, element2) {
       // then redirect them to the vendor signup form
       navigate('/vendor-signup');
     }
-  })
+  }, [ captcha ])
 
   // update every element on every "frame" to keep things consistent
   const masterUpdate = () => {
@@ -165,6 +168,15 @@ function isColliding(element1, element2) {
 
     // make sure that the target is still inbounds
     setTarget(prev => {
+
+      // // set up replacement object
+      // const replacement = {
+      //   x: prev.x + prev.xVel,
+      //   y: prev.y + prev.yVel,
+      //   xVel: prev.xVel,
+      //   yVel: prev.yVel
+      // };
+
       return checkOutOfBounds(prev, gameBoardWidth, gameBoardHeight, targetWidth, targetHeight);
     })
 
