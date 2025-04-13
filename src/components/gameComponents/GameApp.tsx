@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import GamePlayer from "./GamePlayer";
 import GameControls from "./GameControls";
 import axios from "axios";
 
@@ -287,7 +286,6 @@ function isColliding(element1, element2) {
       <Typography variant="body2">Make the big blue square touch the small red square.</Typography>
       <Typography>Score: {score} / 3</Typography>
       <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "60vh" }}>
-        {/* <GamePlayer /> */}
         <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
         <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>
       </Box>
