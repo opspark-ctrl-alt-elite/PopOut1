@@ -40,9 +40,20 @@ type Vendor = {
   updatedAt: any;
 };
 
+type Captcha = {
+  beatCaptcha: boolean;
+  wantsToBeVendor: boolean;
+}
+
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [vendors, setVendors] = useState<Vendor[] | null>(null);
+
+  // stores whether or not user has beaten the captcha
+  const [captcha, setCaptcha] = useState<Captcha>({
+    beatCaptcha: false,
+    wantsToBeVendor: false
+  });
 
   // a passed-down function to get and update the user state from children components
   let getUser = async () => {
@@ -95,18 +106,18 @@ const App: React.FC = () => {
 
   return (
     <Routes>
-      <Route path="/" element={<Home user={user} vendors={vendors} />} />
+      <Route path="/" element={<Home user={user} vendors={vendors} captcha={captcha} setCaptcha={setCaptcha}/>} />
       <Route path="/map" element={<Map user={user} />} />
       <Route path="/userprofile" element={<UserProfile user={user} />} />
       <Route path="/edit-profile" element={<EditProfile user={user} />} />
       <Route path="/vendorprofile" element={<VendorProfile user={user} getUser={getUser} />} />
-      <Route path="/vendor-signup" element={<VendorSignupForm user={user} getUser={getUser} />} />
+      <Route path="/vendor-signup" element={<VendorSignupForm user={user} getUser={getUser} captcha={captcha} setCaptcha={setCaptcha}/>} />
       <Route path="/preferences" element={<Preferences setUser={setUser} />} />
       <Route path="/create-event" element={<CreateEvent />} />
       <Route path="/edit-event/:id" element={<EditEvent />} />
       <Route path="/active-events" element={<ActiveEvents user={user} />} />
       <Route path="/events" element={<EventsFeed />} />
-      <Route path="/game" element={<GameApp />} />
+      <Route path="/game" element={<GameApp captcha={captcha} setCaptcha={setCaptcha} />} />
       {/* Vendor Spotlight route */}
       <Route path="/vendor-spotlight" element={<TopVendorSpotlight />} />
       

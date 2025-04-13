@@ -1,6 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import GamePlayer from "./GamePlayer";
 import GameControls from "./GameControls";
 import axios from "axios";
 
@@ -32,15 +31,24 @@ import {
 //   width: number;
 // }
 
-type Player = {
+type Mover = {
   x: number;
   y: number;
   xVel: number;
   yVel: number;
-  // size?: number;
 };
 
-const GameApp: React.FC = () => {
+type Captcha = {
+  beatCaptcha: boolean;
+  wantsToBeVendor: boolean;
+}
+
+type Props = {
+  captcha: Captcha;
+  setCaptcha: Function;
+};
+
+const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
 
   // initiate references to the important elements
   const boardRef = useRef(null);
@@ -63,14 +71,6 @@ const GameApp: React.FC = () => {
     p: 4,
   };
 
-//   // create state to represent the game board
-//   const [board, setBoard] = useState<Board>({
-//     height: document.documentElement.clientHeight,
-//     width: document.documentElement.clientWidth
-//   });
-
-// console.log(document.documentElement.clientWidth)
-
 /*
 
 function isColliding(element1, element2) {
@@ -91,7 +91,7 @@ function isColliding(element1, element2) {
   const [open, setOpen] = useState(false);
 
   // create state to represent the player
-  const [player, setPlayer] = useState<Player>({
+  const [player, setPlayer] = useState<Mover>({
     x: 0,
     y: 0,
     xVel: 0,
@@ -102,7 +102,7 @@ function isColliding(element1, element2) {
   //console.log(player);
 
   // create state to represent the target
-  const [target, setTarget] = useState<Player>({
+  const [target, setTarget] = useState<Mover>({
     x: 200,
     y: 200,
     xVel: 0,
@@ -113,17 +113,32 @@ function isColliding(element1, element2) {
   // create state to represent the current score
   const [score, setScore] = useState(0);
 
+  // // initiate reference to the score state
+  // const scoreRef = useRef(score);
+
   // create an interval only on the first time this component is rendered
   useEffect(() => {
 
-    // call the masterUpdate function every 30 ms
-    setInterval(masterUpdate, 30);
+    // create an interval to call the masterUpdate function every 30 ms
+    const interval = setInterval(masterUpdate, 30);
+
+    // return a callback function that cleans up (destroys) the interval
+    return () => {
+      clearInterval(interval);
+    }
   }, []);
+
+  // check for when captcha is updated
+  useEffect(() => {
+    // if someone who wanted to be a vendor beat the game
+    if (captcha.beatCaptcha && captcha.wantsToBeVendor) {
+      // then redirect them to the vendor signup form
+      navigate('/vendor-signup');
+    }
+  }, [ captcha ])
 
   // update every element on every "frame" to keep things consistent
   const masterUpdate = () => {
-    // console.log("fug");
-
     // console.log(boardRef);
     // console.log(targetRef);
     // console.log(playerRef);
@@ -153,16 +168,21 @@ function isColliding(element1, element2) {
 
     // make sure that the target is still inbounds
     setTarget(prev => {
+
+      // // set up replacement object
+      // const replacement = {
+      //   x: prev.x + prev.xVel,
+      //   y: prev.y + prev.yVel,
+      //   xVel: prev.xVel,
+      //   yVel: prev.yVel
+      // };
+
       return checkOutOfBounds(prev, gameBoardWidth, gameBoardHeight, targetWidth, targetHeight);
     })
 
 
     // update the player's position using said player's current position and velocity
     setPlayer(prev => {
-
-      //TODO: just gotta replace the numbers with actaul widths and stuff and make the elements get their widths off of "5vh" or something of the like (and use useRef instead of getElementById)
-      // console.log(score)
-
 
       // set up replacement object
       const replacement = {
@@ -181,8 +201,17 @@ function isColliding(element1, element2) {
 
           // if the score is at the goal score
           if (prev === 3) {
-            // then give access to app and display winning modal
-            setOpen(true);
+            // check if this is for a captcha
+            if (captcha.wantsToBeVendor && !captcha.beatCaptcha) {
+              // if so, then set captcha.beatCaptcha to true and later redirect back to the vendor signup form
+              setCaptcha({
+                beatCaptcha: true,
+                wantsToBeVendor: true
+              });
+            } else {
+              // else, display winning modal
+              setOpen(true);
+            }
           }
           return prev;
         });
@@ -243,7 +272,7 @@ function isColliding(element1, element2) {
 
   // takes in an element object with x (left) and y (top) properties and makes sure that the number values
   // of said properties stay within the game board
-  const checkOutOfBounds = (replacement: Player, gameBoardWidth: number, gameBoardHeight: number, entWidth: number, entHeight: number) => {
+  const checkOutOfBounds = (replacement: Mover, gameBoardWidth: number, gameBoardHeight: number, entWidth: number, entHeight: number) => {
     // prevent going out of bounds
       // horizontal handling
       if (replacement.x < 0) {
@@ -265,12 +294,12 @@ function isColliding(element1, element2) {
 
   return (
     <Container>
-      <Typography variant="h4">Score: {score} / 3</Typography>
+      <Typography variant="h5">{captcha.wantsToBeVendor ? "Captcha" : "Touchin' Squares"}</Typography>
+      <Typography variant="body2">Make the big blue square touch the small red square.</Typography>
       <Typography>Score: {score} / 3</Typography>
-      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "70vh" }}>
-        {/* <GamePlayer /> */}
-        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: "5vh", height: "5vh" }}></Box>
-        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: "8vh", height: "8vh" }}></Box>
+      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "60vh" }}>
+        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
+        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>
       </Box>
       <Box>
         <GameControls player={player} setPlayer={setPlayer}/>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import ImageUpload from "./ImageUpload";
 
@@ -23,12 +23,19 @@ type User = {
   profile_picture?: string;
 };
 
+type Captcha = {
+  beatCaptcha: boolean;
+  wantsToBeVendor: boolean;
+}
+
 type Props = {
   user: User | null;
   getUser: Function;
+  captcha: Captcha;
+  setCaptcha: Function;
 };
 
-const VendorSignupForm: React.FC<Props> = ({ user, getUser }) => {
+const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha }) => {
   const [formData, setFormData] = useState({
     businessName: "",
     description: "",
@@ -58,13 +65,38 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser }) => {
 
   const navigate = useNavigate();
 
+  // check the captcha state status flags
+  useEffect(() => {
+    // if the captcha hasn't been beaten
+    if (!captcha.beatCaptcha) {
+      // then set the wantsToBeVendor state status flag to true
+      setCaptcha({
+        beatCaptcha: false,
+        wantsToBeVendor: true
+      })
+    } // else, if the user just got back from beating the captcha to become a vendor
+    else if (captcha.beatCaptcha && captcha.wantsToBeVendor) {
+      // set "wantsToBeVendor" flag to false to allow for normal playing of the game
+      setCaptcha({
+        beatCaptcha: true,
+        wantsToBeVendor: false
+      })
+    }
+  }, []);
+  useEffect(() => {
+    // if the user hasn't beaten the captcha yet and wants to be a vendor
+    if (!captcha.beatCaptcha && captcha.wantsToBeVendor) {
+      // then redirect to game
+      navigate("/game");
+    }
+  }, [ captcha ]);
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
     }));
-    console.log(formData); //TODO: ADVISE: TEMP TESTING
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
