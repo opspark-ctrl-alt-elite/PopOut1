@@ -26,7 +26,7 @@ const BookmarkButton: React.FC<Props> = ({
     axios[method](url)
       .then(() => {
         setBookmarked(!bookmarked);
-        onToggle(); // refresh bookmarks if needed
+        onToggle();
       })
       .catch((err) => {
         console.error("Bookmark toggle failed", err);
@@ -34,14 +34,11 @@ const BookmarkButton: React.FC<Props> = ({
   };
 
   return (
-    <>
-      {console.log("Rendering BookmarkButton", { userId, eventId, bookmarked })}
-      <Tooltip title={bookmarked ? "Remove Bookmark" : "Add Bookmark"}>
-        <IconButton onClick={handleToggle} color="primary">
-          {bookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
-        </IconButton>
-      </Tooltip>
-    </>
+    <Tooltip title={bookmarked ? "Remove Bookmark" : "Add Bookmark"}>
+      <IconButton onClick={handleToggle} color="primary">
+        {bookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
+      </IconButton>
+    </Tooltip>
   );
 };
 
