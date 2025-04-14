@@ -60,6 +60,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     isKidFriendly: false,
     isSober: false,
   });
+  const [bookmarkedEventIds, setBookmarkedEventIds] = useState<string[]>([]);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -92,6 +93,21 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     }
   }, [filters]);
 
+  const fetchBookmarkedEventIds = async () => {
+    if (!user) return;
+    try {
+      const res = await axios.get(`/api/users/${user.id}/bookmarked-events`);
+      const bookmarkedIds = res.data.map((event: Event) => event.id);
+      setBookmarkedEventIds(bookmarkedIds);
+    } catch (err) {
+      console.error("Failed to fetch bookmarked event IDs:", err);
+    }
+  };
+
+  const handleToggleBookmark = async () => {
+    await fetchBookmarkedEventIds(); // refresh after toggle
+  };
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -99,6 +115,10 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
+
+  useEffect(() => {
+    fetchBookmarkedEventIds();
+  }, [user]);
 
   const scroll = (dir: "left" | "right") => {
     const scrollAmount = 320;
@@ -116,7 +136,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
   return (
     <Box sx={{ mt: 4, px: 2 }}>
-      {/* filters */}
       <Stack spacing={2} direction="row" flexWrap="wrap" mb={4}>
         <FormControl sx={{ minWidth: 160 }} size="small">
           <InputLabel>Category</InputLabel>
@@ -159,9 +178,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         />
       </Stack>
 
-      {/* events */}
       <Box sx={{ position: "relative" }}>
-        {/* arrows */}
         <IconButton
           onClick={() => scroll("left")}
           sx={{
@@ -192,7 +209,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           <ArrowForwardIosIcon />
         </IconButton>
 
-        {/* scroller */}
         <Box
           ref={scrollRef}
           sx={{
@@ -247,7 +263,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                   {event.isSober && "· Sober"}
                 </Typography>
 
-                <Stack direction="row" spacing={1} mt={2}>
+                <Stack direction="row" spacing={1} mt={2} alignItems="center">
                   <Button
                     variant="outlined"
                     onClick={() =>
@@ -261,7 +277,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                       userId={user.id}
                       eventId={event.id}
                       isBookmarked={bookmarkedEventIds.includes(event.id)}
-                      onToggle={() => {}}
+                      onToggle={handleToggleBookmark}
                     />
                   )}
                 </Stack>
