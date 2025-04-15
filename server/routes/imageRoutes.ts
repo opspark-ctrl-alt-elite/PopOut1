@@ -39,13 +39,14 @@ imageRouter.get("/:foreignKeyName/:foreignKey", async (req, res) => {
   try {
     // find the images associated with the foreign key
     const images = await Image.findAll({ where: { [foreignKeyName]: foreignKey }});
-    if (images === null) {
-      // if no images were found, set the status code to 404
-      res.status(404);
-    } else {
+    // TODO: I made it so that it no longer gives out
+    // if (images === null) {
+    //   // if no images were found, set the status code to 404
+    //   res.status(404);
+    // } else {
       // otherwise, set the status code to 200
       res.status(200);
-    }
+    //}
     // send back the found image records (array)
     res.send(images);
 

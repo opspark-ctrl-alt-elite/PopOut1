@@ -201,6 +201,8 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   // deletes the vendor account
   const deleteVendor = async () => {
     try {
+      // preemptively delete the vendor's uploaded image if there is one
+      await deleteUploadedImage();
       await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
       // update the user in state to reflect vendor status
       await getUser();
