@@ -1,14 +1,37 @@
-import { DataTypes, Model } from 'sequelize';
+import { Model, DataTypes, Optional, Association } from 'sequelize';
 import sequelize from './index';
 import User from './User';
 import Vendor from './Vendor';
 
-class Review extends Model {
-  declare id: string;
-  declare rating: number;
-  declare comment: string | null;
-  declare userId: string;
-  declare vendorId: string;
+interface ReviewAttributes {
+  id: string;
+  rating: number;
+  comment: string | null;
+  userId: string;
+  vendorId: string;
+  createdAt?: Date;
+  updatedAt?: Date;
+}
+
+interface ReviewCreationAttributes extends Optional<ReviewAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
+
+class Review extends Model<ReviewAttributes, ReviewCreationAttributes> implements ReviewAttributes {
+  public id!: string;
+  public rating!: number;
+  public comment!: string | null;
+  public userId!: string;
+  public vendorId!: string;
+  public readonly createdAt!: Date;
+  public readonly updatedAt!: Date;
+
+  // Remove the problematic index signature:
+  // [x: string]: string; // <-- This is what's causing the errors
+
+  // Associations
+  public static associations: {
+    user: Association<Review, User>;
+    vendor: Association<Review, Vendor>;
+  };
 }
 
 Review.init(
@@ -23,39 +46,36 @@ Review.init(
       allowNull: false,
       validate: {
         min: 1,
-        max: 5
-      }
+        max: 5,
+      },
     },
     comment: {
       type: DataTypes.TEXT,
-      allowNull: true
+      allowNull: true,
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: User,
-        key: 'id'
-      }
+        model: 'Users',
+        key: 'id',
+      },
     },
     vendorId: {
       type: DataTypes.UUID,
       allowNull: false,
       references: {
-        model: Vendor,
-        key: 'id'
-      }
-    }
+        model: 'Vendors',
+        key: 'id',
+      },
+    },
   },
   {
     sequelize,
-    modelName: 'review',
-    tableName: 'reviews',
-    timestamps: true
+    modelName: 'Review',
+    tableName: 'Reviews',
+    timestamps: true,
   }
 );
-
-// Associations
-;
 
 export default Review;

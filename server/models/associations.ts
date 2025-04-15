@@ -45,3 +45,5 @@ Vendor.belongsToMany(User, { through: UserFollowsVendor, foreignKey: 'vendorId',
 // bookmark
 User.belongsToMany(Event, { through: 'UserBookmarksEvent', foreignKey: 'userId', as: 'bookmarkedEvents' });
 Event.belongsToMany(User, {through: 'UserBookmarksEvent', foreignKey: 'eventId', as: 'usersWhoBookmarked' });
+
+

@@ -14,6 +14,12 @@ import {
   Tabs,
   Tab,
   Chip,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Divider,
+  Rating,
 } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -54,11 +60,26 @@ type Vendor = {
   email?: string;
 };
 
+type Review = {
+  id: string;
+  rating: number;
+  comment: string;
+  userId: string;
+  user?: {
+    name: string;
+    profile_picture?: string;
+  };
+  createdAt: string;
+};
+
 const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const { vendorId } = useParams<{ vendorId: string }>();
   const [events, setEvents] = useState<Event[]>([]);
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
+  const [avgRating, setAvgRating] = useState<number>(0);
+  const [reviewCount, setReviewCount] = useState<number>(0);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(true);
   const [isFollowing, setIsFollowing] = useState<boolean>(false);
   const [tabIndex, setTabIndex] = useState(0);
@@ -75,63 +96,77 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     }
   };
 
+  const fetchReviews = async () => {
+    try {
+      const res = await axios.get(`/vendors/${vendorId}/reviews`);
+      setReviews(res.data);
+    } catch (err) {
+      console.error("Error fetching reviews:", err);
+    }
+  };
+
+  const fetchAverageRating = async () => {
+    try {
+      const res = await axios.get(`/vendors/${vendorId}/average-rating`);
+      const avg = parseFloat(res.data.averageRating) || 0;
+      const count = parseInt(res.data.reviewCount, 10) || 0;
+      setAvgRating(avg);
+      setReviewCount(count);
+      await fetchReviews();
+    } catch (err) {
+      console.error("Error fetching average rating:", err);
+      setAvgRating(0);
+      setReviewCount(0);
+    }
+  };
+
+  const handleReviewAction = () => {
+    fetchAverageRating();
+  };
+
   useEffect(() => {
-    const fetchVendorEvents = async () => {
+    const fetchData = async () => {
+      if (!vendorId) return;
+      
       try {
-        const res = await axios.get(`/api/events/vendor/${vendorId}`);
-        const sortedEvents = res.data.sort((a: Event, b: Event) => {
-          return (
-            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-          );
+        setLoading(true);
+        const [eventsRes, vendorRes, imageRes] = await Promise.all([
+          axios.get(`/api/events/vendor/${vendorId}`),
+          axios.get(`/api/vendor/public/${vendorId}`),
+          axios.get(`/api/images/vendorId/${vendorId}`),
+        ]);
+
+        const sortedEvents = eventsRes.data.sort((a: Event, b: Event) => {
+          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
         });
         setEvents(sortedEvents);
-      } catch (err) {
-        console.error("err fetching vendor events", err);
-        setEvents([]);
-      }
-    };
+        setVendor(vendorRes.data);
 
-    const fetchVendorInfo = async () => {
-      try {
-        const res = await axios.get(`/api/vendor/public/${vendorId}`);
-        setVendor(res.data);
-      } catch (err) {
-        console.error("err fetching vendor info", err);
-        setVendor(null);
-      }
-    };
+        if (imageRes.data?.length > 0) {
+          setUploadedImage(imageRes.data[0].referenceURL);
+        }
 
-    const fetchVendorImage = async () => {
-      try {
-        const res = await axios.get(`/api/images/vendorId/${vendorId}`);
-        if (res.data?.length > 0) {
-          setUploadedImage(res.data[0].referenceURL);
+        if (user) {
+          try {
+            const followRes = await axios.get(`/users/${user.id}/follows/${vendorId}`);
+            setIsFollowing(followRes.data.isFollowing);
+          } catch (err) {
+            console.error("Error checking follow status", err);
+            setIsFollowing(false);
+          }
         }
       } catch (err) {
-        console.error("err fetching vendor image", err);
+        console.error("Error fetching data:", err);
+        setEvents([]);
+        setVendor(null);
+        setUploadedImage(null);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const checkFollowStatus = async () => {
-      if (!user) return;
-      try {
-        const res = await axios.get(`/users/${user.id}/follows/${vendorId}`);
-        const { isFollowing } = res.data;
-        setIsFollowing(isFollowing);
-      } catch (err) {
-        console.error("Error checking follow status", err);
-        setIsFollowing(false);
-      }
-    };
-
-    if (vendorId) {
-      fetchVendorEvents();
-      fetchVendorInfo();
-      fetchVendorImage();
-      if (user) checkFollowStatus();
-      setLoading(true);
-      setTimeout(() => setLoading(false), 300);
-    }
+    fetchData();
+    fetchAverageRating();
   }, [vendorId, user]);
 
   const handleFollowToggle = () => {
@@ -141,8 +176,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       : `/users/${user.id}/follow/${vendorId}`;
     axios
       .post(route)
-      .then((res) => {
-        console.log(res.data.message);
+      .then(() => {
         setIsFollowing(!isFollowing);
       })
       .catch((err) => console.error("Error toggling follow", err));
@@ -182,25 +216,23 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                     {vendor.email}
                   </Typography>
                 )}
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Rating value={avgRating} precision={0.1} readOnly />
+                  <Typography variant="body2" color="text.secondary">
+                    ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+                  </Typography>
+                </Stack>
               </Box>
             </Stack>
 
             <Stack direction="row" spacing={2} alignItems="center">
               {vendor.facebook && (
-                <IconButton
-                  component="a"
-                  href={vendor.facebook}
-                  target="_blank"
-                >
+                <IconButton component="a" href={vendor.facebook} target="_blank">
                   <FacebookIcon color="primary" />
                 </IconButton>
               )}
               {vendor.instagram && (
-                <IconButton
-                  component="a"
-                  href={vendor.instagram}
-                  target="_blank"
-                >
+                <IconButton component="a" href={vendor.instagram} target="_blank">
                   <InstagramIcon sx={{ color: "#d62976" }} />
                 </IconButton>
               )}
@@ -236,9 +268,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         {loading ? (
           <CircularProgress />
         ) : filteredEvents.length === 0 ? (
-          <Typography>
-            No {tabIndex === 0 ? "Upcoming" : "Past"} Popups
-          </Typography>
+          <Typography>No {tabIndex === 0 ? "Upcoming" : "Past"} Popups</Typography>
         ) : (
           <Box sx={{ position: "relative", mt: 2 }}>
             <IconButton
@@ -255,7 +285,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
             >
               <ArrowBackIosIcon />
             </IconButton>
-
             <IconButton
               onClick={() => scroll("right")}
               sx={{
@@ -270,7 +299,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
             >
               <ArrowForwardIosIcon />
             </IconButton>
-
             <Box
               ref={scrollRef}
               sx={{
@@ -330,12 +358,71 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
 
         <Box sx={{ mt: 4 }}>
           <Typography variant="h4" gutterBottom>
-            Reviews
+            Reviews ({reviewCount})
           </Typography>
+          
+          {reviewCount > 0 && (
+            <Box sx={{ mb: 4 }}>
+              <List sx={{ 
+                maxHeight: 300, 
+                overflow: 'auto',
+                border: '1px solid #eee',
+                borderRadius: 1,
+                p: 1
+              }}>
+                {reviews.map((review) => (
+                  <React.Fragment key={review.id}>
+                    <ListItem alignItems="flex-start">
+                      <ListItemAvatar>
+                        <Avatar 
+                          src={review.user?.profile_picture} 
+                          alt={review.user?.name || 'Anonymous'}
+                        />
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={review.user?.name || 'Anonymous'}
+                        secondary={
+                          <>
+                            <Rating 
+                              value={review.rating} 
+                              precision={0.5} 
+                              readOnly 
+                              size="small"
+                            />
+                            {review.comment && (
+                              <Typography
+                                component="span"
+                                variant="body2"
+                                color="text.primary"
+                                display="block"
+                              >
+                                {review.comment}
+                              </Typography>
+                            )}
+                            <Typography variant="caption">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </Typography>
+                          </>
+                        }
+                      />
+                    </ListItem>
+                    <Divider variant="inset" component="li" />
+                  </React.Fragment>
+                ))}
+              </List>
+            </Box>
+          )}
+
           {vendorId && (
             <>
               {user ? (
-                <ReviewComponent vendorId={vendorId} currentUserId={user.id} />
+                <ReviewComponent
+                  vendorId={vendorId}
+                  currentUserId={user.id}
+                  onReviewAdded={handleReviewAction}
+                  onReviewUpdated={handleReviewAction}
+                  onReviewDeleted={handleReviewAction}
+                />
               ) : (
                 <Typography variant="body1">
                   Please sign in to add your review.
