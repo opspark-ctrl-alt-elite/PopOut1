@@ -1,10 +1,18 @@
-// ReviewComponent.tsx
 import React, { useState, useEffect, FormEvent } from 'react';
 import axios from 'axios';
-import Rating from '@mui/material/Rating';
+import {
+  Box,
+  Typography,
+  Rating,
+  TextField,
+  Button,
+  Stack,
+  Divider,
+  CircularProgress,
+  Alert,
+} from '@mui/material';
 
-// Define the Review type based on the API response structure.
-export interface Review {
+interface Review {
   id?: string;
   rating: number;
   comment: string;
@@ -14,49 +22,40 @@ export interface Review {
   updatedAt?: string;
 }
 
-// Component props include vendorId and currentUserId to control per-user rating.
 interface ReviewComponentProps {
   vendorId: string;
   currentUserId: string;
-  initialReviews?: Review[];
-  onReviewAdded?: (review: Review) => void;
+  onReviewAdded?: () => void;
+  onReviewUpdated?: () => void;
+  onReviewDeleted?: () => void;
 }
 
 const ReviewComponent: React.FC<ReviewComponentProps> = ({
   vendorId,
   currentUserId,
-  initialReviews = [],
   onReviewAdded,
+  onReviewUpdated,
+  onReviewDeleted,
 }) => {
-  // Local state for reviews, current user's review, form inputs, loading and error handling.
-  const [reviews, setReviews] = useState<Review[]>(initialReviews);
+  const [reviews, setReviews] = useState<Review[]>([]);
   const [userReview, setUserReview] = useState<Review | null>(null);
-  const [rating, setRating] = useState<number | null>(null);
-  const [comment, setComment] = useState<string>(''); // Allow empty comment.
+  const [rating, setRating] = useState<number>(0);
+  const [comment, setComment] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  // Fetch reviews from the API and update local state.
   const fetchReviews = async () => {
     try {
       const response = await axios.get(`/vendors/${vendorId}/reviews`);
-
-      // Ensure we work with an array.
-      let reviewsArray: Review[] = [];
-      if (Array.isArray(response.data)) {
-        reviewsArray = response.data;
-      } else if (response.data && Array.isArray(response.data.reviews)) {
-        reviewsArray = response.data.reviews;
-      }
-
+      const reviewsArray = Array.isArray(response.data) ? response.data : 
+                         (response.data?.reviews ? response.data.reviews : []);
+      
       setReviews(reviewsArray);
-
-      // Determine if the current user already has a review.
       const existingReview = reviewsArray.find(
         (review) => review.userId === currentUserId
       ) || null;
+      
       setUserReview(existingReview);
-
       if (existingReview) {
         setRating(existingReview.rating);
         setComment(existingReview.comment);
@@ -64,7 +63,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
         setRating(0);
         setComment('');
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching reviews:', err);
       setError('Failed to fetch reviews. Please try again later.');
     }
@@ -74,72 +73,54 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
     if (vendorId) {
       fetchReviews();
     }
-  }, [vendorId]);
+  }, [vendorId, currentUserId]);
 
-  // Handle form submission: Create a new review or update the existing one.
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
+    if (!rating) {
+      setError('Please provide a rating');
+      return;
+    }
+
     setLoading(true);
     setError(null);
 
-    // The payload always includes the rating and the comment (which may be an empty string).
-    const payload = { rating, comment };
-
     try {
-      if (userReview && userReview.id) {
-        // Update existing review via PUT.
-        const response = await axios.put(
+      if (userReview?.id) {
+        // Update existing review
+        await axios.put(
           `/vendors/${vendorId}/reviews/${userReview.id}`,
-          payload
+          { rating, comment }
         );
-        const updatedReview: Review = response.data;
-        setUserReview(updatedReview);
-        setReviews((prevReviews) =>
-          prevReviews.map((review) =>
-            review.id === updatedReview.id ? updatedReview : review
-          )
-        );
-        if (onReviewAdded) {
-          onReviewAdded(updatedReview);
-        }
+        if (onReviewUpdated) onReviewUpdated();
       } else {
-        // Create new review via POST.
-        const response = await axios.post(`/vendors/${vendorId}/reviews`, payload);
-        const newReview: Review = response.data;
-        setUserReview(newReview);
-        setReviews((prevReviews) => [newReview, ...prevReviews]);
-        if (onReviewAdded) {
-          onReviewAdded(newReview);
-        }
+        // Create new review
+        await axios.post(
+          `/vendors/${vendorId}/reviews`,
+          { rating, comment }
+        );
+        if (onReviewAdded) onReviewAdded();
       }
-    } catch (err: any) {
+      await fetchReviews();
+    } catch (err) {
       console.error('Error submitting review:', err);
-      if (err.response && err.response.data && err.response.data.error) {
-        setError(err.response.data.error);
-      } else {
-        setError('Failed to submit review. Please try again.');
-      }
+      setError(err.response?.data?.error || 'Failed to submit review. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  // Handle delete action for the current user's review.
   const handleDelete = async () => {
-    if (!userReview || !userReview.id) return;
+    if (!userReview?.id) return;
+    
     setLoading(true);
     setError(null);
 
     try {
       await axios.delete(`/vendors/${vendorId}/reviews/${userReview.id}`);
-      // Remove the deleted review from state.
-      setReviews(prevReviews =>
-        prevReviews.filter(review => review.id !== userReview.id)
-      );
-      setUserReview(null);
-      setRating(0);
-      setComment('');
-    } catch (err: any) {
+      if (onReviewDeleted) onReviewDeleted();
+      await fetchReviews();
+    } catch (err) {
       console.error('Error deleting review:', err);
       setError('Failed to delete review. Please try again.');
     } finally {
@@ -148,103 +129,90 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
   };
 
   return (
-    <div className="review-component">
-      <h2>Reviews</h2>
+    <Box>
+      <Typography variant="h6" gutterBottom>
+        {userReview ? 'Update Your Review' : 'Add Your Review'}
+      </Typography>
+
       {error && (
-        <div className="error-message" style={{ color: 'red' }}>
+        <Alert severity="error" sx={{ mb: 2 }}>
           {error}
-        </div>
+        </Alert>
       )}
 
-      {/* Review submission form */}
-      <form onSubmit={handleSubmit} style={{ marginBottom: '1rem' }}>
-        <div style={{ marginBottom: '1rem' }}>
-          <label htmlFor="rating" style={{ marginRight: '0.5rem' }}>
-            Rating:
-          </label>
-          <Rating
-            name="rating"
-            value={rating || 0}
-            onChange={(event, newValue) => {
-              setRating(newValue);
-            }}
-            precision={1}
-            max={5}
-          />
-        </div>
-        <div style={{ marginBottom: '1rem' }}>
-          <label
-            htmlFor="comment"
-            style={{ display: 'block', marginBottom: '0.25rem' }}
-          >
-            Comment (optional):
-          </label>
-          <textarea
-            id="comment"
-            name="comment"
+      <Box component="form" onSubmit={handleSubmit} sx={{ mb: 3 }}>
+        <Stack spacing={2}>
+          <Box>
+            <Typography component="legend">Rating</Typography>
+            <Rating
+              value={rating}
+              onChange={(_, newValue) => setRating(newValue || 0)}
+              precision={0.5}
+            />
+          </Box>
+          
+          <TextField
+            label="Comment (optional)"
+            multiline
+            rows={4}
             value={comment}
             onChange={(e) => setComment(e.target.value)}
-            rows={4}
-            cols={50}
+            fullWidth
+            variant="outlined"
           />
-        </div>
-        <button
-          type="submit"
-          disabled={loading || rating === null || rating === 0}
-        >
-          {loading
-            ? 'Submitting...'
-            : userReview
-            ? 'Update Review'
-            : 'Submit Review'}
-        </button>
-        {/* Show delete button if the user already has a review */}
-        {userReview && (
-          <button
-            type="button"
-            onClick={handleDelete}
-            disabled={loading}
-            style={{ marginLeft: '1rem' }}
-          >
-            Delete Review
-          </button>
-        )}
-      </form>
 
-      {/* List of reviews */}
-      <div className="review-list">
-        {Array.isArray(reviews) && reviews.length > 0 ? (
-          reviews.map((review) => (
-            <div
-              key={review.id}
-              className="review-item"
-              style={{
-                borderBottom: '1px solid #ccc',
-                padding: '0.5rem 0',
-              }}
+          <Stack direction="row" spacing={2}>
+            <Button
+              type="submit"
+              variant="contained"
+              disabled={loading || rating === 0}
             >
-              <p>
-                <strong>Rating:</strong> {review.rating}
-                <span
-                  style={{
-                    marginLeft: '1rem',
-                    fontStyle: 'italic',
-                    fontSize: '0.9rem',
-                  }}
-                >
-                  {review.createdAt
-                    ? new Date(review.createdAt).toLocaleString()
-                    : ''}
-                </span>
-              </p>
-              {review.comment && <p>{review.comment}</p>}
-            </div>
-          ))
-        ) : (
-          <p>No reviews yet.</p>
-        )}
-      </div>
-    </div>
+              {loading ? <CircularProgress size={24} /> : 
+               userReview ? 'Update Review' : 'Submit Review'}
+            </Button>
+            
+            {userReview && (
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={handleDelete}
+                disabled={loading}
+              >
+                Delete Review
+              </Button>
+            )}
+          </Stack>
+        </Stack>
+      </Box>
+
+      <Divider sx={{ my: 3 }} />
+
+      <Typography variant="h6" gutterBottom>
+        All Reviews
+      </Typography>
+      
+      {reviews.length === 0 ? (
+        <Typography>No reviews yet</Typography>
+      ) : (
+        <Stack spacing={2}>
+          {reviews.map((review) => (
+            <Box key={review.id} sx={{ p: 2, border: '1px solid #eee', borderRadius: 1 }}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Rating value={review.rating} precision={0.5} readOnly />
+                <Typography variant="body2" color="text.secondary">
+                  {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}
+                </Typography>
+              </Stack>
+              {review.comment && (
+                <Typography variant="body1" sx={{ mt: 1 }}>
+                  {review.comment}
+                </Typography>
+              )}
+            </Box>
+          ))}
+        </Stack>
+      )}
+    </Box>
   );
 };
 

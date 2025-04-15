@@ -1,86 +1,46 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import Review from '../models/Review';
 import Vendor from '../models/Vendor';
 import User from '../models/User';
 
 const router = Router();
 
-// Debug endpoint to create test vendor
-router.post('/debug/create-test-vendor', async (req: Request, res: Response) => {
-  try {
-    // First check if vendor already exists
-    const existingVendor = await Vendor.findByPk('d64cfda1-5e4a-4196-a605-309c261b75aa');
-    if (existingVendor) {
-      return res.status(400).json({ 
-        error: 'Vendor already exists',
-        vendor: existingVendor 
-      });
-    }
-
-    // Get any user to associate
-    const user = await User.findOne();
-    if (!user) {
-      return res.status(400).json({ error: 'No users exist in database' });
-    }
-
-    // Create test vendor
-    const vendor = await Vendor.create({
-      id: 'd64cfda1-5e4a-4196-a605-309c261b75aa',
-      businessName: 'Test Vendor',
-      email: `testvendor${Math.random().toString(36).substring(2, 7)}@example.com`,
-      description: 'Automatically created test vendor',
-      userId: user.id
-    });
-
-    res.status(201).json({
-      message: 'Test vendor created successfully',
-      vendor
-    });
-  } catch (error) {
-    console.error('Error creating test vendor:', error);
-    res.status(500).json({ 
-      error: 'Failed to create test vendor',
-      details: error instanceof Error ? error.message : String(error)
-    });
-  }
-});
-
-// Authentication middleware
-const isAuthenticated = (req: Request, res: Response, next: NextFunction) => {
-  if (!req.isAuthenticated || !req.isAuthenticated() || !req.user) {
-    return res.status(401).json({ error: 'Unauthorized' });
-  }
+// Middleware to check authentication
+const authenticate = (req: Request, res: Response, next: Function) => {
+  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
   next();
 };
 
 // Submit a review
-router.post('/:vendorId/reviews', isAuthenticated, async (req: Request, res: Response) => {
+router.post('/:vendorId/reviews', authenticate, async (req: Request, res: Response) => {
   const { vendorId } = req.params;
   const { rating, comment } = req.body;
-  const userId = (req.user as any).id;
+  const userId = (req.user as User).id;
 
   try {
-    // Check if vendor exists
-    const vendor = await Vendor.findOne({ where: { id: vendorId } });
-    if (!vendor) {
-      return res.status(404).json({ 
-        error: 'Vendor not found',
-        receivedId: vendorId
-      });
+    // Validate vendor exists
+    const vendor = await Vendor.findByPk(vendorId);
+    if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
+
+    // Check for existing review
+    const existingReview = await Review.findOne({ where: { vendorId, userId } });
+    if (existingReview) {
+      return res.status(400).json({ error: 'You have already reviewed this vendor' });
     }
-    // Create review
+
+    // Create new review
     const review = await Review.create({ rating, comment, userId, vendorId });
-    return res.status(201).json(review);
+    res.status(201).json(review);
   } catch (error) {
     console.error('Review creation error:', error);
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : String(error)
     });
   }
 });
 
-// Get reviews
+// Get reviews for a vendor
 router.get('/:vendorId/reviews', async (req: Request, res: Response) => {
   const { vendorId } = req.params;
   try {
@@ -88,15 +48,14 @@ router.get('/:vendorId/reviews', async (req: Request, res: Response) => {
       where: { vendorId },
       include: [{
         model: User,
-        // Updated attribute to match the database column name.
         attributes: ['id', 'name', 'profile_picture']
       }],
       order: [['createdAt', 'DESC']]
     });
-    return res.json(reviews);
+    res.json(reviews);
   } catch (error) {
     console.error('Error fetching reviews:', error);
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : String(error)
     });
@@ -104,21 +63,22 @@ router.get('/:vendorId/reviews', async (req: Request, res: Response) => {
 });
 
 // Update a review
-router.put('/:vendorId/reviews/:reviewId', isAuthenticated, async (req: Request, res: Response) => {
+router.put('/:vendorId/reviews/:reviewId', authenticate, async (req: Request, res: Response) => {
   const { vendorId, reviewId } = req.params;
   const { rating, comment } = req.body;
-  const userId = (req.user as any).id;
+  const userId = (req.user as User).id;
 
   try {
-    const review = await Review.findOne({ where: { id: reviewId, vendorId, userId } });
-    if (!review) {
-      return res.status(404).json({ error: 'Review not found or unauthorized' });
-    }
+    const review = await Review.findOne({ 
+      where: { id: reviewId, vendorId, userId } 
+    });
+    if (!review) return res.status(404).json({ error: 'Review not found' });
+
     await review.update({ rating, comment });
-    return res.json(review);
+    res.json(review);
   } catch (error) {
     console.error('Error updating review:', error);
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : String(error)
     });
@@ -126,19 +86,21 @@ router.put('/:vendorId/reviews/:reviewId', isAuthenticated, async (req: Request,
 });
 
 // Delete a review
-router.delete('/:vendorId/reviews/:reviewId', isAuthenticated, async (req: Request, res: Response) => {
+router.delete('/:vendorId/reviews/:reviewId', authenticate, async (req: Request, res: Response) => {
   const { vendorId, reviewId } = req.params;
-  const userId = (req.user as any).id;
+  const userId = (req.user as User).id;
+
   try {
-    const review = await Review.findOne({ where: { id: reviewId, vendorId, userId } });
-    if (!review) {
-      return res.status(404).json({ error: 'Review not found or unauthorized' });
-    }
+    const review = await Review.findOne({ 
+      where: { id: reviewId, vendorId, userId } 
+    });
+    if (!review) return res.status(404).json({ error: 'Review not found' });
+
     await review.destroy();
-    return res.status(204).end();
+    res.status(204).end();
   } catch (error) {
     console.error('Error deleting review:', error);
-    return res.status(500).json({ 
+    res.status(500).json({ 
       error: 'Internal server error',
       details: error instanceof Error ? error.message : String(error)
     });
