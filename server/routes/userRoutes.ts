@@ -4,6 +4,9 @@ import { Category } from '../models/Category';
 import router from './authRoutes';
 import Vendor from '../models/Vendor';
 import Event from '../models/EventModel';
+import Image from '../models/Image';
+import { Op } from 'sequelize';
+import cloudinary from "../../cloudinaryConfig";
 
 const allowedCategories = [
   'Food & Drink',
@@ -12,6 +15,14 @@ const allowedCategories = [
   'Sports & Fitness',
   'Hobbies'
 ];
+
+// types for cascading uploaded image deletion with user
+type DataValues = {
+  publicId: string
+}
+type EventImages = {
+  dataValues: DataValues
+}
 
 // GET /user/me - get full authenticated user from DB
 router.get('/user/me', (req, res) => {
@@ -283,9 +294,60 @@ router.patch('/user/me', async (req, res) => {
 
 
 // DELETE /user/me - WILL DESTROY
-router.delete('/user/me', (req, res) => {
+router.delete('/user/me', async (req, res) => {
   const user = req.user as any;
   if (!user) return res.status(401).send({ error: 'Not logged in' });
+
+  // check if user is a vendor
+  if (user.is_vendor) {
+    // if so, then begin the process of deleting any uploaded Cloudinary images related to the user's vendor and events data
+
+    // get the vendor record associated with the user
+    let vendor = await Vendor.findOne({ where: { userId: user.id } });
+    // console.log("VENDOR X");
+    // console.log(vendor);
+
+    // initialize variables;
+    let vendorImage = null;
+    let eventImages: EventImages[] = [];
+    let publicIds: string[] = [];
+
+    if (vendor) {
+      // get the uploaded image record associated with the vendor (returns null for no image found)
+      vendorImage = await Image.findOne({ where: { vendorId: vendor.dataValues.id } });
+      // console.log("VENDOR IMAGE X");
+      // console.log(vendorImage);
+
+      // get the event records associated with the vendor
+      let events = await Event.findAll({ where: { vendor_id: vendor.dataValues.id } });
+      // console.log("EVENTS X");
+      // console.log(events);
+
+      if (events) {
+        // extract ids from all events
+        let eventIds = events.map(event => event.dataValues.id);
+        // get the uploaded image records associated with each event (returns empty array for no images found)
+        eventImages = await Image.findAll({ where: { eventId: { [Op.in]: eventIds } } });
+        // console.log("EVENT IMAGES X");
+        // console.log(eventImages);
+      }
+    }
+
+    // check to see if any images were found and add their ids to the publicIds array if so
+    if (vendorImage !== null) {
+      publicIds.push(vendorImage.dataValues.publicId);
+    }
+    if (eventImages.length !== 0) {
+      // extract publicId from each event image
+      let eventPublicIds = eventImages.map(eventImage => eventImage.dataValues.publicId);
+      publicIds.concat(eventPublicIds);
+    }
+
+    // delete images from Cloudinary by their publicIds if any associated uploaded images were found
+    if (publicIds.length !== 0) {
+      await cloudinary.api.delete_resources(publicIds);
+    }
+  }
 
   User.destroy({ where: { email: user.email } })
     .then(deleted => {

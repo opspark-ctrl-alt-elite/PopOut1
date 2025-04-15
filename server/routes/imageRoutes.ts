@@ -39,14 +39,13 @@ imageRouter.get("/:foreignKeyName/:foreignKey", async (req, res) => {
   try {
     // find the images associated with the foreign key
     const images = await Image.findAll({ where: { [foreignKeyName]: foreignKey }});
-    // TODO: I made it so that it no longer gives out
-    // if (images === null) {
-    //   // if no images were found, set the status code to 404
-    //   res.status(404);
-    // } else {
+    if (images === null) {
+      // if no images were found, set the status code to 404
+      res.status(404);
+    } else {
       // otherwise, set the status code to 200
       res.status(200);
-    //}
+    }
     // send back the found image records (array)
     res.send(images);
 
@@ -227,27 +226,27 @@ imageRouter.delete("/", async (req, res) => {
     let deletedCloudImages = await cloudinary.api.delete_resources(publicIds);
     console.log(deletedCloudImages);
 
-    if (deletedCloudImages.deleted[''] === 'not_found') {
-      // return 404 error wih message if no images were found in the cloud
-      res.status(404).send("no Images were found in or deleted from the cloud");
-    } else {
-      // otherwise, delete the corresponding images from the images db
-      const deletedRecords = await Image.destroy({
-        where: {
-          publicId: {
-            [Op.in]: publicIds
-          }
+    // delete the corresponding images from the images db
+    const deletedRecords = await Image.destroy({
+      where: {
+        publicId: {
+          [Op.in]: publicIds
         }
-      });
-      if (deletedRecords === 0) {
-        // if an image wasn't found, send a status code of 404 with message
-        res.status(404).send("no Images were found in or deleted from the db");
-      } else {
-        // // otherwise, update the associated user record to make the user's "is_vendor" status false
-        // await User.update({ is_vendor: false }, { where: { id: foreignKey } });
-        // send a status code of 200 with message
-        res.status(200).send("Images successfully deleted from cloud and database");
       }
+    });
+    
+    if (deletedRecords === 0 && deletedCloudImages.deleted[''] === 'not_found') {
+      // if an image wasn't found anywhere, send a status code of 404 with message
+      res.status(404).send("no Images were found in or deleted from the cloud nor db");
+    } else if (deletedRecords === 0) {
+      // if an image wasn't found in the db, send a status code of 404 with message
+      res.status(200).send("Images found and deleted from the cloud, but not the db");
+    } else if (deletedCloudImages.deleted[''] === 'not_found') {
+      // return 404 error wih message if no images were found in the cloud
+      res.status(200).send("Images found and deleted from the db, but not the cloud");
+    } else {
+      // send a status code of 200 with message
+      res.status(200).send("Images successfully deleted from cloud and database");
     }
 
   } catch (err) {

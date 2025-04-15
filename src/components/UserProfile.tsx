@@ -56,52 +56,19 @@ const UserProfile: React.FC<Props> = ({ user }) => {
     );
     if (!confirmed) return;
 
-    // delete associated uploaded images before hand
-    if (user.is_vendor) {
-      // get vendor
-      axios.get(`/api/vendor/${user.id}`, {
-        withCredentials: true,
+    // send request to delete user
+    fetch(`/user/me`, {
+      method: "DELETE",
+      credentials: "include",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Failed to delete user");
+        navigate("/");
       })
-        .then((res) => {
-          axios.get(`/api/images/vendorId/${res.data.id}`, {
-            withCredentials: true,
-          })
-            .then((res) => {
-              console.log("FUUUUSSSS");
-              fetch(`/user/me`, {
-                method: "DELETE",
-                credentials: "include",
-              })
-                .then((res) => {
-                  if (!res.ok) throw new Error("Failed to delete user");
-                  navigate("/");
-                })
-                .catch((err) => {
-                  console.error("Error deleting user:", err);
-                  alert("Failed to delete account.");
-                });
-            })
-            .catch((err) => {
-              console.error("Error finding related vender images during user deletion:", err);
-            })
-        })
-        .catch((err) => {
-          console.error("Error finding related vender during user deletion:", err);
-        });
-    } else {
-      fetch(`/user/me`, {
-        method: "DELETE",
-        credentials: "include",
-      })
-        .then((res) => {
-          if (!res.ok) throw new Error("Failed to delete user");
-          navigate("/");
-        })
-        .catch((err) => {
-          console.error("Error deleting user:", err);
-          alert("Failed to delete account.");
-        });
-    }
+      .catch((err) => {
+        console.error("Error deleting user:", err);
+        alert("Failed to delete account.");
+      });
   };
 
   const handleViewBookmarkedEvents = () => {
