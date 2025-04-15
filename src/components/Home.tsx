@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import axios from "axios";
 import {
   AppBar,
   Toolbar,
@@ -15,10 +16,9 @@ import {
   Card,
   CardContent,
 } from "@mui/material";
-import NotificationsIcon from "@mui/icons-material/Notifications";
 import EventsFeed from "./EventsFeed";
+import Navbar from "./NavBar";
 import { onMessageListener } from "../firebase/onMessageListener";
-import axios from "axios";
 
 type User = {
   id: string;
@@ -157,50 +157,7 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
 
   return (
     <Box>
-      {/* Navbar */}
-      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
-        <Toolbar
-          sx={{
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            gap: 2,
-            px: 2,
-            py: 1,
-          }}
-        >
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Typography variant="h5" fontWeight="bold">
-              PopOut
-            </Typography>
-            {user && (
-              <Button component={Link} to="/map" variant="outlined" size="small">
-                View Map
-              </Button>
-            )}
-          </Stack>
-          {user ? (
-            <Stack direction="row" spacing={2} alignItems="center">
-              <IconButton onClick={handleBellClick}>
-                <Badge badgeContent={unreadCount} color="error">
-                  <NotificationsIcon />
-                </Badge>
-              </IconButton>
-              <IconButton component={Link} to="/userprofile">
-                <Avatar src={user.profile_picture} alt={user.name} />
-              </IconButton>
-              <Button variant="outlined" href="/auth/logout" color="error">
-                Logout
-              </Button>
-            </Stack>
-          ) : (
-            <Button variant="contained" href="/auth/google">
-              Login with Google
-            </Button>
-          )}
-        </Toolbar>
-      </AppBar>
-
-      {/* Notification List */}
+      <Navbar user={user} />
       <Popover
         open={open}
         anchorEl={anchorEl}
@@ -227,7 +184,7 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
         </Box>
       </Popover>
 
-      {/* Events Section */}
+      {/* events */}
       <Container sx={{ mt: 4 }}>
         <EventsFeed user={null} />
         {user && !user.is_vendor && (
@@ -260,7 +217,7 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
         )}
       </Container>
 
-      {/* Vendor Spotlight Section - MOVED TO BOTTOM */}
+      {/* vendor spotlight */}
       <Container sx={{ mt: 4, mb: 4 }}>
         <Typography variant="h4" gutterBottom>
           Vendor Spotlight
