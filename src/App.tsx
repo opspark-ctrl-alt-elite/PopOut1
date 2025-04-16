@@ -116,7 +116,7 @@ const App: React.FC = () => {
       <Route path="/create-event" element={<CreateEvent />} />
       <Route path="/edit-event/:id" element={<EditEvent />} />
       <Route path="/active-events" element={<ActiveEvents user={user} />} />
-      <Route path="/events" element={<EventsFeed />} />
+      <Route path="/events" element={<EventsFeed user={null} />} />
       <Route path="/game" element={<GameApp captcha={captcha} setCaptcha={setCaptcha} />} />
       {/* Vendor Spotlight route */}
       <Route path="/vendor-spotlight" element={<TopVendorSpotlight />} />
