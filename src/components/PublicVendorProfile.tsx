@@ -30,7 +30,6 @@ import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 
-import Navbar from "./NavBar";
 import formatDate from "../utils/formatDate";
 import ReviewComponent from "./Review";
 import EventDetails from "./EventDetails";
@@ -209,7 +208,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
 
   return (
     <>
-      <Navbar user={user} />
       <Box sx={{ p: 4 }}>
         {/* VENDOR HEADER */}
         {vendor && (

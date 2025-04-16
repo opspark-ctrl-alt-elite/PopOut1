@@ -75,35 +75,6 @@ const ActiveEvents: React.FC = () => {
 
   return (
     <Box>
-      {/* navbar */}
-      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
-        <Toolbar sx={{ justifyContent: "space-between", px: 2, py: 1 }}>
-          <Typography
-            component={Link}
-            to="/"
-            variant="h5"
-            fontWeight="bold"
-            sx={{ textDecoration: "none", color: "inherit" }}
-          >
-            PopOut
-          </Typography>
-          {user && (
-            <Stack direction="row" spacing={2} alignItems="center">
-              <IconButton component={Link} to="/userprofile">
-                <Avatar
-                  src={user.profile_picture}
-                  alt={user.name}
-                  sx={{ width: 40, height: 40 }}
-                />
-              </IconButton>
-              <Button variant="outlined" href="/auth/logout" color="error">
-                Logout
-              </Button>
-            </Stack>
-          )}
-        </Toolbar>
-      </AppBar>
-
       {/* profile */}
       {user && (
         <Container maxWidth="md" sx={{ mt: 4 }}>

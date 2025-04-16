@@ -16,8 +16,10 @@ import { registerServiceWorker } from "./firebase/sw-registration";
 import { requestNotificationPermission } from "./firebase/requestPermission";
 import PublicVendorProfile from "./components/PublicVendorProfile";
 import TopVendorSpotlight from "./components/TopVendorSpotlight";
-import NotificationListener from "./components/NotificationListener";
 import axios from "axios";
+import { onMessageListener } from "./firebase/onMessageListener";
+import NotificationListener from "./components/NotificationListener";
+import Navbar from "./components/NavBar";
 
 type User = {
   id: string;
@@ -49,11 +51,13 @@ type Captcha = {
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [vendors, setVendors] = useState<Vendor[] | null>(null);
-
   const [captcha, setCaptcha] = useState<Captcha>({
     beatCaptcha: false,
     wantsToBeVendor: false,
   });
+
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
 
   const getUser = async () => {
     try {
@@ -104,11 +108,39 @@ const App: React.FC = () => {
     }
   }, [user]);
 
+  // fcm
+  useEffect(() => {
+    onMessageListener().then((payload: any) => {
+      setNotifications((prev) => [payload.notification, ...prev]);
+      setUnreadCount((prev) => prev + 1);
+    });
+  }, []);
+
   return (
     <>
       <NotificationListener />
+      <Navbar
+        user={user}
+        notifications={notifications}
+        unreadCount={unreadCount}
+        setUnreadCount={setUnreadCount}
+        setNotifications={setNotifications}
+      />
       <Routes>
-        <Route path="/" element={<Home user={user} vendors={vendors} captcha={captcha} setCaptcha={setCaptcha} />} />
+        <Route path="/"
+          element={
+            <Home
+              user={user}
+              vendors={vendors}
+              captcha={captcha}
+              setCaptcha={setCaptcha}
+              notifications={notifications}
+              unreadCount={unreadCount}
+              setUnreadCount={setUnreadCount}
+              setNotifications={setNotifications}
+            />
+          }
+        />
         <Route path="/map" element={<Map user={user} />} />
         <Route path="/userprofile" element={<UserProfile user={user} />} />
         <Route path="/edit-profile" element={<EditProfile user={user} />} />
