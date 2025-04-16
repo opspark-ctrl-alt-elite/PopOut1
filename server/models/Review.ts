@@ -1,61 +1,57 @@
-import { DataTypes, Model } from 'sequelize';
+// models/Review.ts
+import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import User from './User';
-import Vendor from './Vendor';
 
 class Review extends Model {
+  // Use the 'declare' keyword without initializers so that Sequelize can define getters and setters.
   declare id: string;
   declare rating: number;
-  declare comment: string | null;
+  declare comment: string;
   declare userId: string;
   declare vendorId: string;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Review.init(
   {
     id: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
     },
     rating: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        min: 1,
-        max: 5
-      }
     },
     comment: {
-      type: DataTypes.TEXT,
-      allowNull: true
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: {
-        model: User,
-        key: 'id'
-      }
     },
     vendorId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: {
-        model: Vendor,
-        key: 'id'
-      }
-    }
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
   },
   {
     sequelize,
-    modelName: 'review',
-    tableName: 'reviews',
-    timestamps: true
+    modelName: 'Review',
+    tableName: 'Reviews',
   }
 );
-
-// Associations
-;
 
 export default Review;

@@ -1,8 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import axios from "axios";
 import { Link } from "react-router-dom";
+import EventDetails from "./EventDetails";
 import formatDate from "../utils/formatDate";
-import BookmarkButton from "./BookmarkButton";
+// import BookmarkButton from "./BookmarkButton";
 
 import {
   Box,
@@ -20,6 +21,7 @@ import {
 } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 type Event = {
   id: string;
@@ -31,10 +33,13 @@ type Event = {
   isFree: boolean;
   isKidFriendly: boolean;
   isSober: boolean;
+  location: string;
   vendor: {
     id: string;
     businessName: string;
+    averageRating?: number;
   };
+  Categories?: { name: string }[];
 };
 
 type Category = {
@@ -60,6 +65,10 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     isKidFriendly: false,
     isSober: false,
   });
+  const [bookmarkedEventIds, setBookmarkedEventIds] = useState<string[]>([]);
+
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -92,6 +101,21 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     }
   }, [filters]);
 
+  const fetchBookmarkedEventIds = async () => {
+    if (!user) return;
+    try {
+      const res = await axios.get(`/api/users/${user.id}/bookmarked-events`);
+      const bookmarkedIds = res.data.map((event: Event) => event.id);
+      setBookmarkedEventIds(bookmarkedIds);
+    } catch (err) {
+      console.error("Failed to fetch bookmarked event IDs:", err);
+    }
+  };
+
+  const handleToggleBookmark = async () => {
+    await fetchBookmarkedEventIds(); // refresh after toggle
+  };
+
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -99,6 +123,10 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
   useEffect(() => {
     fetchEvents();
   }, [fetchEvents]);
+
+  useEffect(() => {
+    fetchBookmarkedEventIds();
+  }, [user]);
 
   const scroll = (dir: "left" | "right") => {
     const scrollAmount = 320;
@@ -114,9 +142,18 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     setFilters((prev) => ({ ...prev, [key]: !prev[key] }));
   };
 
+  const handleOpenModal = (event: Event) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedEvent(null);
+  };
+
   return (
     <Box sx={{ mt: 4, px: 2 }}>
-      {/* filters */}
       <Stack spacing={2} direction="row" flexWrap="wrap" mb={4}>
         <FormControl sx={{ minWidth: 160 }} size="small">
           <InputLabel>Category</InputLabel>
@@ -159,9 +196,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         />
       </Stack>
 
-      {/* events */}
       <Box sx={{ position: "relative" }}>
-        {/* arrows */}
         <IconButton
           onClick={() => scroll("left")}
           sx={{
@@ -192,7 +227,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           <ArrowForwardIosIcon />
         </IconButton>
 
-        {/* scroller */}
         <Box
           ref={scrollRef}
           sx={{
@@ -242,34 +276,83 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                   {formatDate(event.startDate, event.endDate)}
                 </Typography>
                 <Typography variant="body2" sx={{ mt: 1 }}>
-                  {event.isFree && "Free "}
-                  {event.isKidFriendly && "· Kid-Friendly "}
-                  {event.isSober && "· Sober"}
+                  {event.description}
                 </Typography>
 
-                <Stack direction="row" spacing={1} mt={2}>
-                  <Button
-                    variant="outlined"
-                    onClick={() =>
-                      alert(`TODO: Show details for ${event.title}`)
-                    }
+                {/* chips */}
+                {(event.Categories?.length ||
+                  event.isFree ||
+                  event.isKidFriendly ||
+                  event.isSober) && (
+                  <Stack
+                    direction="row"
+                    spacing={1}
+                    sx={{ mt: 1, flexWrap: "wrap" }}
                   >
-                    View Details
-                  </Button>
-                  {user && (
-                    <BookmarkButton
-                      userId={user.id}
-                      eventId={event.id}
-                      isBookmarked={bookmarkedEventIds.includes(event.id)}
-                      onToggle={() => {}}
-                    />
-                  )}
-                </Stack>
+                    {event.Categories?.map((cat) => (
+                      <Chip
+                        key={cat.name}
+                        label={cat.name}
+                        variant="outlined"
+                        size="small"
+                        sx={{ fontSize: "0.75rem" }}
+                      />
+                    ))}
+                    {event.isFree && (
+                      <Chip
+                        label="Free"
+                        size="small"
+                        sx={{ fontSize: "0.75rem" }}
+                      />
+                    )}
+                    {event.isKidFriendly && (
+                      <Chip
+                        label="Kid-Friendly"
+                        size="small"
+                        sx={{ fontSize: "0.75rem" }}
+                      />
+                    )}
+                    {event.isSober && (
+                      <Chip
+                        label="Sober"
+                        size="small"
+                        sx={{ fontSize: "0.75rem" }}
+                      />
+                    )}
+                  </Stack>
+                )}
+
+                <Button
+                  variant="contained"
+                  size="small"
+                  startIcon={<VisibilityIcon />}
+                  onClick={() => handleOpenModal(event)}
+                  sx={{
+                    mt: 2,
+                    borderRadius: 2,
+                    textTransform: "none",
+                    boxShadow: 1,
+                    backgroundColor: "#000",
+                    color: "#fff",
+                    "&:hover": {
+                      backgroundColor: "#333",
+                    },
+                  }}
+                >
+                  Details
+                </Button>
               </CardContent>
             </Card>
           ))}
         </Box>
       </Box>
+
+      {/* event details */}
+      <EventDetails
+        open={modalOpen}
+        onClose={handleCloseModal}
+        event={selectedEvent}
+      />
     </Box>
   );
 };
