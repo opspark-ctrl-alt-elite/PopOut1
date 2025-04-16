@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GameControls from "./GameControls";
 import axios from "axios";
@@ -96,7 +96,6 @@ function isColliding(element1, element2) {
     y: 0,
     xVel: 0,
     yVel: 0,
-    // size: 45
   });
 
   //console.log(player);
@@ -107,7 +106,6 @@ function isColliding(element1, element2) {
     y: 200,
     xVel: 0,
     yVel: 0,
-    // size: 30
   });
 
   // create state to represent the current score
@@ -136,6 +134,11 @@ function isColliding(element1, element2) {
       navigate('/vendor-signup');
     }
   }, [ captcha ])
+
+  // update current state values via useEffect side effect
+  // useEffect(() => {
+  //   console.log("skunk")
+  // }, [ score ])
 
   // update every element on every "frame" to keep things consistent
   const masterUpdate = () => {
@@ -166,6 +169,8 @@ function isColliding(element1, element2) {
     let targetX = targetElement?.offsetLeft !== undefined ? targetElement?.offsetLeft : 200;
     let targetY = targetElement?.offsetTop !== undefined ? targetElement?.offsetTop : 200;
 
+    console.log(score);
+
     // make sure that the target is still inbounds
     setTarget(prev => {
 
@@ -176,6 +181,8 @@ function isColliding(element1, element2) {
       //   xVel: prev.xVel,
       //   yVel: prev.yVel
       // };
+
+      // console.log(score);
 
       return checkOutOfBounds(prev, gameBoardWidth, gameBoardHeight, targetWidth, targetHeight);
     })
@@ -239,30 +246,6 @@ function isColliding(element1, element2) {
         replacement.x = 0;
         replacement.y = 0;
         return replacement;
-      }
-
-      /*
-      rect1.top > rect2.bottom ||
-        rect1.right < rect2.left ||
-        rect1.bottom < rect2.top ||
-        rect1.left > rect2.right
-      */
-
-      ////////console.log("inMovePlayer", playerHeight, playerWidth, gameBoardHeight, gameBoardWidth);
-
-      // prevent going out of bounds
-      // horizontal handling
-      if (replacement.x < 0) {
-        replacement.x = 0;
-      } else if (replacement.x + playerWidth > gameBoardWidth) {
-        replacement.x = gameBoardWidth - playerWidth;
-      }
-
-      // vertical handling
-      if (replacement.y < 0) {
-        replacement.y = 0;
-      } else if (replacement.y + playerHeight > gameBoardHeight) {
-        replacement.y = gameBoardHeight - playerHeight;
       }
 
       // set new state for player
