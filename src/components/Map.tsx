@@ -181,10 +181,6 @@ const Map: React.FC<Props> = ({ user }) => {
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar sx={{ flexWrap: "wrap", justifyContent: "space-between", gap: 2, px: 2, py: 1 }}>
           <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-            <Typography component={Link} to="/" variant="h5" fontWeight="bold" sx={{ textDecoration: "none", color: "inherit" }}>
-              PopOut
-            </Typography>
-
             <Autocomplete
               onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
               onPlaceChanged={() => {
@@ -243,12 +239,6 @@ const Map: React.FC<Props> = ({ user }) => {
                 </IconButton>
               )}
             </Stack>
-          </Stack>
-
-          <Stack direction="row" spacing={2} alignItems="center">
-            <IconButton component={Link} to="/userprofile">
-              <Avatar src={user?.profile_picture} alt={user?.name || "User"} />
-            </IconButton>
           </Stack>
         </Toolbar>
       </AppBar>
