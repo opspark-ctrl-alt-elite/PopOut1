@@ -15,11 +15,11 @@ import {
   List,
   ListItem,
   ListItemText,
+  Tooltip,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
-import Tooltip from "@mui/material/Tooltip";
 import { onMessageListener } from "../firebase/onMessageListener";
 
 interface Props {
@@ -198,12 +198,23 @@ const Navbar: React.FC<Props> = ({
               <ListItemText primary="Home" />
             </ListItem>
 
+            {user && !user.is_vendor && (
+              <>
+                <ListItem component={Link} to="/vendor-signup" button={true}>
+                  <ListItemText primary="Become a Vendor" />
+                </ListItem>
+              </>
+            )}
+
+            <ListItem component={Link} to="/game" button={true}>
+              <ListItemText primary="Play Game" />
+            </ListItem>
+
             {user && (
               <>
                 <ListItem component={Link} to="/map" button={true}>
                   <ListItemText primary="View Map" />
                 </ListItem>
-
                 <ListItem component={Link} to="/userprofile" button={true}>
                   <ListItemText primary="Profile" />
                 </ListItem>
