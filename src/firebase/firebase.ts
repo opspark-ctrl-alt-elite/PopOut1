@@ -1,4 +1,3 @@
-
 import { initializeApp } from 'firebase/app';
 import { getMessaging } from 'firebase/messaging';
 
@@ -12,8 +11,6 @@ const firebaseConfig = {
 };
 
 const firebaseApp = initializeApp(firebaseConfig);
-
-// exporting message instance
 const messaging = getMessaging(firebaseApp);
 
 export { firebaseApp, messaging };

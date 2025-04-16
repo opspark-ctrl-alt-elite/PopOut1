@@ -12,6 +12,8 @@ import {
   Popover,
   Badge,
 } from "@mui/material";
+import LogoutIcon from "@mui/icons-material/Logout";
+import Tooltip from "@mui/material/Tooltip";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import { onMessageListener } from "../firebase/onMessageListener";
 
@@ -98,9 +100,11 @@ const Navbar: React.FC<Props> = ({ user }) => {
                 <Avatar src={user.profile_picture} alt={user.name} />
               </IconButton>
 
-              <Button variant="outlined" href="/auth/logout" color="error">
-                Logout
-              </Button>
+              <Tooltip title="Logout">
+                <IconButton href="/auth/logout" color="error" sx={{ ml: 1 }}>
+                  <LogoutIcon />
+                </IconButton>
+              </Tooltip>
             </Stack>
           ) : (
             <Button variant="contained" href="/auth/google">
