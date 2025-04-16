@@ -10,7 +10,7 @@ const forceSync = async () => {
   try {
     // Disable foreign key checks
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0');
-    
+
     // Force sync all models
     await sequelize.sync({ alter: true });
 
