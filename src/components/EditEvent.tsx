@@ -1,3 +1,4 @@
+// EditEvent.tsx
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import {
@@ -15,6 +16,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
+  Box,
 } from "@mui/material";
 import { useParams, useNavigate } from "react-router-dom";
 import { Autocomplete, useLoadScript } from "@react-google-maps/api";
@@ -22,18 +24,17 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
-const libraries: "places"[] = ["places"];
+const libraries: ("places")[] = ["places"];
 
 const EditEvent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
+  // Form state; note the added field "image_publicId" for Cloudinary replacements/deletions.
   const [form, setForm] = useState<any>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-
-  // Modal state for notifications
   const [modal, setModal] = useState<{
     open: boolean;
     title: string;
@@ -46,6 +47,7 @@ const EditEvent = () => {
     libraries,
   });
 
+  // Fetch the event details along with categories.
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -53,7 +55,6 @@ const EditEvent = () => {
           axios.get("/api/events", { withCredentials: true }),
           axios.get("/api/categories"),
         ]);
-
         const event = eventRes.data.find((e: any) => e.id === id);
         if (!event) {
           setModal({
@@ -64,11 +65,13 @@ const EditEvent = () => {
           });
           return;
         }
-
+        // Extend the event data with "image_publicId". If not provided by your DB,
+        // initialize it to an empty string—your first upload will set it.
         setForm({
           ...event,
-          location: "",
+          location: event.location || "",
           categories: event.categories?.map((c: any) => c.name) || [],
+          image_publicId: event.image_publicId || "",
         });
         setAvailableCategories(categoriesRes.data.map((cat: any) => cat.name));
       } catch (err) {
@@ -132,6 +135,58 @@ const EditEvent = () => {
     }
   };
 
+  // Image upload handler for editing:
+  // • If no image exists (i.e. image_publicId is empty), use the "new" route.
+  // • If an image exists, use the replacement route.
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    // The partner's routes expect the file under the field "imageUpload"
+    formData.append("imageUpload", file);
+
+    try {
+      let endpoint = "";
+      if (form.image_publicId) {
+        // Replacement: use the route that accepts publicIds. 
+        endpoint = `/api/images/${form.image_publicId}`;
+      } else {
+        // New upload: use a route keyed by the event.
+        endpoint = `/api/images/event/${id}`;
+      }
+      const response = await axios.post(endpoint, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      // The server returns an array of upload results.
+      const uploadResult = Array.isArray(response.data) ? response.data[0] : response.data;
+      setForm((prev: any) => ({
+        ...prev,
+        image_url: uploadResult.secure_url || uploadResult.url,
+        image_publicId: uploadResult.public_id || prev.image_publicId,
+      }));
+    } catch (err) {
+      console.error("Error uploading image:", err);
+    }
+  };
+
+  // Delete the current image by calling the delete endpoint.
+  const handleDeleteImage = async () => {
+    if (!form.image_publicId) return; // nothing to delete
+    try {
+      await axios.delete("/api/images", {
+        data: { publicIds: [form.image_publicId] },
+      });
+      // Clear out the image information in state.
+      setForm((prev: any) => ({
+        ...prev,
+        image_url: "",
+        image_publicId: "",
+      }));
+    } catch (err) {
+      console.error("Error deleting image:", err);
+    }
+  };
+
   const handleSubmit = async () => {
     if (!validate()) return;
     try {
@@ -143,19 +198,18 @@ const EditEvent = () => {
       await axios.put(`/api/events/${id}`, payload, { withCredentials: true });
       setModal({ open: true, title: "Success", message: "Event updated!", success: true });
     } catch (err) {
-      console.error(err);
+      console.error("Error updating event:", err);
       setModal({ open: true, title: "Error", message: "Error updating event.", success: false });
     }
   };
 
   const handleModalClose = () => {
-    setModal((prev) => ({ ...prev, open: false }));
+    setModal((prev: any) => ({ ...prev, open: false }));
     if (modal.success) {
       navigate("/active-events");
     }
   };
 
-  // Google Maps API render
   if (!isLoaded) return <div>Loading...</div>;
   if (!form) return <Typography>Loading...</Typography>;
 
@@ -181,8 +235,6 @@ const EditEvent = () => {
             fullWidth
             multiline
           />
-
-          {/* Updated Start Date using DateTimePicker */}
           <DateTimePicker
             label="Start Date *"
             value={form.startDate ? new Date(form.startDate) : null}
@@ -199,8 +251,6 @@ const EditEvent = () => {
               <TextField {...params} fullWidth error={!!errors.startDate} helperText={errors.startDate} />
             )}
           />
-
-          {/* Updated End Date using DateTimePicker */}
           <DateTimePicker
             label="End Date *"
             value={form.endDate ? new Date(form.endDate) : null}
@@ -217,7 +267,6 @@ const EditEvent = () => {
               <TextField {...params} fullWidth error={!!errors.endDate} helperText={errors.endDate} />
             )}
           />
-
           <TextField
             name="venue_name"
             label="Venue *"
@@ -227,7 +276,6 @@ const EditEvent = () => {
             helperText={errors.venue_name}
             fullWidth
           />
-
           <Autocomplete
             onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
             onPlaceChanged={handlePlaceChanged}
@@ -242,15 +290,31 @@ const EditEvent = () => {
               fullWidth
             />
           </Autocomplete>
-
-          <TextField
-            name="image_url"
-            label="Image URL (optional)"
-            value={form.image_url}
-            onChange={handleChange}
-            fullWidth
-          />
-
+          <Box>
+            <Button variant="outlined" component="label">
+              {form.image_url ? "Replace Image" : "Upload Image"}
+              <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+            </Button>
+            {form.image_url && (
+              <>
+                <Box mt={2}>
+                  <img
+                    src={form.image_url}
+                    alt="Event"
+                    style={{ maxWidth: "100%", maxHeight: "200px", objectFit: "cover" }}
+                  />
+                </Box>
+                <Button
+                  variant="outlined"
+                  color="error"
+                  onClick={handleDeleteImage}
+                  sx={{ mt: 1 }}
+                >
+                  Delete Image
+                </Button>
+              </>
+            )}
+          </Box>
           <FormControlLabel
             control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />}
             label="Free?"
@@ -263,7 +327,6 @@ const EditEvent = () => {
             control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />}
             label="Sober?"
           />
-
           {availableCategories.length > 0 && (
             <>
               <FormLabel component="legend">Categories</FormLabel>
@@ -283,13 +346,10 @@ const EditEvent = () => {
               </FormGroup>
             </>
           )}
-
           <Button variant="contained" onClick={handleSubmit}>
             Update
           </Button>
         </Stack>
-
-        {/* Non-blocking Modal Notification */}
         <Dialog
           open={modal.open}
           onClose={handleModalClose}
