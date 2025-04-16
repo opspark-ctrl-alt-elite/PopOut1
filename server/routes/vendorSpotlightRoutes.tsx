@@ -1,4 +1,3 @@
-// src/routes/vendorSpotlightRoutes.ts
 import { Router, Request, Response } from 'express';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../models/index';
@@ -8,12 +7,10 @@ const router = Router();
 
 router.get('/spotlight/top3', async (req: Request, res: Response) => {
   try {
-    // Determine the beginning and end of the current month.
     const now = new Date();
     const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0);
     const endOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
 
-    // Raw SQL to compute vendor scores based on reviews within the date range.
     const topVendors = await sequelize.query(
       `
       SELECT v.*, r.score
@@ -25,7 +22,7 @@ router.get('/spotlight/top3', async (req: Request, res: Response) => {
             0
           )
         ) AS score
-        FROM reviews
+        FROM Reviews
         WHERE createdAt BETWEEN :startOfMonth AND :endOfMonth
         GROUP BY vendorId
       ) r ON v.id = r.vendorId

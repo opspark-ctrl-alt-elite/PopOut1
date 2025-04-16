@@ -1,80 +1,56 @@
-import { Model, DataTypes, Optional, Association } from 'sequelize';
+// models/Review.ts
+import { Model, DataTypes } from 'sequelize';
 import sequelize from './index';
-import User from './User';
-import Vendor from './Vendor';
 
-interface ReviewAttributes {
-  id: string;
-  rating: number;
-  comment: string | null;
-  userId: string;
-  vendorId: string;
-  createdAt?: Date;
-  updatedAt?: Date;
-}
-
-interface ReviewCreationAttributes extends Optional<ReviewAttributes, 'id' | 'createdAt' | 'updatedAt'> {}
-
-class Review extends Model<ReviewAttributes, ReviewCreationAttributes> implements ReviewAttributes {
-  public id!: string;
-  public rating!: number;
-  public comment!: string | null;
-  public userId!: string;
-  public vendorId!: string;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
-
-  // Remove the problematic index signature:
-  // [x: string]: string; // <-- This is what's causing the errors
-
-  // Associations
-  public static associations: {
-    user: Association<Review, User>;
-    vendor: Association<Review, Vendor>;
-  };
+class Review extends Model {
+  // Use the 'declare' keyword without initializers so that Sequelize can define getters and setters.
+  declare id: string;
+  declare rating: number;
+  declare comment: string;
+  declare userId: string;
+  declare vendorId: string;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 }
 
 Review.init(
   {
     id: {
       type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
       primaryKey: true,
+      defaultValue: DataTypes.UUIDV4,
     },
     rating: {
       type: DataTypes.INTEGER,
       allowNull: false,
-      validate: {
-        min: 1,
-        max: 5,
-      },
     },
     comment: {
-      type: DataTypes.TEXT,
+      type: DataTypes.STRING,
       allowNull: true,
     },
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: {
-        model: 'Users',
-        key: 'id',
-      },
     },
     vendorId: {
       type: DataTypes.UUID,
       allowNull: false,
-      references: {
-        model: 'Vendors',
-        key: 'id',
-      },
+    },
+    createdAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
+    },
+    updatedAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+      defaultValue: DataTypes.NOW,
     },
   },
   {
     sequelize,
     modelName: 'Review',
     tableName: 'Reviews',
-    timestamps: true,
   }
 );
 
