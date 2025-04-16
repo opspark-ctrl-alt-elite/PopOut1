@@ -29,12 +29,20 @@ interface Props {
     email: string;
     profile_picture?: string;
   } | null;
+  notifications: any[];
+  unreadCount: number;
+  setUnreadCount: React.Dispatch<React.SetStateAction<number>>;
+  setNotifications: React.Dispatch<React.SetStateAction<any[]>>;
 }
 
-const Navbar: React.FC<Props> = ({ user }) => {
-  const [notifications, setNotifications] = useState<any[]>([]);
+const Navbar: React.FC<Props> = ({
+  user,
+  notifications = [],
+  unreadCount,
+  setUnreadCount,
+  setNotifications,
+}) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [unreadCount, setUnreadCount] = useState(0);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -42,7 +50,7 @@ const Navbar: React.FC<Props> = ({ user }) => {
       setNotifications((prev) => [payload.notification, ...prev]);
       setUnreadCount((prev) => prev + 1);
     });
-  }, []);
+  }, [setNotifications, setUnreadCount]);
 
   const handleBellClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -53,6 +61,7 @@ const Navbar: React.FC<Props> = ({ user }) => {
     setAnchorEl(null);
   };
 
+  // side nav
   const toggleDrawer =
     (open: boolean) => (event: React.KeyboardEvent | React.MouseEvent) => {
       if (
@@ -176,7 +185,7 @@ const Navbar: React.FC<Props> = ({ user }) => {
         </Box>
       </Popover>
 
-      {/* side nav */}
+      {/* sidenav */}
       <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
         <Box
           sx={{ width: 250 }}
