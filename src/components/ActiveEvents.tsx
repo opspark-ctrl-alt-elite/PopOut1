@@ -1,3 +1,4 @@
+// ActiveEvents.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -33,6 +34,7 @@ type Event = {
   startDate: string;
   endDate: string;
   venue_name: string;
+  image_url?: string;
   Categories?: { name: string }[];
 };
 
@@ -75,7 +77,7 @@ const ActiveEvents: React.FC = () => {
 
   return (
     <Box>
-      {/* navbar */}
+      {/* Navbar */}
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar sx={{ justifyContent: "space-between", px: 2, py: 1 }}>
           <Typography
@@ -103,17 +105,15 @@ const ActiveEvents: React.FC = () => {
           )}
         </Toolbar>
       </AppBar>
-
-      {/* profile */}
       {user && (
         <Container maxWidth="md" sx={{ mt: 4 }}>
           <Stack
             direction="row"
+            spacing={2}
             alignItems="center"
             justifyContent="space-between"
-            spacing={4}
-            sx={{ mb: 4 }}
             flexWrap="wrap"
+            sx={{ mb: 4 }}
           >
             <Stack direction="row" spacing={2} alignItems="center">
               <Avatar
@@ -130,7 +130,6 @@ const ActiveEvents: React.FC = () => {
                 </Typography>
               </Box>
             </Stack>
-
             <Stack direction="row" spacing={2} alignItems="center">
               <IconButton href="#" sx={{ color: "#1877F2" }} aria-label="Facebook">
                 <FacebookIcon />
@@ -141,20 +140,13 @@ const ActiveEvents: React.FC = () => {
               <IconButton href="#" sx={{ color: "#34A853" }} aria-label="Website">
                 <LanguageIcon />
               </IconButton>
-              <Button
-                variant="outlined"
-                size="small"
-                component={Link}
-                to="/vendorprofile"
-              >
+              <Button variant="outlined" size="small" component={Link} to="/vendorprofile">
                 Back to Vendor Profile
               </Button>
             </Stack>
           </Stack>
         </Container>
       )}
-
-      {/* active events */}
       <Container maxWidth="md" sx={{ mt: 2 }}>
         <Typography variant="h4" gutterBottom>
           My Events
@@ -167,6 +159,15 @@ const ActiveEvents: React.FC = () => {
             events.map((event) => (
               <Card key={event.id}>
                 <CardContent>
+                  {event.image_url && (
+                    <Box mb={2}>
+                      <img
+                        src={event.image_url}
+                        alt={event.title}
+                        style={{ width: '100%', maxHeight: '200px', objectFit: 'cover' }}
+                      />
+                    </Box>
+                  )}
                   <Typography variant="h6">{event.title}</Typography>
                   <Typography variant="body2" color="text.secondary">
                     {event.venue_name}
@@ -175,14 +176,12 @@ const ActiveEvents: React.FC = () => {
                     {new Date(event.startDate).toLocaleString()} —{" "}
                     {new Date(event.endDate).toLocaleString()}
                   </Typography>
-
                   {event.Categories && event.Categories.length > 0 && (
                     <Typography variant="body2" sx={{ mt: 1 }}>
                       Categories:{" "}
                       {event.Categories.map((cat) => cat.name).join(", ")}
                     </Typography>
                   )}
-
                   <Stack direction="row" spacing={2} sx={{ mt: 2 }}>
                     <Button
                       variant="outlined"
