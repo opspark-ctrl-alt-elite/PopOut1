@@ -34,11 +34,11 @@ type Vendor = {
   id: string;
   businessName: string;
   email: string;
-  profilePicture?: string;
   description: string;
   website?: string;
   instagram?: string;
   facebook?: string;
+  profilePicture?: string;
   userId: string;
   createdAt: any;
   updatedAt: any;
@@ -47,11 +47,11 @@ type Vendor = {
 type Fields = {
   businessName?: string;
   email?: string;
-  profilePicture?: any;
   description?: string;
   website?: string;
   instagram?: string;
   facebook?: string;
+  profilePicture?: any;
 };
 
 type User = {
@@ -79,11 +79,11 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   const [fields, setFields] = useState<Fields>({
     businessName: "",
     email: "",
-    profilePicture: "",
     description: "",
     website: "",
     instagram: "",
     facebook: "",
+    profilePicture: ""
   });
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
     null
@@ -116,7 +116,27 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   }, [ user ]);
 
   useEffect(() => {
-    if (vendor) getUploadedImage();
+    if (vendor) {
+      getUploadedImage();
+      const {
+        businessName,
+        email,
+        description,
+        website,
+        instagram,
+        facebook,
+        profilePicture
+      } = vendor;
+      setFields({
+        businessName,
+        email,
+        description,
+        website: website ? website : "",
+        instagram: instagram ? instagram : "",
+        facebook: facebook ? facebook : "",
+        profilePicture: profilePicture ? profilePicture : "",
+      })
+    }
   }, [vendor]);
 
   // gets the vendor associated with the user
