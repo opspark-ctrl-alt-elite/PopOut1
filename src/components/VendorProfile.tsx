@@ -106,8 +106,14 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   };
 
   useEffect(() => {
-    getVendor();
+    console.log(user);
+    console.log("DONKEY")
+    getUser();
   }, []);
+
+  useEffect(() => {
+    getVendor();
+  }, [ user ]);
 
   useEffect(() => {
     if (vendor) getUploadedImage();
@@ -204,9 +210,8 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
       // preemptively delete the vendor's uploaded image if there is one
       await deleteUploadedImage();
       await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
-      // update the user in state to reflect vendor status
-      await getUser();
-      getVendor();
+      // update the user in state to reflect vendor status (will update vendor state as side effect)
+      getUser();
     } catch (err) {
       console.error("Error deleting vendor record: ", err);
     }

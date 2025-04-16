@@ -304,8 +304,6 @@ router.delete('/user/me', async (req, res) => {
 
     // get the vendor record associated with the user
     let vendor = await Vendor.findOne({ where: { userId: user.id } });
-    // console.log("VENDOR X");
-    // console.log(vendor);
 
     // initialize variables;
     let vendorImage = null;
@@ -315,21 +313,15 @@ router.delete('/user/me', async (req, res) => {
     if (vendor) {
       // get the uploaded image record associated with the vendor (returns null for no image found)
       vendorImage = await Image.findOne({ where: { vendorId: vendor.dataValues.id } });
-      // console.log("VENDOR IMAGE X");
-      // console.log(vendorImage);
 
       // get the event records associated with the vendor
       let events = await Event.findAll({ where: { vendor_id: vendor.dataValues.id } });
-      // console.log("EVENTS X");
-      // console.log(events);
 
       if (events) {
         // extract ids from all events
         let eventIds = events.map(event => event.dataValues.id);
         // get the uploaded image records associated with each event (returns empty array for no images found)
         eventImages = await Image.findAll({ where: { eventId: { [Op.in]: eventIds } } });
-        // console.log("EVENT IMAGES X");
-        // console.log(eventImages);
       }
     }
 
