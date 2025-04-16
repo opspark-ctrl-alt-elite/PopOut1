@@ -144,3 +144,7 @@ public/uploadedImages/vendorImages/*
 # backups
 server/routes/imageBackup.ts
 src/components/backupImgUp.tsx
+
+# ignore private keys
+service-account-key.json
+encoded-key.txt

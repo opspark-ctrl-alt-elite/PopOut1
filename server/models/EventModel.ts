@@ -33,10 +33,6 @@ Event.init(
       type: DataTypes.TEXT,
       allowNull: false,
     },
-    // category: {
-    //   type: DataTypes.ENUM("Food & Drink", "Art", "Music", "Sports & Fitness", "Hobbies"),
-    //   allowNull: false,
-    // },
     startDate: {
       type: DataTypes.DATE,
       allowNull: false,
@@ -48,6 +44,10 @@ Event.init(
     venue_name: {
       type: DataTypes.STRING,
       allowNull: false,
+    },
+    location: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     latitude: {
       type: DataTypes.FLOAT,
@@ -81,6 +81,5 @@ Event.init(
     timestamps: true,
   }
 );
-
 
 export default Event;

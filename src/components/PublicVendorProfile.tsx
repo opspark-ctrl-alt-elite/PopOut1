@@ -26,10 +26,13 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import LanguageIcon from "@mui/icons-material/Language";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
+import PersonRemoveIcon from "@mui/icons-material/PersonRemove";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
-import Navbar from "./NavBar";
 import formatDate from "../utils/formatDate";
 import ReviewComponent from "./Review";
+import EventDetails from "./EventDetails";
 
 type Props = {
   user: {
@@ -47,10 +50,20 @@ type Event = {
   startDate: string;
   endDate: string;
   venue_name: string;
+  location: string;
+  isFree: boolean;
+  isKidFriendly: boolean;
+  isSober: boolean;
   Categories?: { name: string }[];
+  vendor: {
+    id: string;
+    businessName: string;
+    averageRating?: number;
+  };
 };
 
 type Vendor = {
+  id?: string;
   businessName: string;
   description: string;
   profilePicture?: string;
@@ -80,9 +93,11 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const [avgRating, setAvgRating] = useState<number>(0);
   const [reviewCount, setReviewCount] = useState<number>(0);
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [isFollowing, setIsFollowing] = useState<boolean>(false);
+  const [isFollowing, setIsFollowing] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -96,91 +111,94 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     }
   };
 
-  const fetchReviews = async () => {
-    try {
-      const res = await axios.get(`/vendors/${vendorId}/reviews`);
-      setReviews(res.data);
-    } catch (err) {
-      console.error("Error fetching reviews:", err);
-    }
+  const handleOpenModal = (event: Event) => {
+    setSelectedEvent(event);
+    setModalOpen(true);
   };
 
-  const fetchAverageRating = async () => {
+  const handleCloseModal = () => {
+    setModalOpen(false);
+    setSelectedEvent(null);
+  };
+
+  const fetchData = async () => {
+    if (!vendorId) return;
     try {
-      const res = await axios.get(`/vendors/${vendorId}/average-rating`);
-      const avg = parseFloat(res.data.averageRating) || 0;
-      const count = parseInt(res.data.reviewCount, 10) || 0;
+      const [vendorRes, imageRes, eventRes, ratingRes] = await Promise.all([
+        axios.get(`/api/vendor/public/${vendorId}`),
+        axios.get(`/api/images/vendorId/${vendorId}`),
+        axios.get(`/api/events/vendor/${vendorId}`),
+        axios.get(`/vendors/${vendorId}/average-rating`),
+      ]);
+
+      const vendorData = vendorRes.data;
+      const vendorWithId = { ...vendorData, id: vendorId };
+
+      setVendor(vendorWithId);
+
+      const eventsWithVendor = eventRes.data.map((e: Event) => ({
+        ...e,
+        vendor: vendorWithId,
+      }));
+
+      const sorted = eventsWithVendor.sort(
+        (a, b) =>
+          new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+      );
+
+      setEvents(sorted);
+
+      if (imageRes.data?.length > 0) {
+        setUploadedImage(imageRes.data[0].referenceURL);
+      }
+
+      const avg = parseFloat(ratingRes.data.averageRating) || 0;
+      const count = parseInt(ratingRes.data.reviewCount, 10) || 0;
       setAvgRating(avg);
       setReviewCount(count);
-      await fetchReviews();
+
+      const reviewRes = await axios.get(`/vendors/${vendorId}/reviews`);
+      setReviews(reviewRes.data);
     } catch (err) {
-      console.error("Error fetching average rating:", err);
-      setAvgRating(0);
-      setReviewCount(0);
+      console.error("Error fetching data:", err);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const handleReviewAction = () => {
-    fetchAverageRating();
+  const handleFollowToggle = async () => {
+    console.log("follow unfollow clicked");
+    if (!user) return;
+
+    const route = isFollowing
+      ? `/api/users/${user.id}/unfollow/${vendorId}`
+      : `/api/users/${user.id}/follow/${vendorId}`;
+
+    console.log("req", route);
+
+    try {
+      const response = await axios.post(route);
+      console.log("res", response.data);
+
+      setIsFollowing(!isFollowing);
+    } catch (err: any) {
+      console.error("err toggle follow", err?.response?.data || err.message);
+    }
+  };
+
+  const handleReviewUpdate = () => {
+    fetchData();
   };
 
   useEffect(() => {
-    const fetchData = async () => {
-      if (!vendorId) return;
-      
-      try {
-        setLoading(true);
-        const [eventsRes, vendorRes, imageRes] = await Promise.all([
-          axios.get(`/api/events/vendor/${vendorId}`),
-          axios.get(`/api/vendor/public/${vendorId}`),
-          axios.get(`/api/images/vendorId/${vendorId}`),
-        ]);
-
-        const sortedEvents = eventsRes.data.sort((a: Event, b: Event) => {
-          return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
-        });
-        setEvents(sortedEvents);
-        setVendor(vendorRes.data);
-
-        if (imageRes.data?.length > 0) {
-          setUploadedImage(imageRes.data[0].referenceURL);
-        }
-
-        if (user) {
-          try {
-            const followRes = await axios.get(`/users/${user.id}/follows/${vendorId}`);
-            setIsFollowing(followRes.data.isFollowing);
-          } catch (err) {
-            console.error("Error checking follow status", err);
-            setIsFollowing(false);
-          }
-        }
-      } catch (err) {
-        console.error("Error fetching data:", err);
-        setEvents([]);
-        setVendor(null);
-        setUploadedImage(null);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-    fetchAverageRating();
+    if (user) {
+      axios
+        .get(`/api/users/${user.id}/follows/${vendorId}`)
+        .then((res) => setIsFollowing(res.data.isFollowing))
+        .catch(() => setIsFollowing(false));
+    }
   }, [vendorId, user]);
-
-  const handleFollowToggle = () => {
-    if (!user) return;
-    const route = isFollowing
-      ? `/users/${user.id}/unfollow/${vendorId}`
-      : `/users/${user.id}/follow/${vendorId}`;
-    axios
-      .post(route)
-      .then(() => {
-        setIsFollowing(!isFollowing);
-      })
-      .catch((err) => console.error("Error toggling follow", err));
-  };
 
   const now = new Date();
   const filteredEvents =
@@ -190,8 +208,8 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
 
   return (
     <>
-      <Navbar user={user} />
       <Box sx={{ p: 4 }}>
+        {/* VENDOR HEADER */}
         {vendor && (
           <Stack
             direction="row"
@@ -219,20 +237,27 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                 <Stack direction="row" alignItems="center" spacing={1}>
                   <Rating value={avgRating} precision={0.1} readOnly />
                   <Typography variant="body2" color="text.secondary">
-                    ({reviewCount} {reviewCount === 1 ? 'review' : 'reviews'})
+                    ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
                   </Typography>
                 </Stack>
               </Box>
             </Stack>
-
             <Stack direction="row" spacing={2} alignItems="center">
               {vendor.facebook && (
-                <IconButton component="a" href={vendor.facebook} target="_blank">
+                <IconButton
+                  component="a"
+                  href={vendor.facebook}
+                  target="_blank"
+                >
                   <FacebookIcon color="primary" />
                 </IconButton>
               )}
               {vendor.instagram && (
-                <IconButton component="a" href={vendor.instagram} target="_blank">
+                <IconButton
+                  component="a"
+                  href={vendor.instagram}
+                  target="_blank"
+                >
                   <InstagramIcon sx={{ color: "#d62976" }} />
                 </IconButton>
               )}
@@ -242,20 +267,29 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                 </IconButton>
               )}
               {user && (
-                <Button variant="outlined" onClick={handleFollowToggle}>
-                  {isFollowing ? "Unfollow" : "Follow"} Vendor
+                <Button
+                  variant="contained"
+                  startIcon={
+                    isFollowing ? <PersonRemoveIcon /> : <PersonAddAltIcon />
+                  }
+                  onClick={handleFollowToggle}
+                  sx={{
+                    backgroundColor: isFollowing ? "#e4e6eb" : "#1b74e4",
+                    color: isFollowing ? "#050505" : "#fff",
+                    textTransform: "none",
+                    "&:hover": {
+                      backgroundColor: isFollowing ? "#d8dadf" : "#1a6ed8",
+                    },
+                  }}
+                >
+                  {isFollowing ? "Following" : "Follow"}
                 </Button>
               )}
             </Stack>
           </Stack>
         )}
 
-        {vendor?.description && (
-          <Typography variant="body1" sx={{ mb: 3 }}>
-            {vendor.description}
-          </Typography>
-        )}
-
+        {/* EVENT CARDS */}
         <Tabs
           value={tabIndex}
           onChange={(_, newValue) => setTabIndex(newValue)}
@@ -268,7 +302,9 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         {loading ? (
           <CircularProgress />
         ) : filteredEvents.length === 0 ? (
-          <Typography>No {tabIndex === 0 ? "Upcoming" : "Past"} Popups</Typography>
+          <Typography>
+            No {tabIndex === 0 ? "Upcoming" : "Past"} Popups
+          </Typography>
         ) : (
           <Box sx={{ position: "relative", mt: 2 }}>
             <IconButton
@@ -312,15 +348,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               }}
             >
               {filteredEvents.map((event) => (
-                <Card
-                  key={event.id}
-                  sx={{
-                    minWidth: 300,
-                    maxWidth: 300,
-                    flex: "0 0 auto",
-                    boxShadow: 3,
-                  }}
-                >
+                <Card key={event.id} sx={{ minWidth: 300, boxShadow: 3 }}>
                   <CardContent>
                     <Typography variant="h6">{event.title}</Typography>
                     <Typography variant="body2" color="text.secondary">
@@ -332,13 +360,16 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                     <Typography variant="body2" sx={{ mt: 1 }}>
                       {event.description}
                     </Typography>
-                    {event.Categories && event.Categories.length > 0 && (
+                    {(event.Categories?.length ||
+                      event.isFree ||
+                      event.isKidFriendly ||
+                      event.isSober) && (
                       <Stack
                         direction="row"
                         spacing={1}
                         sx={{ mt: 1, flexWrap: "wrap" }}
                       >
-                        {event.Categories.map((cat) => (
+                        {event.Categories?.map((cat) => (
                           <Chip
                             key={cat.name}
                             label={cat.name}
@@ -347,8 +378,48 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                             sx={{ fontSize: "0.75rem" }}
                           />
                         ))}
+                        {event.isFree && (
+                          <Chip
+                            label="Free"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        )}
+                        {event.isKidFriendly && (
+                          <Chip
+                            label="Kid-Friendly"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        )}
+                        {event.isSober && (
+                          <Chip
+                            label="Sober"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        )}
                       </Stack>
                     )}
+                    <Button
+                      variant="contained"
+                      size="small"
+                      startIcon={<VisibilityIcon />}
+                      onClick={() => handleOpenModal(event)}
+                      sx={{
+                        mt: 2,
+                        borderRadius: 2,
+                        textTransform: "none",
+                        boxShadow: 1,
+                        backgroundColor: "#000",
+                        color: "#fff",
+                        "&:hover": {
+                          backgroundColor: "#333",
+                        },
+                      }}
+                    >
+                      Details
+                    </Button>
                   </CardContent>
                 </Card>
               ))}
@@ -356,46 +427,41 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
           </Box>
         )}
 
+        {/* REVIEWS */}
         <Box sx={{ mt: 4 }}>
           <Typography variant="h4" gutterBottom>
             Reviews ({reviewCount})
           </Typography>
-          
+
           {reviewCount > 0 && (
             <Box sx={{ mb: 4 }}>
-              <List sx={{ 
-                maxHeight: 300, 
-                overflow: 'auto',
-                border: '1px solid #eee',
-                borderRadius: 1,
-                p: 1
-              }}>
+              <List
+                sx={{
+                  maxHeight: 300,
+                  overflow: "auto",
+                  border: "1px solid #eee",
+                  borderRadius: 1,
+                  p: 1,
+                }}
+              >
                 {reviews.map((review) => (
                   <React.Fragment key={review.id}>
                     <ListItem alignItems="flex-start">
                       <ListItemAvatar>
-                        <Avatar 
-                          src={review.user?.profile_picture} 
-                          alt={review.user?.name || 'Anonymous'}
-                        />
+                        <Avatar src={review.user?.profile_picture} />
                       </ListItemAvatar>
                       <ListItemText
-                        primary={review.user?.name || 'Anonymous'}
+                        primary={review.user?.name || "Anonymous"}
                         secondary={
                           <>
-                            <Rating 
-                              value={review.rating} 
-                              precision={0.5} 
-                              readOnly 
+                            <Rating
+                              value={review.rating}
+                              precision={0.5}
+                              readOnly
                               size="small"
                             />
                             {review.comment && (
-                              <Typography
-                                component="span"
-                                variant="body2"
-                                color="text.primary"
-                                display="block"
-                              >
+                              <Typography variant="body2" display="block">
                                 {review.comment}
                               </Typography>
                             )}
@@ -419,19 +485,24 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                 <ReviewComponent
                   vendorId={vendorId}
                   currentUserId={user.id}
-                  onReviewAdded={handleReviewAction}
-                  onReviewUpdated={handleReviewAction}
-                  onReviewDeleted={handleReviewAction}
+                  onReviewAdded={handleReviewUpdate}
+                  onReviewUpdated={handleReviewUpdate}
+                  onReviewDeleted={handleReviewUpdate}
                 />
               ) : (
-                <Typography variant="body1">
-                  Please sign in to add your review.
-                </Typography>
+                <Typography>Please sign in to add your review.</Typography>
               )}
             </>
           )}
         </Box>
       </Box>
+
+      {/* MODAL */}
+      <EventDetails
+        open={modalOpen}
+        onClose={handleCloseModal}
+        event={selectedEvent}
+      />
     </>
   );
 };
