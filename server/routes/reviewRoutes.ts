@@ -5,42 +5,48 @@ import User from '../models/User';
 
 const router = Router();
 
-// Middleware to check authentication
+// Minimal authenticate middleware
 const authenticate = (req: Request, res: Response, next: Function) => {
   if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
   next();
 };
 
-// Submit a review
 router.post('/:vendorId/reviews', authenticate, async (req: Request, res: Response) => {
   const { vendorId } = req.params;
   const { rating, comment } = req.body;
-  const userId = (req.user as User).id;
+  const userId = (req.user as User).id; // Using the user's id from authentication
 
   try {
-    // Validate vendor exists
+    // Confirm the vendor exists.
     const vendor = await Vendor.findByPk(vendorId);
     if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
 
-    // Check for existing review
-    const existingReview = await Review.findOne({ where: { vendorId, userId } });
-    if (existingReview) {
-      return res.status(400).json({ error: 'You have already reviewed this vendor' });
+    // Confirm the user exists in the DB.
+    const user = await User.findByPk(userId);
+    if (!user) {
+      // This error indicates that the authentication process is returning a user ID that does not exist.
+      return res.status(404).json({ error: 'User not found in the database.' });
     }
 
-    // Create new review
+    // Check if a review from this user for this vendor already exists.
+    const existingReview = await Review.findOne({ where: { vendorId, userId } });
+    if (existingReview) {
+      return res.status(400).json({ error: 'You have already reviewed this vendor.' });
+    }
+
+    // Create the review.
     const review = await Review.create({ rating, comment, userId, vendorId });
     res.status(201).json(review);
   } catch (error) {
     console.error('Review creation error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Internal server error',
       details: error instanceof Error ? error.message : String(error)
     });
   }
 });
 
-// Get reviews for a vendor
+// Get all reviews for a vendor
 router.get('/:vendorId/reviews', async (req: Request, res: Response) => {
   const { vendorId } = req.params;
   try {

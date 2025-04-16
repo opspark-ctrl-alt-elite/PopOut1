@@ -6,6 +6,7 @@ const sequelize = new Sequelize('popout', 'root', '', {
   logging: false,
 });
 
+import Review from './Review';
 const forceSync = async () => {
   try {
     // Disable foreign key checks

@@ -1,3 +1,4 @@
+
 import { Router, Request, Response } from 'express';
 import { QueryTypes } from 'sequelize';
 import sequelize from '../models/index';
@@ -19,7 +20,7 @@ interface VendorWithStats {
   reviewCount: string;
 }
 
-// Get average rating and review count
+// Get average rating and review count for a specific vendor
 router.get('/:vendorId/average-rating', async (req: Request, res: Response) => {
   const { vendorId } = req.params;
 
@@ -67,7 +68,7 @@ router.get('/spotlight/top3', async (req: Request, res: Response) => {
         COALESCE(AVG(r.rating), 0) as avgRating,
         COUNT(r.id) as reviewCount
       FROM Vendors v
-      LEFT JOIN Reviews r ON v.id = r.vendorId
+      LEFT JOIN reviews r ON v.id = r.vendorId
         AND r.createdAt BETWEEN :startOfMonth AND :endOfMonth
       GROUP BY v.id
       ORDER BY avgRating DESC, reviewCount DESC
