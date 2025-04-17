@@ -105,12 +105,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     p: 4,
   };
 
-  // TODO: delete this
-  // make sure that you have the current user record in the state
-  // useEffect(() => {
-  //   getUser();
-  // }, []);
-
   // make sure that you have the current vendor record in the state
   useEffect(() => {
     getVendor();

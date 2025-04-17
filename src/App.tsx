@@ -88,14 +88,14 @@ const App: React.FC = () => {
         console.error("Error fetching user:", err);
       });
 
-    fetch("/vendor/all")
+    axios.get("api/vendor/all")
+      // .then((res) => {
+      //   if (!res.data) throw new Error("err fetching vendors");
+      //   return res;
+      // })
       .then((res) => {
-        if (!res.ok) throw new Error("err fetching vendors");
-        return res.json();
-      })
-      .then((data) => {
-        console.log("Client Side: getting all vendors: ", data);
-        if (data) setVendors(data);
+        console.log("Client Side: getting all vendors: ", res.data);
+        if (res) setVendors(res.data);
       })
       .catch((err) => {
         console.error("Error fetching vendors:", err);
@@ -153,7 +153,7 @@ const App: React.FC = () => {
         <Route path="/events" element={<EventsFeed />} />
         <Route path="/game" element={<GameApp captcha={captcha} setCaptcha={setCaptcha} />} />
         <Route path="/vendor-spotlight" element={<TopVendorSpotlight />} />
-        <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} getUser={getUser} />} />
+        <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} />
       </Routes>
     </>
   );
