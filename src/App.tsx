@@ -153,7 +153,7 @@ const App: React.FC = () => {
         <Route path="/events" element={<EventsFeed />} />
         <Route path="/game" element={<GameApp captcha={captcha} setCaptcha={setCaptcha} />} />
         <Route path="/vendor-spotlight" element={<TopVendorSpotlight />} />
-        <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} />
+        <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} getUser={getUser} />} />
       </Routes>
     </>
   );

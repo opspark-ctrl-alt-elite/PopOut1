@@ -41,6 +41,7 @@ type Props = {
     email: string;
     profile_picture?: string;
   } | null;
+  getUser: Function;
 };
 
 type Event = {
@@ -85,7 +86,7 @@ type Review = {
   createdAt: string;
 };
 
-const PublicVendorProfile: React.FC<Props> = ({ user }) => {
+const PublicVendorProfile: React.FC<Props> = ({ user, getUser }) => {
   const { vendorId } = useParams<{ vendorId: string }>();
   const [events, setEvents] = useState<Event[]>([]);
   const [vendor, setVendor] = useState<Vendor | null>(null);
@@ -189,6 +190,11 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const handleReviewUpdate = () => {
     fetchData();
   };
+
+  // // make sure that you have the current user record in the state
+  // useEffect(() => {
+  //   getUser();
+  // }, []);
 
   useEffect(() => {
     fetchData();
