@@ -223,6 +223,9 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         </IconButton>
 
         {/* events */}
+        <Typography variant="h4" gutterBottom>
+              Upcoming Popups
+            </Typography>
         <Box
           ref={scrollRef}
           sx={{
