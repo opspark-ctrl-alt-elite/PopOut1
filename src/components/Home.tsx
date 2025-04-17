@@ -10,6 +10,7 @@ import {
   CardContent,
 } from "@mui/material";
 import EventsFeed from "./EventsFeed";
+import TopVendorSpotlight from "./TopVendorSpotlight";
 
 type User = {
   id: string;
@@ -65,14 +66,19 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
         const spotlightWithRatings = await Promise.all(
           spotlightData.map(async (vendor: any) => {
             try {
-              const ratingRes = await axios.get(`/vendors/${vendor.id}/average-rating`);
+              const ratingRes = await axios.get(
+                `/vendors/${vendor.id}/average-rating`
+              );
               const avg = parseFloat(ratingRes.data.averageRating);
               return {
                 ...vendor,
                 averageRating: !isNaN(avg) ? avg : 0,
               };
             } catch (error) {
-              console.error(`Error fetching rating for vendor ${vendor.id}:`, error);
+              console.error(
+                `Error fetching rating for vendor ${vendor.id}:`,
+                error
+              );
               return {
                 ...vendor,
                 averageRating: 0,
@@ -96,35 +102,23 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
       </Container>
 
       {/* vendor spotlight */}
-      <Container sx={{ mt: 4, mb: 4 }}>
-        <Typography variant="h4" gutterBottom>
-          Vendor Spotlight
-        </Typography>
-        {spotlight.length > 0 ? (
-          spotlight.map((vendor) => (
-            <Card key={vendor.id} sx={{ mb: 2 }}>
-              <CardContent>
-                <Typography variant="h6">{vendor.businessName}</Typography>
-                <Typography variant="body2">
-                  Average Rating:{" "}
-                  {typeof vendor.averageRating === "number"
-                    ? vendor.averageRating.toFixed(1)
-                    : "N/A"}
-                </Typography>
-                <Typography variant="body2">{vendor.description}</Typography>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <Typography>No vendors in spotlight.</Typography>
-        )}
+      <Container sx={{ mt: 4, mb: 4, px: { xs: 2, sm: 4 } }}>
+        {/* <Typography variant="h4" gutterBottom>
+        Vendor Spotlight
+        </Typography> */}
+        <TopVendorSpotlight />
       </Container>
 
       {/* game/vendor signup */}
       <Container sx={{ mt: 4, mb: 4, textAlign: "center" }}>
         {user && !user.is_vendor && (
           <Box mb={3}>
-            <Button component={Link} to="/vendor-signup" variant="outlined" size="large">
+            <Button
+              component={Link}
+              to="/vendor-signup"
+              variant="outlined"
+              size="large"
+            >
               Become a Vendor
             </Button>
           </Box>
