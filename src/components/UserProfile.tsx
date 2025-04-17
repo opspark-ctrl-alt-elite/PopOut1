@@ -37,9 +37,15 @@ type User = {
   name: string;
   email: string;
   profile_picture?: string;
+  // TODO: get rid of the below line when ready
   categories?: Category[];
   is_vendor: boolean;
 };
+
+// type Preference = {
+//   userId: string;
+//   categoryId: string;
+// }
 
 type Props = {
   user: User | null;
@@ -48,6 +54,7 @@ type Props = {
 const UserProfile: React.FC<Props> = ({ user }) => {
   const navigate = useNavigate();
   const [bookmarkedEvents, setBookmarkedEvents] = useState<Event[]>([]);
+  // const [preferences, setPreferences] = useState<Preference[]>([]);
 
   const handleDeleteUser = () => {
     if (!user) return;
