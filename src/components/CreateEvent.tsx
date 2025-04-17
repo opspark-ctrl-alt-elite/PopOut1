@@ -1,3 +1,4 @@
+// CreateEvent.tsx
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import {
@@ -15,23 +16,25 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  FilledTextFieldProps,
-  OutlinedTextFieldProps,
-  StandardTextFieldProps,
-  TextFieldVariants,
+  Box
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Autocomplete, useLoadScript } from '@react-google-maps/api';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
-import { JSX } from 'react/jsx-runtime';
 
 const libraries: ("places")[] = ["places"];
 
 const CreateEvent = () => {
   const navigate = useNavigate();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+  // Only the Google Maps API key is needed on the client.
+  const { isLoaded } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
+    libraries,
+  });
 
   const [form, setForm] = useState({
     title: '',
@@ -48,22 +51,14 @@ const CreateEvent = () => {
     image_url: '',
     categories: [] as string[],
   });
-
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-
-  // Modal state for notifications (non-blocking dialogs)
   const [modal, setModal] = useState<{
     open: boolean;
     title: string;
     message: string;
     success: boolean;
   }>({ open: false, title: '', message: '', success: false });
-
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
-    libraries,
-  });
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -76,20 +71,6 @@ const CreateEvent = () => {
     };
     fetchCategories();
   }, []);
-
-  // Inline validation for date fields (endDate must be after startDate)
-  useEffect(() => {
-    if (form.startDate && form.endDate) {
-      if (new Date(form.endDate) <= new Date(form.startDate)) {
-        setErrors((prev) => ({ ...prev, endDate: 'End date must be after start date' }));
-      } else {
-        setErrors((prev) => {
-          const { endDate, ...rest } = prev;
-          return rest;
-        });
-      }
-    }
-  }, [form.startDate, form.endDate]);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -118,9 +99,7 @@ const CreateEvent = () => {
       const selected = prev.categories.includes(category);
       return {
         ...prev,
-        categories: selected
-          ? prev.categories.filter((c) => c !== category)
-          : [...prev.categories, category],
+        categories: selected ? prev.categories.filter((c) => c !== category) : [...prev.categories, category],
       };
     });
   };
@@ -135,6 +114,31 @@ const CreateEvent = () => {
         latitude: location.lat().toString(),
         longitude: location.lng().toString(),
       }));
+    }
+  };
+
+  // Modified image upload handler: POST to our server endpoint.
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const formData = new FormData();
+    // Use the field name expected by your partner's route.
+    formData.append('imageUpload', file);
+
+    try {
+      // POST to your server's image upload endpoint.
+      // Here, we use "event" as the foreignKeyName and "new" as the foreignKey placeholder.
+      const response = await axios.post('/api/images/event/new', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      // The server returns an array of upload results.
+      const uploadResult = response.data[0];
+      // Set the event's image URL from Cloudinary.
+      setForm(prev => ({ ...prev, image_url: uploadResult.secure_url || uploadResult.url }));
+    } catch (err) {
+      console.error('Error uploading image:', err);
     }
   };
 
@@ -164,7 +168,6 @@ const CreateEvent = () => {
     }
   };
 
-  // Google Maps render
   if (!isLoaded) return <div>Loading...</div>;
 
   return (
@@ -189,8 +192,6 @@ const CreateEvent = () => {
             fullWidth
             multiline
           />
-
-          {/* Updated Start Date using DateTimePicker */}
           <DateTimePicker
             label="Start Date *"
             value={form.startDate ? new Date(form.startDate) : null}
@@ -203,12 +204,10 @@ const CreateEvent = () => {
             inputFormat="MM/dd/yyyy hh:mm aa"
             ampm
             onError={() => null}
-            renderInput={(params: JSX.IntrinsicAttributes & { variant?: TextFieldVariants | undefined; } & Omit<FilledTextFieldProps | OutlinedTextFieldProps | StandardTextFieldProps, "variant">) => (
+            renderInput={(params) => (
               <TextField {...params} fullWidth error={!!errors.startDate} helperText={errors.startDate} />
             )}
           />
-
-          {/* Updated End Date using DateTimePicker */}
           <DateTimePicker
             label="End Date *"
             value={form.endDate ? new Date(form.endDate) : null}
@@ -221,11 +220,10 @@ const CreateEvent = () => {
             inputFormat="MM/dd/yyyy hh:mm aa"
             ampm
             onError={() => null}
-            renderInput={(params: JSX.IntrinsicAttributes & { variant?: TextFieldVariants | undefined; } & Omit<FilledTextFieldProps | OutlinedTextFieldProps | StandardTextFieldProps, "variant">) => (
+            renderInput={(params) => (
               <TextField {...params} fullWidth error={!!errors.endDate} helperText={errors.endDate} />
             )}
           />
-
           <TextField
             name="venue_name"
             label="Venue *"
@@ -235,7 +233,6 @@ const CreateEvent = () => {
             helperText={errors.venue_name}
             fullWidth
           />
-
           <Autocomplete
             onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
             onPlaceChanged={handlePlaceChanged}
@@ -250,15 +247,21 @@ const CreateEvent = () => {
               fullWidth
             />
           </Autocomplete>
-
-          <TextField
-            name="image_url"
-            label="Image URL (optional)"
-            value={form.image_url}
-            onChange={handleChange}
-            fullWidth
-          />
-
+          <Box>
+            <Button variant="outlined" component="label">
+              Upload Image
+              <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+            </Button>
+            {form.image_url && (
+              <Box mt={2}>
+                <img
+                  src={form.image_url}
+                  alt="Event"
+                  style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'cover' }}
+                />
+              </Box>
+            )}
+          </Box>
           <FormControlLabel
             control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />}
             label="Free?"
@@ -271,7 +274,6 @@ const CreateEvent = () => {
             control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />}
             label="Sober?"
           />
-
           {availableCategories.length > 0 && (
             <>
               <FormLabel component="legend">Categories</FormLabel>
@@ -291,13 +293,10 @@ const CreateEvent = () => {
               </FormGroup>
             </>
           )}
-
           <Button variant="contained" onClick={handleSubmit}>
             Submit
           </Button>
         </Stack>
-
-        {/* Non-blocking Modal Notification */}
         <Dialog
           open={modal.open}
           onClose={handleModalClose}
@@ -322,6 +321,3 @@ const CreateEvent = () => {
 };
 
 export default CreateEvent;
-
-
-// new branch 
