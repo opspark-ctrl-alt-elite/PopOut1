@@ -6,7 +6,6 @@ import {
   Typography,
   Button,
   Container,
-  Popover,
   Card,
   CardContent,
 } from "@mui/material";
@@ -91,22 +90,9 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
 
   return (
     <Box>
+      {/* events */}
       <Container sx={{ mt: 4 }}>
         <EventsFeed user={user} />
-        {user && !user.is_vendor && (
-          <Box mt={5} textAlign="center">
-            <Button component={Link} to="/vendor-signup" variant="outlined" size="large">
-              Become a Vendor
-            </Button>
-          </Box>
-        )}
-        {user && (
-          <Box mt={5} textAlign="center">
-            <Button component={Link} to="/game" variant="outlined" size="large">
-              Play Game
-            </Button>
-          </Box>
-        )}
       </Container>
 
       {/* vendor spotlight */}
@@ -131,6 +117,24 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
           ))
         ) : (
           <Typography>No vendors in spotlight.</Typography>
+        )}
+      </Container>
+
+      {/* game/vendor signup */}
+      <Container sx={{ mt: 4, mb: 4, textAlign: "center" }}>
+        {user && !user.is_vendor && (
+          <Box mb={3}>
+            <Button component={Link} to="/vendor-signup" variant="outlined" size="large">
+              Become a Vendor
+            </Button>
+          </Box>
+        )}
+        {user && (
+          <Box>
+            <Button component={Link} to="/game" variant="outlined" size="large">
+              Play Game
+            </Button>
+          </Box>
         )}
       </Container>
     </Box>

@@ -1,7 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import formatDate from "../utils/formatDate";
-
 import {
   Modal,
   Box,
@@ -34,6 +34,8 @@ type Event = {
     averageRating?: number;
   };
   Categories?: { name: string }[];
+  latitude: number;
+  longitude: number;
 };
 
 interface Props {
@@ -57,8 +59,13 @@ const style = {
 
 const EventDetails: React.FC<Props> = ({ open, onClose, event }) => {
   const [bookmarked, setBookmarked] = useState(false);
+  const navigate = useNavigate();
 
   if (!event) return null;
+
+  const handleViewOnMap = () => {
+    navigate(`/map?lat=${event.latitude}&lng=${event.longitude}`);
+  };
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -102,6 +109,18 @@ const EventDetails: React.FC<Props> = ({ open, onClose, event }) => {
           <Typography variant="body2" fontWeight="bold">
             {event.venue_name}
           </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: "0.75rem",
+              color: "#1976d2",
+              cursor: "pointer",
+              ml: 1,
+            }}
+            onClick={handleViewOnMap}
+          >
+            View on Map
+          </Typography>
         </Stack>
 
         <Typography
@@ -112,6 +131,7 @@ const EventDetails: React.FC<Props> = ({ open, onClose, event }) => {
           {event.location.replace(/,\s*USA$/, "")}
         </Typography>
 
+        {/* categories */}
         {(event.Categories?.length ||
           event.isFree ||
           event.isKidFriendly ||
