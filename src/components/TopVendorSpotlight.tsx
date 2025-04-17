@@ -1,32 +1,54 @@
-// src/components/TopVendorSpotlight.tsx
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Card, CardContent, Typography, CircularProgress } from '@mui/material';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Box,
+  Card,
+  CardContent,
+  Typography,
+  CircularProgress,
+  Avatar,
+  Stack,
+  Rating,
+} from "@mui/material";
+import { Link } from "react-router-dom";
 
 interface VendorSpotlightData {
   id: string;
   businessName: string;
-  email: string;
-  description: string;
-  // Include additional fields as needed.
-  score: number;
+  profilePicture?: string;
+  averageRating?: number;
+  reviewCount?: number;
 }
 
 const TopVendorSpotlight: React.FC = () => {
   const [topVendors, setTopVendors] = useState<VendorSpotlightData[]>([]);
-  const [currentIndex, setCurrentIndex] = useState<number>(0);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
 
-  // Fetch the top 3 vendors from the spotlight endpoint.
   useEffect(() => {
     const fetchTopVendors = async () => {
       try {
-        const res = await axios.get('/vendors/spotlight/top3');
-        setTopVendors(res.data);
+        const res = await axios.get("/vendors/spotlight/top3");
+        const vendorData = await Promise.all(
+          res.data.map(async (vendor: VendorSpotlightData) => {
+            try {
+              const ratingRes = await axios.get(
+                `/vendors/${vendor.id}/average-rating`
+              );
+              return {
+                ...vendor,
+                averageRating: parseFloat(ratingRes.data.averageRating),
+                reviewCount: parseInt(ratingRes.data.reviewCount, 10) || 0,
+              };
+            } catch {
+              return { ...vendor, averageRating: 0, reviewCount: 0 };
+            }
+          })
+        );
+        setTopVendors(vendorData);
       } catch (err: any) {
         console.error(err);
-        setError('Failed to fetch top vendors.');
+        setError("Failed to fetch top vendors.");
       } finally {
         setLoading(false);
       }
@@ -35,43 +57,97 @@ const TopVendorSpotlight: React.FC = () => {
     fetchTopVendors();
   }, []);
 
-  // Set up an interval to alternate the current vendor every 15 seconds.
-  useEffect(() => {
-    const intervalId = setInterval(() => {
-      setCurrentIndex(prevIndex => {
-        return topVendors.length ? (prevIndex + 1) % topVendors.length : 0;
-      });
-    }, 15000); // 15 seconds
-
-    return () => clearInterval(intervalId);
-  }, [topVendors]);
-
   if (loading) return <CircularProgress />;
   if (error) return <Typography color="error">{error}</Typography>;
-  if (!topVendors.length) return <Typography>No vendor spotlight available.</Typography>;
-
-  const currentVendor = topVendors[currentIndex];
+  if (!topVendors.length)
+    return <Typography>No vendor spotlight available.</Typography>;
 
   return (
-    <Card sx={{ my: 4, maxWidth: 600, mx: 'auto' }}>
-      <CardContent>
-        <Typography variant="h4" gutterBottom>
-          Vendor Spotlight
-        </Typography>
-        <Typography variant="h5">
-          {currentVendor.businessName}
-        </Typography>
-        <Typography variant="body1" sx={{ mt: 1 }}>
-          {currentVendor.description}
-        </Typography>
-        <Typography variant="body2" sx={{ mt: 1 }}>
-          Score: {currentVendor.score}
-        </Typography>
-        <Typography variant="caption" sx={{ mt: 2, display: 'block' }}>
-          Top 3 vendor spotlight rotates every 15 seconds.
-        </Typography>
-      </CardContent>
-    </Card>
+    <Box sx={{ my: 4, px: 2 }}>
+      <Typography variant="h4" gutterBottom>
+        Vendor Spotlight
+      </Typography>
+
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          overflowX: "auto",
+          pb: 1,
+          "&::-webkit-scrollbar": { height: 8 },
+          "&::-webkit-scrollbar-thumb": {
+            backgroundColor: "#ccc",
+            borderRadius: 4,
+          },
+        }}
+      >
+        {topVendors.map((vendor, index) => (
+          <Card
+            key={vendor.id}
+            sx={{
+              minWidth: 280,
+              flexShrink: 0,
+              borderRadius: 2,
+              transition: "transform 0.3s",
+              "&:hover": {
+                transform: "scale(1.02)",
+                boxShadow: 4,
+              },
+            }}
+          >
+            <CardContent
+              component={Link}
+              to={`/vendor/${vendor.id}`}
+              sx={{
+                textDecoration: "none",
+                color: "inherit",
+              }}
+            >
+              <Stack
+                direction="row"
+                alignItems="center"
+                spacing={1}
+                sx={{ mb: 2 }}
+              >
+                <Typography
+                  sx={{
+                    fontSize: "3rem",
+                    fontWeight: "bold",
+                    color: "black",
+                  }}
+                >
+                  {index + 1}
+                </Typography>
+                <Avatar
+                  src={vendor.profilePicture}
+                  alt={vendor.businessName}
+                  sx={{ width: 48, height: 48 }}
+                />
+                <Typography variant="subtitle1" fontWeight="bold">
+                  {vendor.businessName}
+                </Typography>
+              </Stack>
+
+              <Stack direction="row" spacing={1} alignItems="center">
+                <Rating
+                  value={vendor.averageRating || 0}
+                  precision={0.5}
+                  readOnly
+                  size="small"
+                />
+                <Typography variant="body2" color="text.secondary">
+                  (
+                  {vendor.reviewCount === 1
+                    ? "1 review"
+                    : `${vendor.reviewCount} reviews`}
+                  )
+                </Typography>
+              </Stack>
+            </CardContent>
+          </Card>
+        ))}
+      </Box>
+    </Box>
   );
 };
 
