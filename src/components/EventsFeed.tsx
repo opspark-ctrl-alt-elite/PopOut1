@@ -325,7 +325,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                 <Button
                   variant="contained"
                   size="small"
-                  startIcon={<VisibilityIcon />}
                   onClick={() => handleOpenModal(event)}
                   sx={{
                     mt: 2,

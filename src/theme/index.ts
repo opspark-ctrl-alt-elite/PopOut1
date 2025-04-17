@@ -10,6 +10,17 @@ const theme = createTheme({
       fontFamily: `'Bebas Neue', sans-serif`,
     },
   },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          fontFamily: `'Anton', sans-serif`,
+          letterSpacing: '2px',
+          textTransform: 'uppercase',
+        },
+      },
+    },
+  },
 });
 
 export default theme;
