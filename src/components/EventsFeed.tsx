@@ -3,7 +3,6 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import EventDetails from "./EventDetails";
 import formatDate from "../utils/formatDate";
-// import BookmarkButton from "./BookmarkButton";
 
 import {
   Box,
@@ -21,7 +20,6 @@ import {
 } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 
 type Event = {
   id: string;
@@ -30,6 +28,7 @@ type Event = {
   startDate: string;
   endDate: string;
   venue_name: string;
+  image_url?: string;
   isFree: boolean;
   isKidFriendly: boolean;
   isSober: boolean;
@@ -66,10 +65,8 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     isSober: false,
   });
   const [bookmarkedEventIds, setBookmarkedEventIds] = useState<string[]>([]);
-
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const fetchCategories = async () => {
@@ -112,10 +109,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     }
   };
 
-  const handleToggleBookmark = async () => {
-    await fetchBookmarkedEventIds(); // refresh after toggle
-  };
-
   useEffect(() => {
     fetchCategories();
   }, []);
@@ -154,6 +147,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
   return (
     <Box sx={{ mt: 4, px: 2 }}>
+      {/* filters */}
       <Stack spacing={2} direction="row" flexWrap="wrap" mb={4}>
         <FormControl sx={{ minWidth: 160 }} size="small">
           <InputLabel>Category</InputLabel>
@@ -196,6 +190,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         />
       </Stack>
 
+      {/* scroll */}
       <Box sx={{ position: "relative" }}>
         <IconButton
           onClick={() => scroll("left")}
@@ -227,6 +222,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           <ArrowForwardIosIcon />
         </IconButton>
 
+        {/* events */}
         <Box
           ref={scrollRef}
           sx={{
@@ -250,6 +246,21 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
               }}
             >
               <CardContent>
+                {event.image_url && (
+                  <Box mb={2}>
+                    <img
+                      src={event.image_url}
+                      alt={event.title}
+                      style={{
+                        width: "100%",
+                        height: "160px",
+                        objectFit: "cover",
+                        borderRadius: "6px",
+                      }}
+                    />
+                  </Box>
+                )}
+
                 <Typography variant="h6" gutterBottom>
                   {event.title}
                 </Typography>
@@ -279,16 +290,11 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                   {event.description}
                 </Typography>
 
-                {/* chips */}
                 {(event.Categories?.length ||
                   event.isFree ||
                   event.isKidFriendly ||
                   event.isSober) && (
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{ mt: 1, flexWrap: "wrap" }}
-                  >
+                  <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
                     {event.Categories?.map((cat) => (
                       <Chip
                         key={cat.name}
@@ -298,27 +304,11 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                         sx={{ fontSize: "0.75rem" }}
                       />
                     ))}
-                    {event.isFree && (
-                      <Chip
-                        label="Free"
-                        size="small"
-                        sx={{ fontSize: "0.75rem" }}
-                      />
-                    )}
+                    {event.isFree && <Chip label="Free" size="small" sx={{ fontSize: "0.75rem" }} />}
                     {event.isKidFriendly && (
-                      <Chip
-                        label="Kid-Friendly"
-                        size="small"
-                        sx={{ fontSize: "0.75rem" }}
-                      />
+                      <Chip label="Kid-Friendly" size="small" sx={{ fontSize: "0.75rem" }} />
                     )}
-                    {event.isSober && (
-                      <Chip
-                        label="Sober"
-                        size="small"
-                        sx={{ fontSize: "0.75rem" }}
-                      />
-                    )}
+                    {event.isSober && <Chip label="Sober" size="small" sx={{ fontSize: "0.75rem" }} />}
                   </Stack>
                 )}
 
