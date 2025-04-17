@@ -120,8 +120,8 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
         )}
       </Container>
 
-      {/* Game/Vendor Button Section */}
-      <Container sx={{ mt: 4, mb: 4 }} textAlign="center">
+      {/* game/vendor signup */}
+      <Container sx={{ mt: 4, mb: 4, textAlign: "center" }}>
         {user && !user.is_vendor && (
           <Box mb={3}>
             <Button component={Link} to="/vendor-signup" variant="outlined" size="large">
