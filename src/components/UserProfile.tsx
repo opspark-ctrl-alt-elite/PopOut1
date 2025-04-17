@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "axios";
 import {
@@ -42,19 +42,36 @@ type User = {
   is_vendor: boolean;
 };
 
-// type Preference = {
-//   userId: string;
-//   categoryId: string;
-// }
+type Preference = {
+  userId: string;
+  categoryId: string;
+}
 
 type Props = {
   user: User | null;
+  categories: Category[] | null;
 };
 
-const UserProfile: React.FC<Props> = ({ user }) => {
+const UserProfile: React.FC<Props> = ({ user, categories }) => {
   const navigate = useNavigate();
   const [bookmarkedEvents, setBookmarkedEvents] = useState<Event[]>([]);
-  // const [preferences, setPreferences] = useState<Preference[]>([]);
+  const [preferences, setPreferences] = useState<Preference[]>([]);
+
+  // get preferences upon loading of user
+  useEffect(() => {
+    if (user && categories) {
+      getPreferences();
+    }
+  }, [user, categories]);
+
+  // get preferences from preferences db
+  const getPreferences = async () => {
+    try {
+      //let prefObj = await axios.get("")
+    } catch (err) {
+      console.error("Error with getting user preferences:", err);
+    }
+  }
 
   const handleDeleteUser = () => {
     if (!user) return;
