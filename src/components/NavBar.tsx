@@ -16,10 +16,14 @@ import {
   ListItemText,
   Divider,
   Button,
+  ListItemIcon,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
+import PersonIcon from "@mui/icons-material/Person";
+// import BusinessIcon from "@mui/icons-material/Business";
+import WorkIcon from '@mui/icons-material/Work';
 import { onMessageListener } from "../firebase/onMessageListener";
 
 interface Props {
@@ -43,8 +47,11 @@ const Navbar: React.FC<Props> = ({
   setUnreadCount,
   setNotifications,
 }) => {
-  const [profileAnchorEl, setProfileAnchorEl] = useState<null | HTMLElement>(null);
-  const [notificationsAnchorEl, setNotificationsAnchorEl] = useState<null | HTMLElement>(null);
+  const [profileAnchorEl, setProfileAnchorEl] = useState<null | HTMLElement>(
+    null
+  );
+  const [notificationsAnchorEl, setNotificationsAnchorEl] =
+    useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -157,10 +164,7 @@ const Navbar: React.FC<Props> = ({
               </IconButton>
 
               <IconButton onClick={handleProfileClick}>
-                <Avatar
-                  src={user.profile_picture}
-                  alt={user.name}
-                />
+                <Avatar src={user.profile_picture} alt={user.name} />
               </IconButton>
             </Stack>
           ) : (
@@ -179,8 +183,11 @@ const Navbar: React.FC<Props> = ({
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Box sx={{ p: 1.5, width: 180 }}>
-          <Typography variant="subtitle2" sx={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+        <Box sx={{ p: 1.5, width: 200 }}>
+          <Typography
+            variant="h5"
+            sx={{ fontFamily: "'Bebas Neue', sans-serif" }}
+          >
             {user?.name}
           </Typography>
           <Typography variant="body2" color="text.secondary">
@@ -195,9 +202,12 @@ const Navbar: React.FC<Props> = ({
             style={{ textDecoration: "none", color: "inherit" }}
             onClick={handleProfileClose}
           >
-            <Typography sx={{ padding: "8px", textAlign: "center", cursor: "pointer", fontFamily: "'Bebas Neue', sans-serif" }}>
-              View Profile
-            </Typography>
+            <ListItem button sx={{ paddingLeft: 0 }}>
+              <ListItemIcon sx={{ minWidth: 30 }}>
+                <PersonIcon />
+              </ListItemIcon>
+              <ListItemText primary="User Profile" sx={{ marginLeft: 1 }} />
+            </ListItem>
           </Link>
 
           {user?.is_vendor && (
@@ -206,18 +216,21 @@ const Navbar: React.FC<Props> = ({
               style={{ textDecoration: "none", color: "inherit" }}
               onClick={handleProfileClose}
             >
-              <Typography sx={{ padding: "8px", textAlign: "center", cursor: "pointer", fontFamily: "'Bebas Neue', sans-serif" }}>
-                View Vendor Profile
-              </Typography>
+              <ListItem button sx={{ paddingLeft: 0 }}>
+                <ListItemIcon sx={{ minWidth: 30 }}>
+                  <WorkIcon />
+                </ListItemIcon>
+                <ListItemText primary="Vendor Profile" sx={{ marginLeft: 1 }} />
+              </ListItem>
             </Link>
           )}
 
-          <Typography
-            sx={{ padding: "8px", textAlign: "center", cursor: "pointer", fontFamily: "'Bebas Neue', sans-serif" }}
-            onClick={handleLogout}
-          >
-            Log Out
-          </Typography>
+          <ListItem button onClick={handleLogout} sx={{ paddingLeft: 0 }}>
+            <ListItemIcon sx={{ minWidth: 30 }}>
+              <LogoutIcon />
+            </ListItemIcon>
+            <ListItemText primary="Log Out" sx={{ marginLeft: 1 }} />
+          </ListItem>
         </Box>
       </Popover>
 
