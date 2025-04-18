@@ -58,7 +58,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
       window.removeEventListener('keydown', handleKeyPress);
       window.removeEventListener('keyup', handleKeyUnPress);
     };
-  }, []);
+  }, [ player ]);
 
   // allow for WASD and arrow key control when keys are pressed
   const handleKeyPress = ( e: { key: string; } ) => {
