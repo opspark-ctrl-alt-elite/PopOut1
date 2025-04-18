@@ -1,13 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
-import {
-  Box,
-  Card,
-  CardContent,
-  Typography,
-  Stack,
-  Chip,
-} from "@mui/material";
+import { Box, Card, CardContent, Typography, Stack, Chip } from "@mui/material";
 import formatDate from "../utils/formatDate";
 
 type Event = {
@@ -41,7 +34,7 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
   return (
     <Box mt={6} px={{ xs: 2, sm: 3, md: 6 }}>
       <Typography variant="h6" gutterBottom>
-        Your Bookmarked Events:
+        Bookmarks:
       </Typography>
 
       <Box
@@ -83,7 +76,23 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
                 noWrap
                 title={event.title}
               >
-                {event.title}
+                {event.title}{" "}
+                {event.vendor?.id && event.vendor?.businessName && (
+                  <Typography
+                    component="span"
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontWeight: 400 }}
+                  >
+                    by{" "}
+                    <Link
+                      to={`/vendor/${event.vendor.id}`}
+                      style={{ color: "#1976d2", textDecoration: "none" }}
+                    >
+                      {event.vendor.businessName}
+                    </Link>
+                  </Typography>
+                )}
               </Typography>
 
               <Typography variant="caption" color="text.secondary">
@@ -94,16 +103,12 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
                 {event.venue_name}
               </Typography>
 
+              {/* cats */}
               {(event.Categories?.length ||
                 event.isFree ||
                 event.isKidFriendly ||
                 event.isSober) && (
-                <Stack
-                  direction="row"
-                  spacing={0.5}
-                  flexWrap="wrap"
-                  mt={1}
-                >
+                <Stack direction="row" spacing={0.5} flexWrap="wrap" mt={1}>
                   {event.Categories?.map((cat) => (
                     <Chip
                       key={cat.name}

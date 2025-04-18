@@ -30,7 +30,7 @@ router.post('/:userId/bookmark/:eventId', async (req, res) => {
   }
 });
 
-// get bookmarked events 
+// get bookmarked events
 router.get('/users/:userId/bookmarked-events', async (req, res) => {
   const { userId } = req.params;
 
@@ -38,14 +38,16 @@ router.get('/users/:userId/bookmarked-events', async (req, res) => {
     const user = await User.findByPk(userId);
     if (!user) return res.status(404).json({ error: 'User not found' });
 
-    const events = await user.getBookmarkedEvents(); // mixin from association
+    const events = await user.getBookmarkedEvents({
+      include: [{ model: Vendor, as: 'vendor' }],
+    });
+
     res.status(200).json(events);
   } catch (err) {
     console.error('Error fetching bookmarked events:', err);
     res.status(500).json({ error: 'Failed to fetch bookmarked events' });
   }
 });
-
 
 // unbookmark
 router.delete('/users/:userId/unbookmark/:eventId', async (req, res) => {
