@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate, Link as RouterLink } from "react-router-dom";
+import Bookmarks from "../components/Bookmarks";
 import axios from "axios";
 import {
   Box,
@@ -223,32 +224,8 @@ const UserProfile: React.FC<Props> = ({ user }) => {
             </Stack>
 
             {/* bookmarks */}
-            {bookmarkedEvents.length > 0 && (
-              <Box mt={6}>
-                <Typography variant="h6" gutterBottom>
-                  Bookmarks:
-                </Typography>
-                <Stack spacing={2}>
-                  {bookmarkedEvents.map((event) => (
-                    <Card key={event.id}>
-                      <CardContent>
-                        <Typography variant="h6">{event.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {event.venue_name}
-                        </Typography>
-                        <Typography variant="body2">
-                          {new Date(event.startDate).toLocaleString()} -{" "}
-                          {new Date(event.endDate).toLocaleString()}
-                        </Typography>
-                        <Typography variant="body2" sx={{ mt: 1 }}>
-                          {event.description}
-                        </Typography>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Stack>
-              </Box>
-            )}
+            {user && <Bookmarks userId={user.id} events={bookmarkedEvents} />}
+
 
             {/* followed vendors */}
             {followedVendors.length > 0 && (
