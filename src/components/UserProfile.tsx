@@ -61,7 +61,9 @@ const UserProfile: React.FC<Props> = ({ user }) => {
         const vendorsWithImages = await Promise.all(
           res.data.map(async (vendor: FollowedVendor) => {
             try {
-              const imageRes = await axios.get(`/api/images/vendorId/${vendor.id}`);
+              const imageRes = await axios.get(
+                `/api/images/vendorId/${vendor.id}`
+              );
               const uploadedImage =
                 imageRes.data?.[0]?.referenceURL || vendor.profilePicture || "";
               return {
@@ -119,6 +121,7 @@ const UserProfile: React.FC<Props> = ({ user }) => {
       <Container maxWidth="md" sx={{ mt: 6 }}>
         {user ? (
           <Box>
+            {/* header */}
             <Stack
               direction="row"
               alignItems="center"
@@ -152,84 +155,14 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               </Button>
             </Stack>
 
-            {/* preferences */}
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Preferences:
-            </Typography>
-
-            {user.categories && user.categories.length > 0 ? (
-              <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
-                {user.categories.map((cat) => (
-                  <Box
-                    key={cat.id}
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      borderRadius: "8px",
-                      backgroundColor: "#e0e0e0",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {cat.name}
-                  </Box>
-                ))}
-              </Stack>
-            ) : (
-              <Typography>No preferences selected yet.</Typography>
-            )}
-
-            {/* acc */}
-            <Stack spacing={2}>
-              <Button
-                variant="contained"
-                fullWidth
-                component={Link}
-                to="/preferences"
-              >
-                User Preferences
-              </Button>
-
-              <Divider />
-
-              {user.is_vendor ? (
-                <Button
-                  component={Link}
-                  to="/vendorprofile"
-                  variant="text"
-                  fullWidth
-                >
-                  View Vendor Profile
-                </Button>
-              ) : (
-                <Button
-                  component={Link}
-                  to="/vendor-signup"
-                  variant="outlined"
-                  fullWidth
-                >
-                  Become a Vendor
-                </Button>
-              )}
-
-              <Divider />
-
-              <Button
-                variant="outlined"
-                color="error"
-                fullWidth
-                onClick={handleDeleteUser}
-              >
-                Delete My Account
-              </Button>
-            </Stack>
-
             {/* bookmarks */}
-            {user && <Bookmarks userId={user.id} events={bookmarkedEvents} />}
-
+            {user && bookmarkedEvents.length > 0 && (
+              <Bookmarks userId={user.id} events={bookmarkedEvents} />
+            )}
 
             {/* followed vendors */}
             {followedVendors.length > 0 && (
-              <Box mt={6}>
+              <Box mt={4} mb={4}>
                 <Typography variant="h6" gutterBottom>
                   Following:
                 </Typography>
@@ -280,6 +213,76 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                 </Box>
               </Box>
             )}
+
+            {/* prefs */}
+            <Typography variant="h6" fontWeight="bold" gutterBottom>
+              Preferences:
+            </Typography>
+
+            {user.categories && user.categories.length > 0 ? (
+              <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
+                {user.categories.map((cat) => (
+                  <Box
+                    key={cat.id}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: "8px",
+                      backgroundColor: "#e0e0e0",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {cat.name}
+                  </Box>
+                ))}
+              </Stack>
+            ) : (
+              <Typography>No preferences selected yet.</Typography>
+            )}
+
+            <Stack spacing={2}>
+              <Button
+                variant="contained"
+                fullWidth
+                component={Link}
+                to="/preferences"
+              >
+                User Preferences
+              </Button>
+
+              <Divider />
+
+              {user.is_vendor ? (
+                <Button
+                  component={Link}
+                  to="/vendorprofile"
+                  variant="text"
+                  fullWidth
+                >
+                  View Vendor Profile
+                </Button>
+              ) : (
+                <Button
+                  component={Link}
+                  to="/vendor-signup"
+                  variant="outlined"
+                  fullWidth
+                >
+                  Become a Vendor
+                </Button>
+              )}
+
+              <Divider />
+
+              <Button
+                variant="outlined"
+                color="error"
+                fullWidth
+                onClick={handleDeleteUser}
+              >
+                Delete My Account
+              </Button>
+            </Stack>
           </Box>
         ) : (
           <Typography textAlign="center" mt={4}>

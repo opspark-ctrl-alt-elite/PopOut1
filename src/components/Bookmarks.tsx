@@ -32,7 +32,7 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
   if (!events || !Array.isArray(events) || events.length === 0) return null;
 
   return (
-    <Box mt={6} px={{ xs: 2, sm: 3, md: 6 }}>
+    <Box mt={6}>
       <Typography variant="h6" gutterBottom>
         Bookmarks:
       </Typography>
@@ -103,7 +103,6 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
                 {event.venue_name}
               </Typography>
 
-              {/* cats */}
               {(event.Categories?.length ||
                 event.isFree ||
                 event.isKidFriendly ||
