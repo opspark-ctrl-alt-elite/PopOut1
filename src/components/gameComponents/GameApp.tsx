@@ -111,20 +111,44 @@ function isColliding(element1, element2) {
   // create state to represent the current score
   const [score, setScore] = useState(0);
 
+  // create state to represent the current time
+  const [time, setTime] = useState(0);
+
   // // initiate reference to the score state
   // const scoreRef = useRef(score);
 
-  // create an interval only on the first time this component is rendered
+
+
+  // // create an interval only on the first time this component is rendered
+  // useEffect(() => {
+
+  //   // create an interval to call the masterUpdate function every 30 ms
+  //   const interval = setInterval(masterUpdate, 30);
+
+  //   // return a callback function that cleans up (destroys) the interval
+  //   return () => {
+  //     clearInterval(interval);
+  //   }
+  // }, []);
+
+  // repeatedly call masterUpdate without making current states unusable in said function
   useEffect(() => {
+    console.log(time);
+    // set the time to a different number after 30 ms to call this useEffect again after 30 ms
+    setTimeout(() => {
+      setTime(prev => {
+        // prevent integer overflow
+        if (prev > 99) {
+          return 0;
+        }
+        return prev + 1;
+      });
+    }, 30);
+    // update all state values where necessary each frame
+    masterUpdate();
+  }, [ time ]);
 
-    // create an interval to call the masterUpdate function every 30 ms
-    const interval = setInterval(masterUpdate, 30);
 
-    // return a callback function that cleans up (destroys) the interval
-    return () => {
-      clearInterval(interval);
-    }
-  }, []);
 
   // check for when captcha is updated
   useEffect(() => {
