@@ -16,6 +16,7 @@ import {
   ListItem,
   ListItemText,
   Tooltip,
+  Divider,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -28,6 +29,7 @@ interface Props {
     name: string;
     email: string;
     profile_picture?: string;
+    is_vendor: boolean;
   } | null;
   notifications: any[];
   unreadCount: number;
@@ -42,7 +44,8 @@ const Navbar: React.FC<Props> = ({
   setUnreadCount,
   setNotifications,
 }) => {
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [profileAnchorEl, setProfileAnchorEl] = useState<null | HTMLElement>(null);
+  const [notificationsAnchorEl, setNotificationsAnchorEl] = useState<null | HTMLElement>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   useEffect(() => {
@@ -52,14 +55,33 @@ const Navbar: React.FC<Props> = ({
     });
   }, [setNotifications, setUnreadCount]);
 
-  const handleBellClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-    setUnreadCount(0);
+
+  const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
+    setProfileAnchorEl(event.currentTarget);
+    setNotificationsAnchorEl(null);
   };
 
-  const handleClose = () => {
-    setAnchorEl(null);
+  const handleProfileClose = () => {
+    setProfileAnchorEl(null);
   };
+
+  // Notifications dropdown logic
+  const handleBellClick = (event: React.MouseEvent<HTMLElement>) => {
+    setNotificationsAnchorEl(event.currentTarget);
+    setProfileAnchorEl(null);
+  };
+
+  const handleNotificationsClose = () => {
+    setNotificationsAnchorEl(null);
+  };
+
+  const handleLogout = () => {
+    // Logic to handle logout
+    window.location.href = "/auth/logout";
+  };
+
+  const openProfile = Boolean(profileAnchorEl);
+  const openNotifications = Boolean(notificationsAnchorEl);
 
   // side nav
   const toggleDrawer =
@@ -73,8 +95,6 @@ const Navbar: React.FC<Props> = ({
       }
       setDrawerOpen(open);
     };
-
-  const open = Boolean(anchorEl);
 
   return (
     <>
@@ -140,15 +160,9 @@ const Navbar: React.FC<Props> = ({
                 </Badge>
               </IconButton>
 
-              <IconButton component={Link} to="/userprofile">
+              <IconButton onClick={handleProfileClick}>
                 <Avatar src={user.profile_picture} alt={user.name} />
               </IconButton>
-
-              <Tooltip title="Logout">
-                <IconButton href="/auth/logout" color="error" sx={{ ml: 1 }}>
-                  <LogoutIcon />
-                </IconButton>
-              </Tooltip>
             </Stack>
           ) : (
             <Button variant="contained" href="/auth/google">
@@ -158,11 +172,45 @@ const Navbar: React.FC<Props> = ({
         </Toolbar>
       </AppBar>
 
+      {/* profile dropdown */}
+      <Popover
+        open={openProfile}
+        anchorEl={profileAnchorEl}
+        onClose={handleProfileClose}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
+      >
+        <Box sx={{ p: 2, minWidth: 200 }}>
+          <Typography variant="subtitle2">{user?.name}</Typography>
+          <Typography variant="body2" color="text.secondary">
+            {user?.email}
+          </Typography>
+
+          <Divider sx={{ my: 1 }} />
+
+          {/* Profile Links */}
+          <Link to="/userprofile" style={{ textDecoration: "none", color: "inherit" }}>
+            <Button fullWidth variant="text">View Profile</Button>
+          </Link>
+
+          {user?.is_vendor && (
+            <Link to="/vendorprofile" style={{ textDecoration: "none", color: "inherit" }}>
+              <Button fullWidth variant="text">View Vendor Profile</Button>
+            </Link>
+          )}
+
+          {/* Logout Button */}
+          <Button fullWidth variant="outlined" color="error" onClick={handleLogout} sx={{ mt: 2 }}>
+            Log Out
+          </Button>
+        </Box>
+      </Popover>
+
       {/* notifs */}
       <Popover
-        open={open}
-        anchorEl={anchorEl}
-        onClose={handleClose}
+        open={openNotifications}
+        anchorEl={notificationsAnchorEl}
+        onClose={handleNotificationsClose}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
@@ -194,35 +242,33 @@ const Navbar: React.FC<Props> = ({
           onKeyDown={toggleDrawer(false)}
         >
           <List>
-            <ListItem component={Link} to="/" button={true}>
+            <ListItem component={Link} to="/" button>
               <ListItemText primary="Home" />
             </ListItem>
 
             {user && !user.is_vendor && (
-              <>
-                <ListItem component={Link} to="/vendor-signup" button={true}>
-                  <ListItemText primary="Become a Vendor" />
-                </ListItem>
-              </>
+              <ListItem component={Link} to="/vendor-signup" button>
+                <ListItemText primary="Become a Vendor" />
+              </ListItem>
             )}
 
-            <ListItem component={Link} to="/game" button={true}>
+            <ListItem component={Link} to="/game" button>
               <ListItemText primary="Play Game" />
             </ListItem>
 
             {user && (
               <>
-                <ListItem component={Link} to="/map" button={true}>
+                <ListItem component={Link} to="/map" button>
                   <ListItemText primary="View Map" />
                 </ListItem>
-                <ListItem component={Link} to="/userprofile" button={true}>
+                <ListItem component={Link} to="/userprofile" button>
                   <ListItemText primary="Profile" />
                 </ListItem>
               </>
             )}
 
             {!user && (
-              <ListItem component="a" href="/auth/google" button={true}>
+              <ListItem component="a" href="/auth/google" button>
                 <ListItemText primary="Login with Google" />
               </ListItem>
             )}
