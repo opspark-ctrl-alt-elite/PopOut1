@@ -18,7 +18,7 @@ router.get("/:userId", async (req, res) => {
   }
 });
 
-//TODO: make more efficient by adding only new preferences and deleting only unwanted preferences instead of mass replacement
+//TODO: MAYBE make more efficient by adding only new preferences and deleting only unwanted preferences instead of mass replacement
 // Replace old preference records with new ones
 router.put("/:userId", async (req, res) => {
   const { userId } = req.params;

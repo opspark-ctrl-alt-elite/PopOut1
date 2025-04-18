@@ -7,25 +7,25 @@ class Preferences extends Model {}
 
 Preferences.init(
   {
-    userId: {
-      type: DataTypes.UUID,
-      allowNull: false,
-      primaryKey: true,
-      references: { 
-        model: User,
-        key: 'id',
-      }
-    },
-    categoryId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      primaryKey: true,
-      references: { 
-        model: Category,
-        key: 'id',
-      }
+    // userId: {
+    //   type: DataTypes.UUID,
+    //   allowNull: false,
+    //   primaryKey: true,
+    //   references: { 
+    //     model: User,
+    //     key: 'id',
+    //   }
+    // },
+    // categoryId: {
+    //   type: DataTypes.INTEGER,
+    //   allowNull: false,
+    //   primaryKey: true,
+    //   references: { 
+    //     model: Category,
+    //     key: 'id',
+    //   }
 
-    },
+    // },
   },
   {
     sequelize,
