@@ -61,7 +61,8 @@ const UserProfile: React.FC<Props> = ({ user }) => {
           res.data.map(async (vendor: FollowedVendor) => {
             try {
               const imageRes = await axios.get(`/api/images/vendorId/${vendor.id}`);
-              const uploadedImage = imageRes.data?.[0]?.referenceURL || vendor.profilePicture || "";
+              const uploadedImage =
+                imageRes.data?.[0]?.referenceURL || vendor.profilePicture || "";
               return {
                 ...vendor,
                 profilePicture: uploadedImage,
@@ -73,11 +74,21 @@ const UserProfile: React.FC<Props> = ({ user }) => {
         );
         setFollowedVendors(vendorsWithImages);
       } catch (err) {
-        console.error("Error fetching followed vendors", err);
+        console.error("err fetching followed vendors", err);
+      }
+    };
+
+    const fetchBookmarkedEvents = async () => {
+      try {
+        const res = await axios.get(`/users/${user.id}/bookmarked-events`);
+        setBookmarkedEvents(res.data);
+      } catch (err) {
+        console.error("err fetching bookmarked events", err);
       }
     };
 
     fetchFollowedVendors();
+    fetchBookmarkedEvents();
   }, [user]);
 
   const handleDeleteUser = () => {
@@ -99,32 +110,6 @@ const UserProfile: React.FC<Props> = ({ user }) => {
       .catch((err) => {
         console.error("Error deleting user:", err);
         alert("Failed to delete account.");
-      });
-  };
-
-  const handleViewBookmarkedEvents = () => {
-    if (!user) return;
-
-    axios
-      .get(`/users/${user.id}/bookmarked-events`)
-      .then((res) => setBookmarkedEvents(res.data))
-      .catch((err) => {
-        console.error("Error fetching bookmarked events:", err);
-      });
-  };
-
-  const handleUnbookmarkEvent = (eventId: string) => {
-    if (!user) return;
-
-    axios
-      .delete(`/users/${user.id}/unbookmark/${eventId}`)
-      .then(() => {
-        setBookmarkedEvents((prev) =>
-          prev.filter((event) => event.id !== eventId)
-        );
-      })
-      .catch((err) => {
-        console.error("Failed to unbookmark event", err);
       });
   };
 
@@ -166,9 +151,9 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               </Button>
             </Stack>
 
-            {/* prefs */}
+            {/* preferences */}
             <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Your Preferences:
+              Preferences:
             </Typography>
 
             {user.categories && user.categories.length > 0 ? (
@@ -192,17 +177,8 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               <Typography>No preferences selected yet.</Typography>
             )}
 
-            {/* Buttons */}
+            {/* acc */}
             <Stack spacing={2}>
-              <Button
-                variant="contained"
-                color="secondary"
-                fullWidth
-                onClick={handleViewBookmarkedEvents}
-              >
-                Bookmarked / Upcoming Events
-              </Button>
-
               <Button
                 variant="contained"
                 fullWidth
@@ -246,11 +222,11 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               </Button>
             </Stack>
 
-            {/* Bookmarked Events */}
+            {/* bookmarks */}
             {bookmarkedEvents.length > 0 && (
               <Box mt={6}>
                 <Typography variant="h6" gutterBottom>
-                  Your Bookmarked Events:
+                  Bookmarks:
                 </Typography>
                 <Stack spacing={2}>
                   {bookmarkedEvents.map((event) => (
@@ -264,16 +240,9 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                           {new Date(event.startDate).toLocaleString()} -{" "}
                           {new Date(event.endDate).toLocaleString()}
                         </Typography>
-                        <Typography variant="body2" sx={{ mb: 2 }}>
+                        <Typography variant="body2" sx={{ mt: 1 }}>
                           {event.description}
                         </Typography>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          onClick={() => handleUnbookmarkEvent(event.id)}
-                        >
-                          Remove Bookmark
-                        </Button>
                       </CardContent>
                     </Card>
                   ))}
@@ -285,7 +254,7 @@ const UserProfile: React.FC<Props> = ({ user }) => {
             {followedVendors.length > 0 && (
               <Box mt={6}>
                 <Typography variant="h6" gutterBottom>
-                  Vendors You Follow:
+                  Following:
                 </Typography>
                 <Box
                   display="grid"
