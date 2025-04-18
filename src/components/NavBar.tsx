@@ -5,7 +5,6 @@ import {
   Toolbar,
   Box,
   Typography,
-  Button,
   Avatar,
   Stack,
   IconButton,
@@ -15,8 +14,8 @@ import {
   List,
   ListItem,
   ListItemText,
-  Tooltip,
   Divider,
+  Button,
 } from "@mui/material";
 import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
@@ -55,7 +54,6 @@ const Navbar: React.FC<Props> = ({
     });
   }, [setNotifications, setUnreadCount]);
 
-
   const handleProfileClick = (event: React.MouseEvent<HTMLElement>) => {
     setProfileAnchorEl(event.currentTarget);
     setNotificationsAnchorEl(null);
@@ -65,7 +63,6 @@ const Navbar: React.FC<Props> = ({
     setProfileAnchorEl(null);
   };
 
-  // Notifications dropdown logic
   const handleBellClick = (event: React.MouseEvent<HTMLElement>) => {
     setNotificationsAnchorEl(event.currentTarget);
     setProfileAnchorEl(null);
@@ -76,7 +73,6 @@ const Navbar: React.FC<Props> = ({
   };
 
   const handleLogout = () => {
-    // Logic to handle logout
     window.location.href = "/auth/logout";
   };
 
@@ -161,7 +157,10 @@ const Navbar: React.FC<Props> = ({
               </IconButton>
 
               <IconButton onClick={handleProfileClick}>
-                <Avatar src={user.profile_picture} alt={user.name} />
+                <Avatar
+                  src={user.profile_picture}
+                  alt={user.name}
+                />
               </IconButton>
             </Stack>
           ) : (
@@ -180,29 +179,45 @@ const Navbar: React.FC<Props> = ({
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Box sx={{ p: 2, minWidth: 200 }}>
-          <Typography variant="subtitle2">{user?.name}</Typography>
+        <Box sx={{ p: 1.5, width: 180 }}>
+          <Typography variant="subtitle2" sx={{ fontFamily: "'Bebas Neue', sans-serif" }}>
+            {user?.name}
+          </Typography>
           <Typography variant="body2" color="text.secondary">
             {user?.email}
           </Typography>
 
           <Divider sx={{ my: 1 }} />
 
-          {/* Profile Links */}
-          <Link to="/userprofile" style={{ textDecoration: "none", color: "inherit" }}>
-            <Button fullWidth variant="text">View Profile</Button>
+          {/* links */}
+          <Link
+            to="/userprofile"
+            style={{ textDecoration: "none", color: "inherit" }}
+            onClick={handleProfileClose}
+          >
+            <Typography sx={{ padding: "8px", textAlign: "center", cursor: "pointer", fontFamily: "'Bebas Neue', sans-serif" }}>
+              View Profile
+            </Typography>
           </Link>
 
           {user?.is_vendor && (
-            <Link to="/vendorprofile" style={{ textDecoration: "none", color: "inherit" }}>
-              <Button fullWidth variant="text">View Vendor Profile</Button>
+            <Link
+              to="/vendorprofile"
+              style={{ textDecoration: "none", color: "inherit" }}
+              onClick={handleProfileClose}
+            >
+              <Typography sx={{ padding: "8px", textAlign: "center", cursor: "pointer", fontFamily: "'Bebas Neue', sans-serif" }}>
+                View Vendor Profile
+              </Typography>
             </Link>
           )}
 
-          {/* Logout Button */}
-          <Button fullWidth variant="outlined" color="error" onClick={handleLogout} sx={{ mt: 2 }}>
+          <Typography
+            sx={{ padding: "8px", textAlign: "center", cursor: "pointer", fontFamily: "'Bebas Neue', sans-serif" }}
+            onClick={handleLogout}
+          >
             Log Out
-          </Button>
+          </Typography>
         </Box>
       </Popover>
 
@@ -214,7 +229,7 @@ const Navbar: React.FC<Props> = ({
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <Box sx={{ p: 2, minWidth: 250 }}>
+        <Box sx={{ p: 2, minWidth: 150 }}>
           <Typography variant="subtitle1" fontWeight="bold">
             Notifications
           </Typography>
