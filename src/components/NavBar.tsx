@@ -142,11 +142,12 @@ const Navbar: React.FC<Props> = ({
                 variant="outlined"
                 size="small"
                 sx={{
-                  color: "black",
-                  borderColor: "black",
+                  backgroundColor: "transparent",
+                  color: "#000",
+                  border: "1px solid #000",
                   "&:hover": {
-                    borderColor: "black",
-                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                    backgroundColor: "rgba(0, 0, 0, 0.05)",
+                    borderColor: "#000",
                   },
                 }}
               >
