@@ -34,11 +34,11 @@ type Vendor = {
   id: string;
   businessName: string;
   email: string;
-  profilePicture?: string;
   description: string;
   website?: string;
   instagram?: string;
   facebook?: string;
+  profilePicture?: string;
   userId: string;
   createdAt: any;
   updatedAt: any;
@@ -47,11 +47,11 @@ type Vendor = {
 type Fields = {
   businessName?: string;
   email?: string;
-  profilePicture?: any;
   description?: string;
   website?: string;
   instagram?: string;
   facebook?: string;
+  profilePicture?: any;
 };
 
 type User = {
@@ -79,11 +79,11 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   const [fields, setFields] = useState<Fields>({
     businessName: "",
     email: "",
-    profilePicture: "",
     description: "",
     website: "",
     instagram: "",
     facebook: "",
+    profilePicture: ""
   });
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
     null
@@ -105,12 +105,33 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     p: 4,
   };
 
+  // make sure that you have the current vendor record in the state
   useEffect(() => {
     getVendor();
-  }, []);
+  }, [ user ]);
 
   useEffect(() => {
-    if (vendor) getUploadedImage();
+    if (vendor) {
+      getUploadedImage();
+      const {
+        businessName,
+        email,
+        description,
+        website,
+        instagram,
+        facebook,
+        profilePicture
+      } = vendor;
+      setFields({
+        businessName,
+        email,
+        description,
+        website: website ? website : "",
+        instagram: instagram ? instagram : "",
+        facebook: facebook ? facebook : "",
+        profilePicture: profilePicture ? profilePicture : "",
+      })
+    }
   }, [vendor]);
 
   // gets the vendor associated with the user
@@ -201,10 +222,11 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   // deletes the vendor account
   const deleteVendor = async () => {
     try {
+      // preemptively delete the vendor's uploaded image if there is one
+      await deleteUploadedImage();
       await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
-      // update the user in state to reflect vendor status
-      await getUser();
-      getVendor();
+      // update the user in state to reflect vendor status (will update vendor state as side effect)
+      getUser();
     } catch (err) {
       console.error("Error deleting vendor record: ", err);
     }

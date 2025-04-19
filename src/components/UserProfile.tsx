@@ -39,17 +39,54 @@ type User = {
   name: string;
   email: string;
   profile_picture?: string;
+  // TODO: get rid of the below line when ready
   categories?: Category[];
   is_vendor: boolean;
 };
 
+type Preference = {
+  userId: string;
+  categoryId: number;
+}
+
 type Props = {
   user: User | null;
+  categories: Category[] | null;
 };
 
-const UserProfile: React.FC<Props> = ({ user }) => {
+const UserProfile: React.FC<Props> = ({ user, categories }) => {
   const navigate = useNavigate();
   const [bookmarkedEvents, setBookmarkedEvents] = useState<Event[]>([]);
+  const [preferences, setPreferences] = useState<Category[]>([]);
+
+  // get preferences upon loading of user
+  useEffect(() => {
+    if (user && categories) {
+      getPreferences();
+    }
+  }, [user, categories]);
+
+  // get preferences from preferences db
+  const getPreferences = async () => {
+    try {
+      if (user !== null && categories !== null) {
+        let prefObj = await axios.get(`/api/preferences/${user.id}`);
+        const prefCats: Category[] = [];
+        prefObj.data.forEach((preference: Preference) => {
+          categories.forEach((category: Category) => {
+            if (preference.categoryId === category.id) {
+              prefCats.push(category);
+            }
+          })
+        })
+        setPreferences(prefCats);
+      } else {
+        setPreferences([]);
+      }
+    } catch (err) {
+      console.error("Error with getting user preferences:", err);
+    }
+  }
   const [followedVendors, setFollowedVendors] = useState<FollowedVendor[]>([]);
 
   useEffect(() => {
@@ -219,9 +256,9 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               Preferences:
             </Typography>
 
-            {user.categories && user.categories.length > 0 ? (
+            {preferences.length > 0 ? (
               <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
-                {user.categories.map((cat) => (
+                {preferences.map((cat) => (
                   <Box
                     key={cat.id}
                     sx={{

@@ -43,6 +43,11 @@ type Vendor = {
   updatedAt: any;
 };
 
+type Category = {
+  id: number;
+  name: string;
+}
+
 type Captcha = {
   beatCaptcha: boolean;
   wantsToBeVendor: boolean;
@@ -51,6 +56,7 @@ type Captcha = {
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [vendors, setVendors] = useState<Vendor[] | null>(null);
+  const [categories, setCategories] = useState<Category[] | null>(null);
   const [captcha, setCaptcha] = useState<Captcha>({
     beatCaptcha: false,
     wantsToBeVendor: false,
@@ -59,6 +65,20 @@ const App: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
+  // function to retrieve event categories from the db
+  const getCategories = async () => {
+    try {
+      const categoriesObj = await axios.get(`/api/categories`, {
+        withCredentials: true,
+      });
+      setCategories(categoriesObj.data);
+    } catch (err) {
+      setCategories(null);
+      console.error("Error retrieving category records:", err);
+    }
+  }
+
+  // function to retrieve the user record associated with the current user from the db
   const getUser = async () => {
     try {
       const userObj = await axios.get(`/user/me`, {
@@ -88,18 +108,20 @@ const App: React.FC = () => {
         console.error("Error fetching user:", err);
       });
 
-    fetch("/vendor/all")
+    axios.get("api/vendor/all")
+      // .then((res) => {
+      //   if (!res.data) throw new Error("err fetching vendors");
+      //   return res;
+      // })
       .then((res) => {
-        if (!res.ok) throw new Error("err fetching vendors");
-        return res.json();
-      })
-      .then((data) => {
-        console.log("Client Side: getting all vendors: ", data);
-        if (data) setVendors(data);
+        console.log("Client Side: getting all vendors: ", res.data);
+        if (res) setVendors(res.data);
       })
       .catch((err) => {
         // console.error("Error fetching vendors:", err);
       });
+
+      getCategories();
   }, []);
 
   useEffect(() => {
@@ -142,6 +164,8 @@ const App: React.FC = () => {
           }
         />
         <Route path="/map" element={<Map user={user} />} />
+        <Route path="/userprofile" element={<UserProfile user={user} categories={categories}/>} />
+        <Route path="/edit-profile" element={<EditProfile user={user} />} />
         <Route path="/userprofile" element={<UserProfile user={user} />} />
         <Route path="/edit-profile" element={<EditProfile user={user} setUser={setUser} />} />
         <Route path="/vendorprofile" element={<VendorProfile user={user} getUser={getUser} />} />
