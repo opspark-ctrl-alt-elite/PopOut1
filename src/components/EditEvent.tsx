@@ -1,4 +1,3 @@
-// EditEvent.tsx
 import React, { useEffect, useState, useRef } from "react";
 import axios from "axios";
 import {
@@ -31,23 +30,21 @@ const EditEvent = () => {
   const navigate = useNavigate();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
-  // Form state; note the added field "image_publicId" for Cloudinary replacements/deletions.
   const [form, setForm] = useState<any>(null);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
-  const [modal, setModal] = useState<{
-    open: boolean;
-    title: string;
-    message: string;
-    success: boolean;
-  }>({ open: false, title: "", message: "", success: false });
+  const [modal, setModal] = useState({
+    open: false,
+    title: "",
+    message: "",
+    success: false,
+  });
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
     libraries,
   });
 
-  // Fetch the event details along with categories.
   useEffect(() => {
     const fetchEvent = async () => {
       try {
@@ -65,8 +62,6 @@ const EditEvent = () => {
           });
           return;
         }
-        // Extend the event data with "image_publicId". If not provided by your DB,
-        // initialize it to an empty string—your first upload will set it.
         setForm({
           ...event,
           location: event.location || "",
@@ -135,29 +130,20 @@ const EditEvent = () => {
     }
   };
 
-  // Image upload handler for editing:
-  // • If no image exists (i.e. image_publicId is empty), use the "new" route.
-  // • If an image exists, use the replacement route.
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const formData = new FormData();
-    // The partner's routes expect the file under the field "imageUpload"
     formData.append("imageUpload", file);
 
     try {
-      let endpoint = "";
-      if (form.image_publicId) {
-        // Replacement: use the route that accepts publicIds. 
-        endpoint = `/api/images/${form.image_publicId}`;
-      } else {
-        // New upload: use a route keyed by the event.
-        endpoint = `/api/images/event/${id}`;
-      }
+      const endpoint = form.image_publicId
+        ? `/api/images/${form.image_publicId}`
+        : `/api/images/event/${id}`;
       const response = await axios.post(endpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      // The server returns an array of upload results.
       const uploadResult = Array.isArray(response.data) ? response.data[0] : response.data;
       setForm((prev: any) => ({
         ...prev,
@@ -169,14 +155,12 @@ const EditEvent = () => {
     }
   };
 
-  // Delete the current image by calling the delete endpoint.
   const handleDeleteImage = async () => {
-    if (!form.image_publicId) return; // nothing to delete
+    if (!form.image_publicId) return;
     try {
       await axios.delete("/api/images", {
         data: { publicIds: [form.image_publicId] },
       });
-      // Clear out the image information in state.
       setForm((prev: any) => ({
         ...prev,
         image_url: "",
@@ -205,19 +189,16 @@ const EditEvent = () => {
 
   const handleModalClose = () => {
     setModal((prev: any) => ({ ...prev, open: false }));
-    if (modal.success) {
-      navigate("/active-events");
-    }
+    if (modal.success) navigate("/active-events");
   };
 
-  if (!isLoaded) return <div>Loading...</div>;
-  if (!form) return <Typography>Loading...</Typography>;
+  if (!isLoaded || !form) return <Typography>Loading...</Typography>;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container sx={{ mt: 4 }}>
-        <Typography variant="h4">Edit Event</Typography>
-        <Stack spacing={2} sx={{ mt: 2 }}>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Typography variant="h4" gutterBottom>Edit Event</Typography>
+        <Stack spacing={3}>
           <TextField
             name="title"
             label="Title *"
@@ -227,14 +208,17 @@ const EditEvent = () => {
             helperText={errors.title}
             fullWidth
           />
+
           <TextField
             name="description"
-            label="Description"
+            label="Description *"
             value={form.description}
             onChange={handleChange}
             fullWidth
             multiline
+            rows={4}
           />
+
           <DateTimePicker
             label="Start Date *"
             value={form.startDate ? new Date(form.startDate) : null}
@@ -244,13 +228,11 @@ const EditEvent = () => {
                 startDate: newValue ? newValue.toISOString() : "",
               }))
             }
-            inputFormat="MM/dd/yyyy hh:mm aa"
-            ampm
-            onError={() => null}
             renderInput={(params) => (
               <TextField {...params} fullWidth error={!!errors.startDate} helperText={errors.startDate} />
             )}
           />
+
           <DateTimePicker
             label="End Date *"
             value={form.endDate ? new Date(form.endDate) : null}
@@ -260,13 +242,11 @@ const EditEvent = () => {
                 endDate: newValue ? newValue.toISOString() : "",
               }))
             }
-            inputFormat="MM/dd/yyyy hh:mm aa"
-            ampm
-            onError={() => null}
             renderInput={(params) => (
               <TextField {...params} fullWidth error={!!errors.endDate} helperText={errors.endDate} />
             )}
           />
+
           <TextField
             name="venue_name"
             label="Venue *"
@@ -276,22 +256,34 @@ const EditEvent = () => {
             helperText={errors.venue_name}
             fullWidth
           />
-          <Autocomplete
-            onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-            onPlaceChanged={handlePlaceChanged}
-          >
+
+          <Autocomplete onLoad={(a) => (autocompleteRef.current = a)} onPlaceChanged={handlePlaceChanged}>
             <TextField
               label="Location *"
+              name="location"
               value={form.location}
               onChange={handleChange}
-              name="location"
               error={!!errors.location}
-              helperText={errors.location || "Start typing address..."}
+              helperText={errors.location || "Type to search..."}
               fullWidth
             />
           </Autocomplete>
+
           <Box>
-            <Button variant="outlined" component="label">
+            <Button
+              variant="contained"
+              size="small"
+              component="label"
+              sx={{
+                mt: 2,
+                borderRadius: 2,
+                textTransform: "none",
+                boxShadow: 1,
+                backgroundColor: "#000",
+                color: "#fff",
+                "&:hover": { backgroundColor: "#333" },
+              }}
+            >
               {form.image_url ? "Replace Image" : "Upload Image"}
               <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
             </Button>
@@ -301,32 +293,28 @@ const EditEvent = () => {
                   <img
                     src={form.image_url}
                     alt="Event"
-                    style={{ maxWidth: "100%", maxHeight: "200px", objectFit: "cover" }}
+                    style={{ width: "100%", maxHeight: "200px", objectFit: "cover" }}
                   />
                 </Box>
                 <Button
-                  variant="outlined"
+                  variant="contained"
+                  size="small"
                   color="error"
                   onClick={handleDeleteImage}
-                  sx={{ mt: 1 }}
+                  sx={{ mt: 2, borderRadius: 2, textTransform: "none", boxShadow: 1 }}
                 >
                   Delete Image
                 </Button>
               </>
             )}
           </Box>
-          <FormControlLabel
-            control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />}
-            label="Free?"
-          />
-          <FormControlLabel
-            control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />}
-            label="Kid-Friendly?"
-          />
-          <FormControlLabel
-            control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />}
-            label="Sober?"
-          />
+
+          <FormGroup row>
+            <FormControlLabel control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />} label="Free" />
+            <FormControlLabel control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />} label="Kid-Friendly" />
+            <FormControlLabel control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />} label="Sober" />
+          </FormGroup>
+
           {availableCategories.length > 0 && (
             <>
               <FormLabel component="legend">Categories</FormLabel>
@@ -346,26 +334,45 @@ const EditEvent = () => {
               </FormGroup>
             </>
           )}
-          <Button variant="contained" onClick={handleSubmit}>
-            Update
+
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleSubmit}
+            sx={{
+              mt: 2,
+              borderRadius: 2,
+              textTransform: "none",
+              boxShadow: 1,
+              backgroundColor: "#000",
+              color: "#fff",
+              "&:hover": { backgroundColor: "#333" },
+            }}
+          >
+            Update Event
           </Button>
         </Stack>
-        <Dialog
-          open={modal.open}
-          onClose={handleModalClose}
-          hideBackdrop
-          disableEnforceFocus
-          aria-labelledby="notification-dialog-title"
-          aria-describedby="notification-dialog-description"
-        >
-          <DialogTitle id="notification-dialog-title">{modal.title}</DialogTitle>
+
+        <Dialog open={modal.open} onClose={handleModalClose}>
+          <DialogTitle>{modal.title}</DialogTitle>
           <DialogContent>
-            <DialogContentText id="notification-dialog-description">
-              {modal.message}
-            </DialogContentText>
+            <DialogContentText>{modal.message}</DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleModalClose}>Close</Button>
+            <Button
+              size="small"
+              onClick={handleModalClose}
+              sx={{
+                borderRadius: 2,
+                textTransform: "none",
+                boxShadow: 1,
+                backgroundColor: "#000",
+                color: "#fff",
+                "&:hover": { backgroundColor: "#333" },
+              }}
+            >
+              Close
+            </Button>
           </DialogActions>
         </Dialog>
       </Container>

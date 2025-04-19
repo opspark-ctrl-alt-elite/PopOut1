@@ -393,14 +393,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               >
                 Create New Event
               </Button>
-              <Button
-                variant="contained"
-                fullWidth
-                component={Link}
-                to="/reviews"
-              >
-                Reviews
-              </Button>
               <Divider />
               <Button
                 variant="outlined"
@@ -436,6 +428,11 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     margin="normal"
                     value={fields[key as keyof Fields]}
                     onChange={handleUpdateFieldChange}
+                    placeholder={
+                      ["website","instagram","facebook"].includes(key)
+                        ? "Link must start with http://"
+                        : undefined
+                    }
                   />
                 ))}
                 <Button
