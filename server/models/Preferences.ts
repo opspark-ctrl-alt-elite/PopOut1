@@ -3,34 +3,34 @@ import sequelize from './index';
 import User from './User';
 import Category from './Category';
 
-class Preferences extends Model {}
+class Preference extends Model {}
 
-Preferences.init(
+Preference.init(
   {
     userId: {
       type: DataTypes.UUID,
       allowNull: false,
       primaryKey: true,
-      references: { 
-        model: User,
-        key: 'id',
-      }
+      // references: { 
+      //   model: User,
+      //   key: 'id',
+      // }
     },
     categoryId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       primaryKey: true,
-      references: { 
-        model: Category,
-        key: 'id',
-      }
+      // references: { 
+      //   model: Category,
+      //   key: 'id',
+      // }
 
     },
   },
   {
     sequelize,
-    modelName: 'Preferences',
-    tableName: 'preferences',
+    modelName: 'Preference',
+    tableName: 'Preferences',
     timestamps: false,
   }
 );
@@ -40,4 +40,4 @@ Preferences.init(
 
 // Category.belongsToMany(User, { through: Preferences, foreignKey: 'categoryId', });
 
-export default Preferences;
+export default Preference;

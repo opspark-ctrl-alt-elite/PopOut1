@@ -16,7 +16,6 @@ Event.hasMany(Review, { foreignKey: 'eventId' });
 Review.belongsTo(Vendor, { foreignKey: 'vendorId' });
 Vendor.hasMany(Review, { foreignKey: 'vendorId' });
 
-
 User.hasOne(Vendor, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Vendor.belongsTo(User, { foreignKey: 'userId' });
 
@@ -29,11 +28,25 @@ Event.belongsTo(Vendor, { foreignKey: 'vendor_id', as: 'vendor' });
 Event.belongsToMany(Category, { through: 'EventCategories', foreignKey: 'eventId' });
 Category.belongsToMany(Event, { through: 'EventCategories', foreignKey: 'categoryId' });
 
-User.belongsToMany(Category, { through: 'Preferences', foreignKey: 'userId' });
-Category.belongsToMany(User, { through: 'Preferences', foreignKey: 'categoryId' });
+
+User.belongsToMany(Category, { through: Preferences, foreignKey: 'userId' });
+Category.belongsToMany(User, { through: Preferences, foreignKey: 'categoryId' });
+
+///// Preferences.belongsTo(User);
+///// Preferences.belongsTo(Category);
+
+// User.hasMany(Preferences, { foreignKey: 'userId', onDelete: 'CASCADE' });
+// Preferences.belongsTo(User, { foreignKey: 'userId'});
+
+// Category.hasMany(Preferences, { foreignKey: 'categoryId', onDelete: 'CASCADE' });
+// Preferences.belongsTo(Category, { foreignKey: 'categoryId' });
 
 User.belongsToMany(Vendor, { through: UserFollowsVendor, foreignKey: 'userId', as: 'followedVendors', });
 Vendor.belongsToMany(User, { through: UserFollowsVendor, foreignKey: 'vendorId', as: 'followers', });
+
+// User.belongsToMany(Category, { through: Preferences, foreignKey: 'userId', });
+//TODO: may use NULLABLE to make work
+// Category.belongsToMany(User, { through: Preferences, foreignKey: 'categoryId', });
 
 User.belongsToMany(Event, { through: 'UserBookmarksEvent', foreignKey: 'userId', as: 'bookmarkedEvents', });
 Event.belongsToMany(User, { through: 'UserBookmarksEvent', foreignKey: 'eventId', as: 'usersWhoBookmarked', });
