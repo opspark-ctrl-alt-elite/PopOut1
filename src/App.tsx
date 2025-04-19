@@ -118,7 +118,7 @@ const App: React.FC = () => {
         if (res) setVendors(res.data);
       })
       .catch((err) => {
-        console.error("Error fetching vendors:", err);
+        // console.error("Error fetching vendors:", err);
       });
 
       getCategories();

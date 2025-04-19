@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import axios from "axios";
 import formatDate from "../utils/formatDate";
-
 import {
   Modal,
   Box,
@@ -29,17 +29,20 @@ type Event = {
   isKidFriendly: boolean;
   isSober: boolean;
   vendor: {
-    id: any;
+    id: string;
     businessName: string;
     averageRating?: number;
   };
   Categories?: { name: string }[];
+  latitude: number;
+  longitude: number;
 };
 
 interface Props {
   open: boolean;
   onClose: () => void;
   event: Event | null;
+  currentUserId: string;
 }
 
 const style = {
@@ -55,10 +58,55 @@ const style = {
   maxWidth: 500,
 };
 
-const EventDetails: React.FC<Props> = ({ open, onClose, event }) => {
+const EventDetails: React.FC<Props> = ({
+  open,
+  onClose,
+  event,
+  currentUserId,
+}) => {
   const [bookmarked, setBookmarked] = useState(false);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!event || !currentUserId) return;
+
+    axios
+      .get(`/users/${currentUserId}/bookmarked-events`)
+      .then((res) => {
+        const alreadyBookmarked = res.data.some(
+          (e: Event) => e.id === event.id
+        );
+        setBookmarked(alreadyBookmarked);
+      })
+      .catch((err) => console.error("bookmark fail", err));
+  }, [event, currentUserId]);
+
+  const handleToggleBookmark = async () => {
+    if (!event || !currentUserId) {
+      console.warn("no event/id");
+      return;
+    }
+
+    try {
+      if (bookmarked) {
+        await axios.delete(`/users/${currentUserId}/unbookmark/${event.id}`);
+        setBookmarked(false);
+        console.log("bookmark removed");
+      } else {
+        await axios.post(`/${currentUserId}/bookmark/${event.id}`);
+        setBookmarked(true);
+        console.log("event bookmarked");
+      }
+    } catch (err) {
+      console.error("bookmark err", err);
+    }
+  };
 
   if (!event) return null;
+
+  const handleViewOnMap = () => {
+    navigate(`/map?lat=${event.latitude}&lng=${event.longitude}`);
+  };
 
   return (
     <Modal open={open} onClose={onClose}>
@@ -101,6 +149,18 @@ const EventDetails: React.FC<Props> = ({ open, onClose, event }) => {
           <PlaceIcon fontSize="small" />
           <Typography variant="body2" fontWeight="bold">
             {event.venue_name}
+          </Typography>
+          <Typography
+            variant="body2"
+            sx={{
+              fontSize: "0.75rem",
+              color: "#1976d2",
+              cursor: "pointer",
+              ml: 1,
+            }}
+            onClick={handleViewOnMap}
+          >
+            View on Map
           </Typography>
         </Stack>
 
@@ -160,10 +220,10 @@ const EventDetails: React.FC<Props> = ({ open, onClose, event }) => {
             />
           </Box>
           <Tooltip
-            title={bookmarked ? "Remove from bookmarks" : "Bookmark this event"}
+            title={bookmarked ? "Remove bookmark" : "Bookmark this PopUp"}
           >
             <IconButton
-              onClick={() => setBookmarked((prev) => !prev)}
+              onClick={handleToggleBookmark}
               aria-label={bookmarked ? "Unbookmark" : "Bookmark"}
               sx={{ ml: 2 }}
             >

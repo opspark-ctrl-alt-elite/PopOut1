@@ -3,8 +3,6 @@ import axios from "axios";
 import { Link } from "react-router-dom";
 import EventDetails from "./EventDetails";
 import formatDate from "../utils/formatDate";
-// import BookmarkButton from "./BookmarkButton";
-
 import {
   Box,
   Typography,
@@ -18,10 +16,12 @@ import {
   Chip,
   IconButton,
   Button,
+  Fade,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import VisibilityIcon from "@mui/icons-material/Visibility";
 
 type Event = {
   id: string;
@@ -30,6 +30,7 @@ type Event = {
   startDate: string;
   endDate: string;
   venue_name: string;
+  image_url?: string;
   isFree: boolean;
   isKidFriendly: boolean;
   isSober: boolean;
@@ -65,12 +66,14 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     isKidFriendly: false,
     isSober: false,
   });
-  const [bookmarkedEventIds, setBookmarkedEventIds] = useState<string[]>([]);
-
-  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
-
+  const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const itemsPerPage = isMobile ? 2 : 3;
 
   const fetchCategories = async () => {
     const res = await axios.get("/api/categories");
@@ -87,34 +90,18 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
       const res = await axios.get("/api/events", { params });
       const data = Array.isArray(res.data) ? res.data : res.data.events;
-
       const now = new Date();
-      const upcomingEvents = data.filter((event: Event) => {
-        const eventEnd = new Date(event.endDate);
-        return eventEnd >= now;
-      });
+      const upcomingEvents = data.filter(
+        (event: Event) => new Date(event.endDate) >= now
+      );
 
       setEvents(upcomingEvents);
+      setCurrentIndex(0);
     } catch (err) {
-      console.error("Error fetching public events:", err);
+      console.error("Error fetching events:", err);
       setEvents([]);
     }
   }, [filters]);
-
-  const fetchBookmarkedEventIds = async () => {
-    if (!user) return;
-    try {
-      const res = await axios.get(`/api/users/${user.id}/bookmarked-events`);
-      const bookmarkedIds = res.data.map((event: Event) => event.id);
-      setBookmarkedEventIds(bookmarkedIds);
-    } catch (err) {
-      console.error("Failed to fetch bookmarked event IDs:", err);
-    }
-  };
-
-  const handleToggleBookmark = async () => {
-    await fetchBookmarkedEventIds(); // refresh after toggle
-  };
 
   useEffect(() => {
     fetchCategories();
@@ -125,17 +112,31 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
   }, [fetchEvents]);
 
   useEffect(() => {
-    fetchBookmarkedEventIds();
-  }, [user]);
+    const hasFilters =
+      filters.category !== "" ||
+      filters.isFree ||
+      filters.isKidFriendly ||
+      filters.isSober;
 
-  const scroll = (dir: "left" | "right") => {
-    const scrollAmount = 320;
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({
-        left: dir === "left" ? -scrollAmount : scrollAmount,
-        behavior: "smooth",
-      });
-    }
+    if (modalOpen || isHovered || hasFilters) return;
+
+    const interval = setInterval(() => {
+      setCurrentIndex((prev) =>
+        events.length ? (prev + itemsPerPage) % events.length : 0
+      );
+    }, 10000);
+
+    return () => clearInterval(interval);
+  }, [events.length, itemsPerPage, isHovered, modalOpen, filters]);
+
+  const handleArrowClick = (direction: "left" | "right") => {
+    setCurrentIndex((prev) => {
+      const newIndex =
+        direction === "left"
+          ? (prev - itemsPerPage + events.length) % events.length
+          : (prev + itemsPerPage) % events.length;
+      return newIndex;
+    });
   };
 
   const toggleChip = (key: keyof typeof filters) => {
@@ -152,16 +153,19 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     setSelectedEvent(null);
   };
 
+  const visibleEvents = events.slice(currentIndex, currentIndex + itemsPerPage);
+
   return (
-    <Box sx={{ mt: 4, px: 2 }}>
-      <Stack spacing={2} direction="row" flexWrap="wrap" mb={4}>
+    <Box sx={{ mt: 4, px: { xs: 2, sm: 3, md: 6 } }}>
+      {/* filters */}
+      <Stack spacing={2} direction="row" flexWrap="wrap" mb={2}>
         <FormControl sx={{ minWidth: 160 }} size="small">
           <InputLabel>Category</InputLabel>
           <Select
             value={filters.category}
             label="Category"
-            onChange={(event) =>
-              setFilters((fil) => ({ ...fil, category: event.target.value }))
+            onChange={(e) =>
+              setFilters((fil) => ({ ...fil, category: e.target.value }))
             }
           >
             <MenuItem value="">All</MenuItem>
@@ -196,52 +200,41 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         />
       </Stack>
 
-      <Box sx={{ position: "relative" }}>
-        <IconButton
-          onClick={() => scroll("left")}
-          sx={{
-            position: "absolute",
-            top: "35%",
-            left: 0,
-            zIndex: 2,
-            bgcolor: "#fff",
-            boxShadow: 2,
-            "&:hover": { bgcolor: "#f0f0f0" },
-          }}
-        >
-          <ArrowBackIosIcon />
-        </IconButton>
+      {/* header */}
+      <Stack
+        direction="row"
+        alignItems="center"
+        justifyContent="space-between"
+        mb={1}
+      >
+        <Typography variant="h4">Upcoming Popups</Typography>
+        <Box>
+          <IconButton onClick={() => handleArrowClick("left")}>
+            <ArrowBackIosIcon />
+          </IconButton>
+          <IconButton onClick={() => handleArrowClick("right")}>
+            <ArrowForwardIosIcon />
+          </IconButton>
+        </Box>
+      </Stack>
 
-        <IconButton
-          onClick={() => scroll("right")}
-          sx={{
-            position: "absolute",
-            top: "35%",
-            right: 0,
-            zIndex: 2,
-            bgcolor: "#fff",
-            boxShadow: 2,
-            "&:hover": { bgcolor: "#f0f0f0" },
-          }}
-        >
-          <ArrowForwardIosIcon />
-        </IconButton>
-
-        <Box
-          ref={scrollRef}
-          sx={{
-            display: "flex",
-            gap: 3,
-            py: 2,
-            px: 5,
-            overflowX: "scroll",
-            scrollbarWidth: "none",
-            "&::-webkit-scrollbar": { display: "none" },
-          }}
-        >
-          {events.map((event) => (
+      {/* events */}
+      <Box
+        ref={scrollRef}
+        onMouseEnter={() => setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
+        sx={{
+          display: "flex",
+          gap: 3,
+          py: 2,
+          overflowX: "auto",
+          scrollBehavior: "smooth",
+          "&::-webkit-scrollbar": { display: "none" },
+        }}
+      >
+        {visibleEvents.map((event, index) => (
+          <Fade key={`${event.id}-${index}`} in={true} timeout={600}>
             <Card
-              key={event.id}
               sx={{
                 minWidth: 300,
                 maxWidth: 300,
@@ -250,10 +243,23 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
               }}
             >
               <CardContent>
+                {event.image_url && (
+                  <Box mb={2}>
+                    <img
+                      src={event.image_url}
+                      alt={event.title}
+                      style={{
+                        width: "100%",
+                        height: "160px",
+                        objectFit: "cover",
+                        borderRadius: "6px",
+                      }}
+                    />
+                  </Box>
+                )}
                 <Typography variant="h6" gutterBottom>
                   {event.title}
                 </Typography>
-
                 <Typography variant="body2" color="text.secondary">
                   Hosted by{" "}
                   {event.vendor?.id ? (
@@ -270,7 +276,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                     event.vendor?.businessName
                   )}
                 </Typography>
-
                 <Typography variant="body2">{event.venue_name}</Typography>
                 <Typography variant="body2">
                   {formatDate(event.startDate, event.endDate)}
@@ -279,7 +284,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                   {event.description}
                 </Typography>
 
-                {/* chips */}
                 {(event.Categories?.length ||
                   event.isFree ||
                   event.isKidFriendly ||
@@ -325,7 +329,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                 <Button
                   variant="contained"
                   size="small"
-                  startIcon={<VisibilityIcon />}
                   onClick={() => handleOpenModal(event)}
                   sx={{
                     mt: 2,
@@ -334,24 +337,22 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                     boxShadow: 1,
                     backgroundColor: "#000",
                     color: "#fff",
-                    "&:hover": {
-                      backgroundColor: "#333",
-                    },
+                    "&:hover": { backgroundColor: "#333" },
                   }}
                 >
                   Details
                 </Button>
               </CardContent>
             </Card>
-          ))}
-        </Box>
+          </Fade>
+        ))}
       </Box>
 
-      {/* event details */}
       <EventDetails
         open={modalOpen}
-        onClose={handleCloseModal}
+        onClose={() => setModalOpen(false)}
         event={selectedEvent}
+        currentUserId={user?.id}
       />
     </Box>
   );

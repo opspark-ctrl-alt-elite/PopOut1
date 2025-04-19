@@ -16,7 +16,7 @@ import {
   IconButton,
   InputBase,
 } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import BrushIcon from "@mui/icons-material/Brush";
@@ -42,12 +42,12 @@ const containerStyle = {
   height: "calc(100vh - 64px)",
 };
 
-const center = {
+const defaultCenter = {
   lat: 29.9511,
   lng: -90.0715,
 };
 
-const libraries: "places"[] = ["places"];
+const libraries: ("places")[] = ["places"];
 
 const getCategoryIcon = (category: string) => {
   switch (category) {
@@ -92,34 +92,44 @@ const getMarkerIcon = (category: string) => {
 };
 
 const Map: React.FC<Props> = ({ user }) => {
-  const [selected, setSelected] = useState<google.maps.LatLngLiteral | null>(
-    null
-  );
-  const [activeEvent, setActiveEvent] = useState<any | null>(null);
+  const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral>(defaultCenter);
+  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
+  const [activeEvent, setActiveEvent] = useState<any | null>(null); // Track the active event
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+  const location = useLocation();
+  const queryParams = new URLSearchParams(location.search);
+  const selectedLat = parseFloat(queryParams.get("lat") || "");
+  const selectedLng = parseFloat(queryParams.get("lng") || "");
+  const hasSelectedCoords = !isNaN(selectedLat) && !isNaN(selectedLng);
 
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
     libraries,
   });
 
-  // geolocation
+  // map center
   useEffect(() => {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const { latitude, longitude } = position.coords;
-        setSelected({ lat: latitude, lng: longitude });
-      },
-      (error) => {
-        console.warn("geolocation err", error);
-        setSelected(center);
-      }
-    );
-  }, []);
+    if (hasSelectedCoords) {
+      setMapCenter({ lat: selectedLat, lng: selectedLng });
+    } else {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const { latitude, longitude } = position.coords;
+          const loc = { lat: latitude, lng: longitude };
+          setUserLocation(loc);
+          setMapCenter(loc);
+        },
+        (error) => {
+          console.warn("Geolocation error", error);
+          setMapCenter(defaultCenter);
+        }
+      );
+    }
+  }, [hasSelectedCoords, selectedLat, selectedLng]);
 
-  // fetch all events
   useEffect(() => {
     const fetchEvents = async () => {
       try {
@@ -127,23 +137,14 @@ const Map: React.FC<Props> = ({ user }) => {
         const data = await res.json();
         setEvents(data);
       } catch (err) {
-        console.error("err fetching all events", err);
+        console.error("Error fetching events", err);
       }
     };
 
     fetchEvents();
   }, []);
 
-  useEffect(() => {
-    if (!selected) {
-      navigator.geolocation.getCurrentPosition((position) => {
-        const { latitude, longitude } = position.coords;
-        setSelected({ lat: latitude, lng: longitude });
-      });
-    }
-  }, []);
-
-  // useEffect(() => {
+    // useEffect(() => {
   //   if (!selected) return;
 
   //   // const fetchEvents = async () => {
@@ -178,40 +179,15 @@ const Map: React.FC<Props> = ({ user }) => {
   return (
     <Box>
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
-        <Toolbar
-          sx={{
-            flexWrap: "wrap",
-            justifyContent: "space-between",
-            gap: 2,
-            px: 2,
-            py: 1,
-          }}
-        >
-          <Stack
-            direction="row"
-            spacing={2}
-            alignItems="center"
-            flexWrap="wrap"
-          >
-            <Typography
-              component={Link}
-              to="/"
-              variant="h5"
-              fontWeight="bold"
-              sx={{ textDecoration: "none", color: "inherit" }}
-            >
-              PopOut
-            </Typography>
-
+        <Toolbar sx={{ flexWrap: "wrap", justifyContent: "space-between", gap: 2, px: 2, py: 1 }}>
+          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
             <Autocomplete
-              onLoad={(autocomplete) =>
-                (autocompleteRef.current = autocomplete)
-              }
+              onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
               onPlaceChanged={() => {
                 const place = autocompleteRef.current?.getPlace();
                 const location = place?.geometry?.location;
                 if (location) {
-                  setSelected({ lat: location.lat(), lng: location.lng() });
+                  setMapCenter({ lat: location.lat(), lng: location.lng() });
                 }
               }}
             >
@@ -227,28 +203,14 @@ const Map: React.FC<Props> = ({ user }) => {
               />
             </Autocomplete>
 
-            <Stack
-              direction="row"
-              spacing={1}
-              alignItems="center"
-              sx={{ ml: 2 }}
-            >
-              {[
-                "Food & Drink",
-                "Art",
-                "Music",
-                "Sports & Fitness",
-                "Hobbies",
-              ].map((cat) => (
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ ml: 2 }}>
+              {["Food & Drink", "Art", "Music", "Sports & Fitness", "Hobbies"].map((cat) => (
                 <IconButton
                   key={cat}
                   size="small"
-                  onClick={() =>
-                    setActiveCategory((prev) => (prev === cat ? null : cat))
-                  }
+                  onClick={() => setActiveCategory((prev) => (prev === cat ? null : cat))}
                   sx={{
-                    bgcolor:
-                      activeCategory === cat ? categoryColors[cat] : "#f0f0f0",
+                    bgcolor: activeCategory === cat ? categoryColors[cat] : "#f0f0f0",
                     color: activeCategory === cat ? "#fff" : "#000",
                     "&:hover": {
                       bgcolor: categoryColors[cat],
@@ -278,28 +240,18 @@ const Map: React.FC<Props> = ({ user }) => {
               )}
             </Stack>
           </Stack>
-
-          <Stack direction="row" spacing={2} alignItems="center">
-            <IconButton component={Link} to="/userprofile">
-              <Avatar src={user?.profile_picture} alt={user?.name || "User"} />
-            </IconButton>
-          </Stack>
         </Toolbar>
       </AppBar>
 
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={selected || center}
-        zoom={12}
-      >
+      <GoogleMap mapContainerStyle={containerStyle} center={mapCenter} zoom={12}>
+        {/* markers */}
         {events
           .filter((event) => {
             const category = event.category_name || event.Categories?.[0]?.name;
             return !activeCategory || category === activeCategory;
           })
           .map((event, i) => {
-            const category =
-              event.category_name || event.Categories?.[0]?.name || "Unknown";
+            const category = event.category_name || event.Categories?.[0]?.name || "Unknown";
             return (
               <Marker
                 key={i}
@@ -311,6 +263,15 @@ const Map: React.FC<Props> = ({ user }) => {
             );
           })}
 
+        {/* user */}
+        {userLocation && (
+          <Marker
+            position={userLocation}
+            icon={{ url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }}
+          />
+        )}
+
+        {/* info window */}
         {activeEvent && (
           <InfoWindow
             position={{
@@ -340,9 +301,7 @@ const Map: React.FC<Props> = ({ user }) => {
                 }}
               >
                 {getCategoryIcon(
-                  activeEvent.category_name ||
-                    activeEvent.Categories?.[0]?.name ||
-                    "Unknown"
+                  activeEvent.category_name || activeEvent.Categories?.[0]?.name || "Unknown"
                 )}{" "}
                 {activeEvent.category_name ||
                   activeEvent.Categories?.[0]?.name ||
@@ -350,15 +309,6 @@ const Map: React.FC<Props> = ({ user }) => {
               </p>
             </div>
           </InfoWindow>
-        )}
-
-        {selected && (
-          <Marker
-            position={selected}
-            icon={{
-              url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
-            }}
-          />
         )}
       </GoogleMap>
     </Box>
