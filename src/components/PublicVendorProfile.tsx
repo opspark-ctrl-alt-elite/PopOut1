@@ -525,6 +525,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         open={modalOpen}
         onClose={handleCloseModal}
         event={selectedEvent}
+        currentUserId={user?.id || ""}
       />
     </>
   );
