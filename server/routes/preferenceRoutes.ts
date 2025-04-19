@@ -2,6 +2,8 @@ import { Router } from "express";
 // import Vendor from "../models/Vendor";
 import User from "../models/User";
 import Preferences from "../models/Preferences";
+import Category from "../models/Category";
+import { UUID } from "crypto";
 
 const router = Router();
 
@@ -22,12 +24,31 @@ router.get("/:userId", async (req, res) => {
 // Replace old preference records with new ones
 router.put("/:userId", async (req, res) => {
   const { userId } = req.params;
-  const { preferencesArr } = req.body;
+  // take out array of category names from request body
+  const { categoryNames } = req.body;
 
   try {
     // make sure given userId is valid
     const user = await User.findByPk(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
+
+    // retrieve each category associated with each category name
+    let cats = categoryNames.map((name: string) => Category.findOne({ where: { name }}));
+
+    // wait for the categories to resolve before continuing
+    cats = await Promise.all(cats);
+
+    // create empty array to hold the new preferences
+    const preferencesArr: { userId: string; categoryId: any }[] = [];
+
+    // fill preferencesArr by looping through the given categories and
+    // creating a new preference object using the given user id and the id associated with each category name
+    cats.forEach((cat: { dataValues: { id: number, name: string }}) => {
+      preferencesArr.push({
+        userId,
+        categoryId: cat.dataValues.id
+      })
+    });
 
     // // obtain preferences from db
     // const preferences = await Preferences.findAll({ where: { userId } });
