@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import Bookmarks from "../components/Bookmarks";
+import EditProfile from "../components/EditProfile";
 import axios from "axios";
 import {
   Box,
@@ -11,83 +12,49 @@ import {
   Button,
   Divider,
   Card,
-  CardContent,
 } from "@mui/material";
 
-type Category = {
-  id: number;
-  name: string;
-};
-
-type Event = {
-  id: string;
-  title: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  venue_name: string;
-};
-
-type FollowedVendor = {
-  id: string;
-  businessName: string;
-  profilePicture?: string;
-};
-
+type Category = { id: number; name: string };
+type Event = { id: string; title: string; description: string; startDate: string; endDate: string; venue_name: string };
+type FollowedVendor = { id: string; businessName: string; profilePicture?: string };
+type Preference = { userId: string; categoryId: number };
 type User = {
   id: string;
   name: string;
   email: string;
   profile_picture?: string;
-  // TODO: get rid of the below line when ready
   categories?: Category[];
   is_vendor: boolean;
 };
 
-type Preference = {
-  userId: string;
-  categoryId: number;
-}
-
 type Props = {
   user: User | null;
+  setUser: (user: User) => void;
   categories: Category[] | null;
 };
 
-const UserProfile: React.FC<Props> = ({ user, categories }) => {
-  const navigate = useNavigate();
+const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
   const [bookmarkedEvents, setBookmarkedEvents] = useState<Event[]>([]);
   const [preferences, setPreferences] = useState<Category[]>([]);
+  const [followedVendors, setFollowedVendors] = useState<FollowedVendor[]>([]);
+  const [openEdit, setOpenEdit] = useState(false);
 
-  // get preferences upon loading of user
   useEffect(() => {
-    if (user && categories) {
-      getPreferences();
-    }
+    if (user && categories) getPreferences();
   }, [user, categories]);
 
-  // get preferences from preferences db
   const getPreferences = async () => {
+    if (!user || !categories) return;
     try {
-      if (user !== null && categories !== null) {
-        let prefObj = await axios.get(`/api/preferences/${user.id}`);
-        const prefCats: Category[] = [];
-        prefObj.data.forEach((preference: Preference) => {
-          categories.forEach((category: Category) => {
-            if (preference.categoryId === category.id) {
-              prefCats.push(category);
-            }
-          })
-        })
-        setPreferences(prefCats);
-      } else {
-        setPreferences([]);
-      }
+      const res = await axios.get(`/api/preferences/${user.id}`);
+      const prefCats: Category[] = res.data
+        .map((pref: Preference) => categories.find((cat) => cat.id === pref.categoryId))
+        .filter((c): c is Category => !!c);
+      setPreferences(prefCats);
     } catch (err) {
-      console.error("Error with getting user preferences:", err);
+      console.error("Error fetching preferences:", err);
     }
-  }
-  const [followedVendors, setFollowedVendors] = useState<FollowedVendor[]>([]);
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -95,26 +62,22 @@ const UserProfile: React.FC<Props> = ({ user, categories }) => {
     const fetchFollowedVendors = async () => {
       try {
         const res = await axios.get(`/users/${user.id}/followed-vendors`);
-        const vendorsWithImages = await Promise.all(
+        const withImages = await Promise.all(
           res.data.map(async (vendor: FollowedVendor) => {
             try {
-              const imageRes = await axios.get(
-                `/api/images/vendorId/${vendor.id}`
-              );
-              const uploadedImage =
-                imageRes.data?.[0]?.referenceURL || vendor.profilePicture || "";
+              const imgRes = await axios.get(`/api/images/vendorId/${vendor.id}`);
               return {
                 ...vendor,
-                profilePicture: uploadedImage,
+                profilePicture: imgRes.data?.[0]?.referenceURL || vendor.profilePicture,
               };
             } catch {
               return vendor;
             }
           })
         );
-        setFollowedVendors(vendorsWithImages);
+        setFollowedVendors(withImages);
       } catch (err) {
-        console.error("err fetching followed vendors", err);
+        console.error("Error fetching vendors:", err);
       }
     };
 
@@ -123,7 +86,7 @@ const UserProfile: React.FC<Props> = ({ user, categories }) => {
         const res = await axios.get(`/users/${user.id}/bookmarked-events`);
         setBookmarkedEvents(res.data);
       } catch (err) {
-        console.error("err fetching bookmarked events", err);
+        console.error("Error fetching bookmarks:", err);
       }
     };
 
@@ -131,119 +94,44 @@ const UserProfile: React.FC<Props> = ({ user, categories }) => {
     fetchBookmarkedEvents();
   }, [user]);
 
-  const handleDeleteUser = () => {
+  const handleDeleteUser = async () => {
     if (!user) return;
-
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This action cannot be undone."
-    );
-    if (!confirmed) return;
-
-    fetch(`/user/me`, {
-      method: "DELETE",
-      credentials: "include",
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to delete user");
-        navigate("/");
-      })
-      .catch((err) => {
-        console.error("Error deleting user:", err);
-        alert("Failed to delete account.");
-      });
+    if (!window.confirm("Are you sure you want to delete your account?")) return;
+    try {
+      await fetch(`/user/me`, { method: "DELETE", credentials: "include" });
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Error deleting user:", err);
+    }
   };
 
   return (
     <Box>
       <Container maxWidth="md" sx={{ mt: 6 }}>
         {user ? (
-          <Box>
-            {/* header */}
-            <Stack
-              direction="row"
-              alignItems="center"
-              justifyContent="space-between"
-              spacing={4}
-              sx={{ mb: 4 }}
-              flexWrap="wrap"
-            >
-              <Stack direction="row" spacing={2} alignItems="center">
-                <Avatar
-                  src={user.profile_picture}
-                  alt={user.name}
-                  sx={{ width: 56, height: 56 }}
-                />
+          <>
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
+              <Stack direction="row" spacing={2}>
+                <Avatar src={user.profile_picture} alt={user.name} sx={{ width: 56, height: 56 }} />
                 <Box>
-                  <Typography variant="h6" fontWeight="bold">
-                    {user.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {user.email}
-                  </Typography>
+                  <Typography variant="h6" fontWeight="bold">{user.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">{user.email}</Typography>
                 </Box>
               </Stack>
-              <Button
-                variant="outlined"
-                size="small"
-                component={Link}
-                to="/edit-profile"
-              >
-                Edit Profile
-              </Button>
+              <Button variant="outlined" size="small" onClick={() => setOpenEdit(true)}>Edit Profile</Button>
             </Stack>
 
-            {/* bookmarks */}
-            {user && bookmarkedEvents.length > 0 && (
-              <Bookmarks userId={user.id} events={bookmarkedEvents} />
-            )}
+            {bookmarkedEvents.length > 0 && <Bookmarks userId={user.id} events={bookmarkedEvents} />}
 
-            {/* followed vendors */}
             {followedVendors.length > 0 && (
               <Box mt={4} mb={4}>
-                <Typography variant="h6" gutterBottom>
-                  Following:
-                </Typography>
-                <Box
-                  display="grid"
-                  gridTemplateColumns="repeat(auto-fill, minmax(180px, 1fr))"
-                  gap={2}
-                >
+                <Typography variant="h6" gutterBottom>Following:</Typography>
+                <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(180px, 1fr))" gap={2}>
                   {followedVendors.map((vendor) => (
-                    <RouterLink
-                      key={vendor.id}
-                      to={`/vendor/${vendor.id}`}
-                      style={{ textDecoration: "none" }}
-                    >
-                      <Card
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 2,
-                          padding: 2,
-                          borderRadius: 3,
-                          boxShadow: 2,
-                          cursor: "pointer",
-                          transition: "transform 0.2s ease-in-out",
-                          "&:hover": {
-                            transform: "scale(1.02)",
-                            boxShadow: 4,
-                          },
-                        }}
-                      >
-                        <Avatar
-                          src={vendor.profilePicture || "/default-avatar.png"}
-                          alt={vendor.businessName}
-                          sx={{ width: 48, height: 48 }}
-                        />
-                        <Box>
-                          <Typography
-                            fontWeight="bold"
-                            variant="body1"
-                            color="text.primary"
-                          >
-                            {vendor.businessName}
-                          </Typography>
-                        </Box>
+                    <RouterLink key={vendor.id} to={`/vendor/${vendor.id}`} style={{ textDecoration: "none" }}>
+                      <Card sx={{ display: "flex", alignItems: "center", gap: 2, padding: 2, borderRadius: 3, boxShadow: 2 }}>
+                        <Avatar src={vendor.profilePicture || "/default-avatar.png"} alt={vendor.businessName} sx={{ width: 48, height: 48 }} />
+                        <Typography fontWeight="bold">{vendor.businessName}</Typography>
                       </Card>
                     </RouterLink>
                   ))}
@@ -251,24 +139,11 @@ const UserProfile: React.FC<Props> = ({ user, categories }) => {
               </Box>
             )}
 
-            {/* prefs */}
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Preferences:
-            </Typography>
-
+            <Typography variant="h6" fontWeight="bold" gutterBottom>Preferences:</Typography>
             {preferences.length > 0 ? (
               <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
                 {preferences.map((cat) => (
-                  <Box
-                    key={cat.id}
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      borderRadius: "8px",
-                      backgroundColor: "#e0e0e0",
-                      fontWeight: "bold",
-                    }}
-                  >
+                  <Box key={cat.id} sx={{ px: 2, py: 1, borderRadius: "8px", backgroundColor: "#e0e0e0", fontWeight: "bold" }}>
                     {cat.name}
                   </Box>
                 ))}
@@ -278,53 +153,27 @@ const UserProfile: React.FC<Props> = ({ user, categories }) => {
             )}
 
             <Stack spacing={2}>
-              <Button
-                variant="contained"
-                fullWidth
-                component={Link}
-                to="/preferences"
-              >
-                User Preferences
-              </Button>
-
+              <Button variant="contained" fullWidth component={RouterLink} to="/preferences">User Preferences</Button>
               <Divider />
-
               {user.is_vendor ? (
-                <Button
-                  component={Link}
-                  to="/vendorprofile"
-                  variant="text"
-                  fullWidth
-                >
-                  View Vendor Profile
-                </Button>
+                <Button component={RouterLink} to="/vendorprofile" variant="text" fullWidth>View Vendor Profile</Button>
               ) : (
-                <Button
-                  component={Link}
-                  to="/vendor-signup"
-                  variant="outlined"
-                  fullWidth
-                >
-                  Become a Vendor
-                </Button>
+                <Button component={RouterLink} to="/vendor-signup" variant="outlined" fullWidth>Become a Vendor</Button>
               )}
-
               <Divider />
-
-              <Button
-                variant="outlined"
-                color="error"
-                fullWidth
-                onClick={handleDeleteUser}
-              >
-                Delete My Account
-              </Button>
+              <Button variant="outlined" color="error" fullWidth onClick={handleDeleteUser}>Delete My Account</Button>
             </Stack>
-          </Box>
+
+            {/* ✅ Corrected modal prop names */}
+            <EditProfile
+              open={openEdit}
+              onClose={() => setOpenEdit(false)}
+              user={user}
+              setUser={setUser}
+            />
+          </>
         ) : (
-          <Typography textAlign="center" mt={4}>
-            No user found.
-          </Typography>
+          <Typography>No user found.</Typography>
         )}
       </Container>
     </Box>

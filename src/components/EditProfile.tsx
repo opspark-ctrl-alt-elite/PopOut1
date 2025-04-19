@@ -1,17 +1,18 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
 import {
+  Modal,
   Box,
   Button,
-  Container,
   TextField,
   Typography,
-  Paper,
   Avatar,
+  Stack,
 } from "@mui/material";
 import axios from "axios";
 
 type Props = {
+  open: boolean;
+  onClose: () => void;
   user: {
     id: string;
     name: string;
@@ -20,12 +21,20 @@ type Props = {
   setUser: (user: any) => void;
 };
 
-const EditProfile: React.FC<Props> = ({ user, setUser }) => {
-  const [name, setName] = useState(user?.name || "");
+const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
+  const [name, setName] = useState("");
   const [uploading, setUploading] = useState(false);
-  const [imagePreview, setImagePreview] = useState(user?.profile_picture || "");
-  const [imageUrl, setImageUrl] = useState(user?.profile_picture || "");
-  const navigate = useNavigate();
+  const [imagePreview, setImagePreview] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+
+  // Set initial values when modal opens
+  useEffect(() => {
+    if (open && user) {
+      setName(user.name || "");
+      setImagePreview(user.profile_picture || "");
+      setImageUrl(user.profile_picture || "");
+    }
+  }, [open, user]);
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -33,23 +42,15 @@ const EditProfile: React.FC<Props> = ({ user, setUser }) => {
 
     const formData = new FormData();
     formData.append("imageUpload", file);
-
     setUploading(true);
 
     try {
-      const response = await axios.post(
-        `/api/images/user/${user.id}`,
-        formData,
-        {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
+      const response = await axios.post(`/api/images/user/${user.id}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
 
       const uploadResult = response.data[0];
       const url = uploadResult.secure_url || uploadResult.url;
-
       setImageUrl(url);
       setImagePreview(url);
     } catch (err) {
@@ -61,18 +62,12 @@ const EditProfile: React.FC<Props> = ({ user, setUser }) => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!user?.id) return;
 
     fetch(`/api/users/${user.id}`, {
       method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        name,
-        profile_picture: imageUrl,
-      }),
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, profile_picture: imageUrl }),
     })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to update profile");
@@ -80,8 +75,8 @@ const EditProfile: React.FC<Props> = ({ user, setUser }) => {
       })
       .then((res) => res.json())
       .then((updatedUser) => {
-        setUser(updatedUser);
-        navigate("/userprofile");
+        setUser(updatedUser);   // ✅ Updates global state
+        onClose();              // ✅ Closes modal
       })
       .catch((err) => {
         console.error("Error updating profile:", err);
@@ -89,53 +84,70 @@ const EditProfile: React.FC<Props> = ({ user, setUser }) => {
   };
 
   return (
-    <Container maxWidth="sm" sx={{ mt: 6 }}>
-      <Paper elevation={3} sx={{ p: 4 }}>
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
+    <Modal open={open} onClose={onClose}>
+      <Box
+        component="form"
+        onSubmit={handleSubmit}
+        sx={{
+          backgroundColor: "white",
+          width: 400,
+          mx: "auto",
+          my: "15vh",
+          borderRadius: 2,
+          p: 4,
+          boxShadow: 24,
+        }}
+      >
+        <Typography variant="h6" fontWeight="bold" gutterBottom>
           Edit Profile
         </Typography>
 
-        <Box display="flex" justifyContent="center" mb={2}>
+        <Stack alignItems="center" mb={2}>
           <Avatar src={imagePreview} sx={{ width: 100, height: 100 }} />
-        </Box>
+        </Stack>
 
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            label="Name"
-            fullWidth
-            required
-            margin="normal"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+        <TextField
+          label="Name"
+          fullWidth
+          required
+          margin="normal"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+        />
+
+        <Button
+          variant="outlined"
+          component="label"
+          fullWidth
+          disabled={uploading}
+          sx={{ mt: 1 }}
+        >
+          {uploading ? "Uploading..." : "Upload Profile Picture"}
+          <input
+            type="file"
+            hidden
+            accept="image/*"
+            onChange={handleImageUpload}
           />
+        </Button>
 
-          <Button
-            variant="outlined"
-            component="label"
-            disabled={uploading}
-            sx={{ mt: 2 }}
-          >
-            {uploading ? "Uploading..." : "Upload Profile Picture"}
-            <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-          </Button>
-
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            sx={{
-              mt: 3,
-              backgroundColor: "#3f0071",
-              "&:hover": {
-                boxShadow: "0 0 10px #3f0071",
-              },
-            }}
-          >
-            Save Changes
-          </Button>
-        </Box>
-      </Paper>
-    </Container>
+        <Button
+          type="submit"
+          variant="contained"
+          fullWidth
+          disabled={!user}
+          sx={{
+            mt: 3,
+            backgroundColor: "#3f0071",
+            "&:hover": {
+              boxShadow: "0 0 10px #3f0071",
+            },
+          }}
+        >
+          Save Changes
+        </Button>
+      </Box>
+    </Modal>
   );
 };
 
