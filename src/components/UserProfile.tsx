@@ -15,8 +15,19 @@ import {
 } from "@mui/material";
 
 type Category = { id: number; name: string };
-type Event = { id: string; title: string; description: string; startDate: string; endDate: string; venue_name: string };
-type FollowedVendor = { id: string; businessName: string; profilePicture?: string };
+type Event = {
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  venue_name: string;
+};
+type FollowedVendor = {
+  id: string;
+  businessName: string;
+  profilePicture?: string;
+};
 type Preference = { userId: string; categoryId: number };
 type User = {
   id: string;
@@ -153,7 +164,7 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
             )}
 
             <Stack spacing={2}>
-              <Button variant="contained" fullWidth component={RouterLink} to="/preferences">User Preferences</Button>
+              {/* 🔥 Removed User Preferences button here */}
               <Divider />
               {user.is_vendor ? (
                 <Button component={RouterLink} to="/vendorprofile" variant="text" fullWidth>View Vendor Profile</Button>
@@ -161,10 +172,11 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                 <Button component={RouterLink} to="/vendor-signup" variant="outlined" fullWidth>Become a Vendor</Button>
               )}
               <Divider />
-              <Button variant="outlined" color="error" fullWidth onClick={handleDeleteUser}>Delete My Account</Button>
+              <Button variant="outlined" color="error" fullWidth onClick={handleDeleteUser}>
+                Delete My Account
+              </Button>
             </Stack>
 
-            {/* ✅ Corrected modal prop names */}
             <EditProfile
               open={openEdit}
               onClose={() => setOpenEdit(false)}
