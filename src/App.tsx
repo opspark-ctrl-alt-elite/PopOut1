@@ -143,7 +143,7 @@ const App: React.FC = () => {
         />
         <Route path="/map" element={<Map user={user} />} />
         <Route path="/userprofile" element={<UserProfile user={user} />} />
-        <Route path="/edit-profile" element={<EditProfile user={user} />} />
+        <Route path="/edit-profile" element={<EditProfile user={user} setUser={setUser} />} />
         <Route path="/vendorprofile" element={<VendorProfile user={user} getUser={getUser} />} />
         <Route path="/vendor-signup" element={<VendorSignupForm user={user} getUser={getUser} captcha={captcha} setCaptcha={setCaptcha} />} />
         <Route path="/preferences" element={<Preferences setUser={setUser} />} />
