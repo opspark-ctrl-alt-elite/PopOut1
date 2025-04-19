@@ -124,7 +124,7 @@ const Navbar: React.FC<Props> = ({
             <Typography
               component={Link}
               to="/"
-              variant="h5"
+              variant="h4"
               fontWeight="bold"
               sx={{
                 textDecoration: "none",

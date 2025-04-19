@@ -33,7 +33,7 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
 
   return (
     <Box mt={6}>
-      <Typography variant="h6" gutterBottom>
+      <Typography variant="h5" gutterBottom>
         Bookmarks:
       </Typography>
 
