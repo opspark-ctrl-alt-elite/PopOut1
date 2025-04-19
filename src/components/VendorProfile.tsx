@@ -393,14 +393,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               >
                 Create New Event
               </Button>
-              <Button
-                variant="contained"
-                fullWidth
-                component={Link}
-                to="/reviews"
-              >
-                Reviews
-              </Button>
               <Divider />
               <Button
                 variant="outlined"

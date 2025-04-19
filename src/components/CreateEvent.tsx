@@ -16,7 +16,9 @@ import {
   DialogContent,
   DialogContentText,
   DialogActions,
-  Box
+  Box,
+  Divider,
+  CircularProgress,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import { Autocomplete, useLoadScript } from '@react-google-maps/api';
@@ -29,8 +31,6 @@ const libraries: ("places")[] = ["places"];
 const CreateEvent = () => {
   const navigate = useNavigate();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
-
-  // Only the Google Maps API key is needed on the client.
   const { isLoaded } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
     libraries,
@@ -51,14 +51,16 @@ const CreateEvent = () => {
     image_url: '',
     categories: [] as string[],
   });
+
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [modal, setModal] = useState<{
-    open: boolean;
-    title: string;
-    message: string;
-    success: boolean;
-  }>({ open: false, title: '', message: '', success: false });
+  const [uploading, setUploading] = useState(false);
+  const [modal, setModal] = useState({
+    open: false,
+    title: '',
+    message: '',
+    success: false,
+  });
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -117,28 +119,24 @@ const CreateEvent = () => {
     }
   };
 
-  // Modified image upload handler: POST to our server endpoint.
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const formData = new FormData();
-    // Use the field name expected by your partner's route.
     formData.append('imageUpload', file);
 
     try {
-      // POST to your server's image upload endpoint.
-      // Here, we use "event" as the foreignKeyName and "new" as the foreignKey placeholder.
+      setUploading(true);
       const response = await axios.post('/api/images/event/new', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
+        headers: { 'Content-Type': 'multipart/form-data' },
       });
-      // The server returns an array of upload results.
       const uploadResult = response.data[0];
-      // Set the event's image URL from Cloudinary.
-      setForm(prev => ({ ...prev, image_url: uploadResult.secure_url || uploadResult.url }));
+      setForm((prev) => ({ ...prev, image_url: uploadResult.secure_url || uploadResult.url }));
     } catch (err) {
       console.error('Error uploading image:', err);
+    } finally {
+      setUploading(false);
     }
   };
 
@@ -147,6 +145,7 @@ const CreateEvent = () => {
       setModal({ open: true, title: 'Error', message: 'Please fix the errors in the form.', success: false });
       return;
     }
+
     try {
       const payload = {
         ...form,
@@ -163,67 +162,56 @@ const CreateEvent = () => {
 
   const handleModalClose = () => {
     setModal((prev) => ({ ...prev, open: false }));
-    if (modal.success) {
-      navigate('/active-events');
-    }
+    if (modal.success) navigate('/active-events');
   };
 
-  if (!isLoaded) return <div>Loading...</div>;
+  if (!isLoaded) return <CircularProgress sx={{ m: 4 }} />;
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container sx={{ mt: 4 }}>
-        <Typography variant="h4">Create Event</Typography>
-        <Stack spacing={2} sx={{ mt: 2 }}>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Typography variant="h4" gutterBottom>Create Event</Typography>
+
+        <Stack spacing={3}>
           <TextField
             name="title"
-            label="Title *"
+            label="Event Title *"
             value={form.title}
             onChange={handleChange}
             error={!!errors.title}
             helperText={errors.title}
             fullWidth
           />
+
           <TextField
             name="description"
             label="Description"
             value={form.description}
             onChange={handleChange}
-            fullWidth
             multiline
+            rows={4}
+            fullWidth
           />
-          <DateTimePicker
-            label="Start Date *"
-            value={form.startDate ? new Date(form.startDate) : null}
-            onChange={(newValue) =>
-              setForm((prev) => ({
-                ...prev,
-                startDate: newValue ? newValue.toISOString() : '',
-              }))
-            }
-            inputFormat="MM/dd/yyyy hh:mm aa"
-            ampm
-            onError={() => null}
-            renderInput={(params) => (
-              <TextField {...params} fullWidth error={!!errors.startDate} helperText={errors.startDate} />
-            )}
-          />
-          <DateTimePicker
-            label="End Date *"
-            value={form.endDate ? new Date(form.endDate) : null}
-            onChange={(newValue) =>
-              setForm((prev) => ({
-                ...prev,
-                endDate: newValue ? newValue.toISOString() : '',
-              }))
-            }
-            inputFormat="MM/dd/yyyy hh:mm aa"
-            ampm
-            onError={() => null}
-            renderInput={(params) => (
-              <TextField {...params} fullWidth error={!!errors.endDate} helperText={errors.endDate} />
-            )}
-          />
+
+          <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+            <DateTimePicker
+              label="Start Date *"
+              value={form.startDate ? new Date(form.startDate) : null}
+              onChange={(val) => setForm(prev => ({ ...prev, startDate: val ? val.toISOString() : '' }))}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth error={!!errors.startDate} helperText={errors.startDate} />
+              )}
+            />
+            <DateTimePicker
+              label="End Date *"
+              value={form.endDate ? new Date(form.endDate) : null}
+              onChange={(val) => setForm(prev => ({ ...prev, endDate: val ? val.toISOString() : '' }))}
+              renderInput={(params) => (
+                <TextField {...params} fullWidth error={!!errors.endDate} helperText={errors.endDate} />
+              )}
+            />
+          </Stack>
+
           <TextField
             name="venue_name"
             label="Venue *"
@@ -233,50 +221,54 @@ const CreateEvent = () => {
             helperText={errors.venue_name}
             fullWidth
           />
-          <Autocomplete
-            onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
-            onPlaceChanged={handlePlaceChanged}
-          >
+
+          <Autocomplete onLoad={(a) => (autocompleteRef.current = a)} onPlaceChanged={handlePlaceChanged}>
             <TextField
               label="Location *"
+              name="location"
               value={form.location}
               onChange={handleChange}
-              name="location"
               error={!!errors.location}
-              helperText={errors.location || 'Start typing address...'}
+              helperText={errors.location || 'Type to search...'}
               fullWidth
             />
           </Autocomplete>
+
           <Box>
-            <Button variant="outlined" component="label">
-              Upload Image
+            <Button
+              variant="contained"
+              size="small"
+              component="label"
+              sx={{ mt: 2 }}
+            >
+              Upload Event Image
               <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
             </Button>
+            {uploading && <Typography mt={1}>Uploading...</Typography>}
             {form.image_url && (
               <Box mt={2}>
                 <img
                   src={form.image_url}
                   alt="Event"
-                  style={{ maxWidth: '100%', maxHeight: '200px', objectFit: 'cover' }}
+                  style={{ width: '100%', maxHeight: 250, objectFit: 'cover' }}
                 />
               </Box>
             )}
           </Box>
-          <FormControlLabel
-            control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />}
-            label="Free?"
-          />
-          <FormControlLabel
-            control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />}
-            label="Kid-Friendly?"
-          />
-          <FormControlLabel
-            control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />}
-            label="Sober?"
-          />
+
+          <Divider />
+
+          <FormGroup row>
+            <FormControlLabel control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />} label="Free" />
+            <FormControlLabel control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />} label="Kid-Friendly" />
+            <FormControlLabel control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />} label="Sober" />
+          </FormGroup>
+
+          <Divider />
+
           {availableCategories.length > 0 && (
             <>
-              <FormLabel component="legend">Categories</FormLabel>
+              <FormLabel>Categories</FormLabel>
               <FormGroup row>
                 {availableCategories.map((category) => (
                   <FormControlLabel
@@ -293,26 +285,29 @@ const CreateEvent = () => {
               </FormGroup>
             </>
           )}
-          <Button variant="contained" onClick={handleSubmit}>
+
+          <Button
+            variant="contained"
+            size="small"
+            onClick={handleSubmit}
+            sx={{ mt: 2 }}
+          >
             Submit
           </Button>
         </Stack>
-        <Dialog
-          open={modal.open}
-          onClose={handleModalClose}
-          hideBackdrop
-          disableEnforceFocus
-          aria-labelledby="notification-dialog-title"
-          aria-describedby="notification-dialog-description"
-        >
-          <DialogTitle id="notification-dialog-title">{modal.title}</DialogTitle>
+
+        <Dialog open={modal.open} onClose={handleModalClose}>
+          <DialogTitle>{modal.title}</DialogTitle>
           <DialogContent>
-            <DialogContentText id="notification-dialog-description">
-              {modal.message}
-            </DialogContentText>
+            <DialogContentText>{modal.message}</DialogContentText>
           </DialogContent>
           <DialogActions>
-            <Button onClick={handleModalClose}>Close</Button>
+            <Button
+              size="small"
+              onClick={handleModalClose}
+            >
+              Close
+            </Button>
           </DialogActions>
         </Dialog>
       </Container>

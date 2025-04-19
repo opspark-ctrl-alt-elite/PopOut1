@@ -6,9 +6,10 @@ import {
   Typography,
   Button,
   Container,
-  Card,
-  CardContent,
+  Grid,
+  IconButton,
 } from "@mui/material";
+import { Facebook, Twitter, Instagram } from "@mui/icons-material";
 import EventsFeed from "./EventsFeed";
 import TopVendorSpotlight from "./TopVendorSpotlight";
 
@@ -96,41 +97,87 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
 
   return (
     <Box>
-      {/* events */}
+      {/* Events */}
       <Container sx={{ mt: 4 }}>
         <EventsFeed user={user} />
       </Container>
 
-      {/* vendor spotlight */}
+      {/* Vendor Spotlight */}
       <Container sx={{ mt: 4, mb: 4, px: { xs: 2, sm: 4 } }}>
-        {/* <Typography variant="h4" gutterBottom>
-        Vendor Spotlight
-        </Typography> */}
         <TopVendorSpotlight />
       </Container>
 
-      {/* game/vendor signup */}
-      <Container sx={{ mt: 4, mb: 4, textAlign: "center" }}>
-        {user && !user.is_vendor && (
-          <Box mb={3}>
-            <Button
-              component={Link}
-              to="/vendor-signup"
-              variant="outlined"
-              size="large"
-            >
-              Become a Vendor
-            </Button>
+      {/* Footer */}
+      <Box
+        component="footer"
+        sx={{
+          py: 4,
+          px: 2,
+          mt: 4,
+          backgroundColor: "#f9f9f9",
+          borderTop: "1px solid #ddd",
+        }}
+      >
+        <Container maxWidth="lg">
+          <Grid container spacing={2} justifyContent="center">
+            {user && !user.is_vendor && (
+              <Grid item xs={12} sm={6} textAlign="center">
+                <Typography variant="h6" gutterBottom>
+                  Want to host events?
+                </Typography>
+                <Button
+                  component={Link}
+                  to="/vendor-signup"
+                  variant="contained"
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: "none",
+                    backgroundColor: "#000",
+                    color: "#fff",
+                    "&:hover": { backgroundColor: "#333" },
+                  }}
+                >
+                  Become a Vendor
+                </Button>
+              </Grid>
+            )}
+
+            {user && (
+              <Grid item xs={12} sm={6} textAlign="center">
+                <Typography variant="h6" gutterBottom>
+                  Just for fun?
+                </Typography>
+                <Button
+                  component={Link}
+                  to="/game"
+                  variant="contained"
+                  sx={{
+                    borderRadius: 2,
+                    textTransform: "none",
+                    backgroundColor: "#000",
+                    color: "#fff",
+                    "&:hover": { backgroundColor: "#333" },
+                  }}
+                >
+                  Play Game
+                </Button>
+              </Grid>
+            )}
+          </Grid>
+
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 3 }}>
+            <IconButton aria-label="facebook">
+              <Facebook />
+            </IconButton>
+            <IconButton aria-label="twitter">
+              <Twitter />
+            </IconButton>
+            <IconButton aria-label="instagram">
+              <Instagram />
+            </IconButton>
           </Box>
-        )}
-        {user && (
-          <Box>
-            <Button component={Link} to="/game" variant="outlined" size="large">
-              Play Game
-            </Button>
-          </Box>
-        )}
-      </Container>
+        </Container>
+      </Box>
     </Box>
   );
 };
