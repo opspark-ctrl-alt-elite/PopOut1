@@ -428,6 +428,11 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     margin="normal"
                     value={fields[key as keyof Fields]}
                     onChange={handleUpdateFieldChange}
+                    placeholder={
+                      ["website","instagram","facebook"].includes(key)
+                        ? "Link must start with http://"
+                        : undefined
+                    }
                   />
                 ))}
                 <Button
