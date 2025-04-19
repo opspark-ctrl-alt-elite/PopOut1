@@ -23,7 +23,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
 // import BusinessIcon from "@mui/icons-material/Business";
-import WorkIcon from '@mui/icons-material/Work';
+import WorkIcon from "@mui/icons-material/Work";
 import { onMessageListener } from "../firebase/onMessageListener";
 
 interface Props {
@@ -262,42 +262,89 @@ const Navbar: React.FC<Props> = ({
       </Popover>
 
       {/* sidenav */}
-      <Drawer anchor="left" open={drawerOpen} onClose={toggleDrawer(false)}>
+      <Drawer
+        anchor="left"
+        open={drawerOpen}
+        onClose={toggleDrawer(false)}
+        sx={{
+          transition: "transform 0.3s ease",
+          "& .MuiDrawer-paper": {
+            width: 250,
+            bgcolor: "#000",
+            color: "#fff",
+            paddingTop: 2,
+            paddingBottom: 0,
+          },
+        }}
+      >
         <Box
-          sx={{ width: 250 }}
           role="presentation"
           onClick={toggleDrawer(false)}
           onKeyDown={toggleDrawer(false)}
         >
-          <List>
-            <ListItem component={Link} to="/" button>
-              <ListItemText primary="Home" />
+          <List sx={{ paddingTop: 2 }}>
+            {/* Home */}
+            <ListItem
+              component={Link}
+              to="/"
+              button
+              sx={{ "&:hover": { bgcolor: "#444" } }}
+            >
+              <ListItemText
+                primary="Home"
+                sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
+              />
             </ListItem>
 
             {user && !user.is_vendor && (
-              <ListItem component={Link} to="/vendor-signup" button>
-                <ListItemText primary="Become a Vendor" />
+              <ListItem
+                component={Link}
+                to="/vendor-signup"
+                button
+                sx={{ "&:hover": { bgcolor: "#444" } }}
+              >
+                <ListItemText
+                  primary="Become a Vendor"
+                  sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
+                />
               </ListItem>
             )}
 
-            <ListItem component={Link} to="/game" button>
-              <ListItemText primary="Play Game" />
+            <ListItem
+              component={Link}
+              to="/game"
+              button
+              sx={{ "&:hover": { bgcolor: "#444" } }}
+            >
+              <ListItemText
+                primary="Play Game"
+                sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
+              />
             </ListItem>
 
-            {user && (
-              <>
-                <ListItem component={Link} to="/map" button>
-                  <ListItemText primary="View Map" />
-                </ListItem>
-                <ListItem component={Link} to="/userprofile" button>
-                  <ListItemText primary="Profile" />
-                </ListItem>
-              </>
-            )}
+            <ListItem
+              component={Link}
+              to="/map"
+              button
+              sx={{ "&:hover": { bgcolor: "#444" } }}
+            >
+              <ListItemText
+                primary="View Map"
+                sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
+              />
+            </ListItem>
 
             {!user && (
-              <ListItem component="a" href="/auth/google" button>
-                <ListItemText primary="Login with Google" />
+              <ListItem
+                component="a"
+                href="/auth/google"
+                button
+                sx={{ "&:hover": { bgcolor: "#444" } }}
+              >
+                <ListItemText
+                  primary="Login with Google"
+                  sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
+                />
               </ListItem>
             )}
           </List>
