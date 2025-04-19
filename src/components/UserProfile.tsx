@@ -1,15 +1,12 @@
-
-import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate, Link as RouterLink } from "react-router-dom";
+import Bookmarks from "../components/Bookmarks";
 import axios from "axios";
 import {
-  AppBar,
-  Toolbar,
   Box,
   Typography,
   Avatar,
   Stack,
-  IconButton,
   Container,
   Button,
   Divider,
@@ -17,7 +14,6 @@ import {
   CardContent,
 } from "@mui/material";
 
-// types
 type Category = {
   id: number;
   name: string;
@@ -30,6 +26,12 @@ type Event = {
   startDate: string;
   endDate: string;
   venue_name: string;
+};
+
+type FollowedVendor = {
+  id: string;
+  businessName: string;
+  profilePicture?: string;
 };
 
 type User = {
@@ -48,6 +50,49 @@ type Props = {
 const UserProfile: React.FC<Props> = ({ user }) => {
   const navigate = useNavigate();
   const [bookmarkedEvents, setBookmarkedEvents] = useState<Event[]>([]);
+  const [followedVendors, setFollowedVendors] = useState<FollowedVendor[]>([]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchFollowedVendors = async () => {
+      try {
+        const res = await axios.get(`/users/${user.id}/followed-vendors`);
+        const vendorsWithImages = await Promise.all(
+          res.data.map(async (vendor: FollowedVendor) => {
+            try {
+              const imageRes = await axios.get(
+                `/api/images/vendorId/${vendor.id}`
+              );
+              const uploadedImage =
+                imageRes.data?.[0]?.referenceURL || vendor.profilePicture || "";
+              return {
+                ...vendor,
+                profilePicture: uploadedImage,
+              };
+            } catch {
+              return vendor;
+            }
+          })
+        );
+        setFollowedVendors(vendorsWithImages);
+      } catch (err) {
+        console.error("err fetching followed vendors", err);
+      }
+    };
+
+    const fetchBookmarkedEvents = async () => {
+      try {
+        const res = await axios.get(`/users/${user.id}/bookmarked-events`);
+        setBookmarkedEvents(res.data);
+      } catch (err) {
+        console.error("err fetching bookmarked events", err);
+      }
+    };
+
+    fetchFollowedVendors();
+    fetchBookmarkedEvents();
+  }, [user]);
 
   const handleDeleteUser = () => {
     if (!user) return;
@@ -71,41 +116,12 @@ const UserProfile: React.FC<Props> = ({ user }) => {
       });
   };
 
-  const handleViewBookmarkedEvents = () => {
-    if (!user) return;
-
-    axios
-      .get(`/users/${user.id}/bookmarked-events`)
-      .then((res) => {
-        console.log("Bookmarked events:", res.data);
-        setBookmarkedEvents(res.data);
-      })
-      .catch((err) => {
-        console.error("Error fetching bookmarked events:", err);
-      });
-  };
-
-  const handleUnbookmarkEvent = (eventId: string) => {
-    if (!user) return;
-
-    axios
-      .delete(`/users/${user.id}/unbookmark/${eventId}`)
-      .then(() => {
-        setBookmarkedEvents((prev) =>
-          prev.filter((event) => event.id !== eventId)
-        );
-      })
-      .catch((err) => {
-        console.error("Failed to unbookmark event", err);
-      });
-  };
-
   return (
     <Box>
-      {/* BODY */}
       <Container maxWidth="md" sx={{ mt: 6 }}>
         {user ? (
           <Box>
+            {/* header */}
             <Stack
               direction="row"
               alignItems="center"
@@ -139,9 +155,68 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               </Button>
             </Stack>
 
-            {/* Preferences Display */}
+            {/* bookmarks */}
+            {user && bookmarkedEvents.length > 0 && (
+              <Bookmarks userId={user.id} events={bookmarkedEvents} />
+            )}
+
+            {/* followed vendors */}
+            {followedVendors.length > 0 && (
+              <Box mt={4} mb={4}>
+                <Typography variant="h6" gutterBottom>
+                  Following:
+                </Typography>
+                <Box
+                  display="grid"
+                  gridTemplateColumns="repeat(auto-fill, minmax(180px, 1fr))"
+                  gap={2}
+                >
+                  {followedVendors.map((vendor) => (
+                    <RouterLink
+                      key={vendor.id}
+                      to={`/vendor/${vendor.id}`}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <Card
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          padding: 2,
+                          borderRadius: 3,
+                          boxShadow: 2,
+                          cursor: "pointer",
+                          transition: "transform 0.2s ease-in-out",
+                          "&:hover": {
+                            transform: "scale(1.02)",
+                            boxShadow: 4,
+                          },
+                        }}
+                      >
+                        <Avatar
+                          src={vendor.profilePicture || "/default-avatar.png"}
+                          alt={vendor.businessName}
+                          sx={{ width: 48, height: 48 }}
+                        />
+                        <Box>
+                          <Typography
+                            fontWeight="bold"
+                            variant="body1"
+                            color="text.primary"
+                          >
+                            {vendor.businessName}
+                          </Typography>
+                        </Box>
+                      </Card>
+                    </RouterLink>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* prefs */}
             <Typography variant="h6" fontWeight="bold" gutterBottom>
-              Your Preferences:
+              Preferences:
             </Typography>
 
             {user.categories && user.categories.length > 0 ? (
@@ -165,27 +240,7 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               <Typography>No preferences selected yet.</Typography>
             )}
 
-            {/* Navigation Buttons */}
             <Stack spacing={2}>
-              <Button
-                variant="contained"
-                color="secondary"
-                fullWidth
-                onClick={handleViewBookmarkedEvents}
-              >
-                Bookmarked / Upcoming Events
-              </Button>
-
-              <Button
-                variant="contained"
-                color="info"
-                fullWidth
-                component={Link}
-                to="/followed-vendors"
-              >
-                Vendors You Follow
-              </Button>
-
               <Button
                 variant="contained"
                 fullWidth
@@ -228,41 +283,6 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                 Delete My Account
               </Button>
             </Stack>
-
-            {/* Render Bookmarked Events */}
-            {bookmarkedEvents.length > 0 && (
-              <Box mt={6}>
-                <Typography variant="h6" gutterBottom>
-                  Your Bookmarked Events:
-                </Typography>
-                <Stack spacing={2}>
-                  {bookmarkedEvents.map((event) => (
-                    <Card key={event.id}>
-                      <CardContent>
-                        <Typography variant="h6">{event.title}</Typography>
-                        <Typography variant="body2" color="text.secondary">
-                          {event.venue_name}
-                        </Typography>
-                        <Typography variant="body2">
-                          {new Date(event.startDate).toLocaleString()} -{" "}
-                          {new Date(event.endDate).toLocaleString()}
-                        </Typography>
-                        <Typography variant="body2" sx={{ mb: 2 }}>
-                          {event.description}
-                        </Typography>
-                        <Button
-                          variant="outlined"
-                          color="error"
-                          onClick={() => handleUnbookmarkEvent(event.id)}
-                        >
-                          Remove Bookmark
-                        </Button>
-                      </CardContent>
-                    </Card>
-                  ))}
-                </Stack>
-              </Box>
-            )}
           </Box>
         ) : (
           <Typography textAlign="center" mt={4}>
@@ -275,6 +295,3 @@ const UserProfile: React.FC<Props> = ({ user }) => {
 };
 
 export default UserProfile;
-
-// lima bean 
-

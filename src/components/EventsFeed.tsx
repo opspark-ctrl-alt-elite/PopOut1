@@ -91,7 +91,9 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       const res = await axios.get("/api/events", { params });
       const data = Array.isArray(res.data) ? res.data : res.data.events;
       const now = new Date();
-      const upcomingEvents = data.filter((event: Event) => new Date(event.endDate) >= now);
+      const upcomingEvents = data.filter(
+        (event: Event) => new Date(event.endDate) >= now
+      );
 
       setEvents(upcomingEvents);
       setCurrentIndex(0);
@@ -348,12 +350,12 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
       <EventDetails
         open={modalOpen}
-        onClose={handleCloseModal}
+        onClose={() => setModalOpen(false)}
         event={selectedEvent}
+        currentUserId={user?.id}
       />
     </Box>
   );
 };
 
 export default EventsFeed;
-

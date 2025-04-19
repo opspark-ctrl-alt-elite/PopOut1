@@ -98,7 +98,7 @@ const App: React.FC = () => {
         if (data) setVendors(data);
       })
       .catch((err) => {
-        console.error("Error fetching vendors:", err);
+        // console.error("Error fetching vendors:", err);
       });
   }, []);
 
