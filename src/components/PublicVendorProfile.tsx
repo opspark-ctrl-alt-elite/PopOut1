@@ -51,6 +51,7 @@ type Event = {
   endDate: string;
   venue_name: string;
   location: string;
+  image_url?: string;
   isFree: boolean;
   isKidFriendly: boolean;
   isSober: boolean;
@@ -349,8 +350,23 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
             >
               {filteredEvents.map((event) => (
                 <Card key={event.id} sx={{ minWidth: 300, boxShadow: 3 }}>
-                  <CardContent>
-                    <Typography variant="h6">{event.title}</Typography>
+                {event.image_url && (
+                  <Box>
+                    <img
+                      src={event.image_url}
+                      alt={event.title}
+                      style={{
+                        width: "100%",
+                        height: "160px",
+                        objectFit: "cover",
+                        borderTopLeftRadius: 4,
+                        borderTopRightRadius: 4,
+                      }}
+                    />
+                  </Box>
+                )}
+                <CardContent>
+                  <Typography variant="h6">{event.title}</Typography>
                     <Typography variant="body2" color="text.secondary">
                       {event.venue_name}
                     </Typography>
