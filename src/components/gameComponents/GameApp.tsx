@@ -32,6 +32,7 @@ import {
 // }
 
 type Mover = {
+  type: string;
   x: number;
   y: number;
   xVel: number;
@@ -92,6 +93,7 @@ function isColliding(element1, element2) {
 
   // create state to represent the player
   const [player, setPlayer] = useState<Mover>({
+    type: "player",
     x: 0,
     y: 0,
     xVel: 0,
@@ -102,6 +104,7 @@ function isColliding(element1, element2) {
 
   // create state to represent the target
   const [target, setTarget] = useState<Mover>({
+    type: "target",
     x: 200,
     y: 200,
     xVel: 0,
@@ -198,17 +201,37 @@ function isColliding(element1, element2) {
     // make sure that the target is still inbounds
     setTarget(prev => {
 
-      // // set up replacement object
-      // const replacement = {
-      //   x: prev.x + prev.xVel,
-      //   y: prev.y + prev.yVel,
-      //   xVel: prev.xVel,
-      //   yVel: prev.yVel
-      // };
+      // numbers to set the target's velocities to
+      let xVel = prev.xVel;
+      let yVel = prev.yVel;
+
+      // make target begin moving in random direction upon new round after a round/score of 5
+      if ((xVel === 0 || yVel === 0) && score > 5) {
+        console.log(prev);
+        if (Math.floor(Math.random() * 2)) {
+          xVel = 5;
+        } else {
+          xVel = -5;
+        }
+        if (Math.floor(Math.random() * 2)) {
+          yVel = 5;
+        } else {
+          yVel = -5;
+        }
+      }
+
+      // set up replacement object
+      const replacement = {
+        type: prev.type,
+        x: prev.x + prev.xVel,
+        y: prev.y + prev.yVel,
+        xVel,
+        yVel
+      };
 
       // console.log(score);
 
-      return checkOutOfBounds(prev, gameBoardWidth, gameBoardHeight, targetWidth, targetHeight);
+      return checkOutOfBounds(replacement, gameBoardWidth, gameBoardHeight, targetWidth, targetHeight);
     })
 
 
@@ -217,6 +240,7 @@ function isColliding(element1, element2) {
 
       // set up replacement object
       const replacement = {
+        type: prev.type,
         x: prev.x + prev.xVel,
         y: prev.y + prev.yVel,
         xVel: prev.xVel,
@@ -260,6 +284,7 @@ function isColliding(element1, element2) {
 
         // randomly place the target somewhere else on the board
         setTarget({
+          type: "target",
           x: newTargetCoords[0],
           y: newTargetCoords[1],
           xVel: 0,
@@ -284,15 +309,27 @@ function isColliding(element1, element2) {
       // horizontal handling
       if (replacement.x < 0) {
         replacement.x = 0;
+        if (replacement.type === "target" && score > 5) {
+          replacement.xVel = 5;
+        }
       } else if (replacement.x + entWidth > gameBoardWidth) {
         replacement.x = gameBoardWidth - entWidth;
+        if (replacement.type === "target" && score > 5) {
+          replacement.xVel = -5;
+        }
       }
 
       // vertical handling
       if (replacement.y < 0) {
         replacement.y = 0;
+        if (replacement.type === "target" && score > 5) {
+          replacement.yVel = 5;
+        }
       } else if (replacement.y + entHeight > gameBoardHeight) {
         replacement.y = gameBoardHeight - entHeight;
+        if (replacement.type === "target" && score > 5) {
+          replacement.yVel = -5;
+        }
       }
 
       // set new state for player
