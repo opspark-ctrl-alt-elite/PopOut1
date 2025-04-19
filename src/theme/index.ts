@@ -16,7 +16,14 @@ const theme = createTheme({
         root: {
           fontFamily: `'Anton', sans-serif`,
           letterSpacing: '2px',
-          textTransform: 'uppercase',
+          textTransform: 'none',
+          borderRadius: 8,
+          boxShadow: 1,
+          backgroundColor: "#000",
+          color: "#fff",
+          "&:hover": {
+            backgroundColor: "#333",
+          },
         },
       },
     },
