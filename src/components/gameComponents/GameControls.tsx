@@ -41,9 +41,67 @@ type Props = {
 
 const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
 
-  // useEffect(() => {
+//   useEffect(()=>{
+//     console.log(player);
+//  },[player]);
 
-  // }, []);
+  useEffect(() => {
+
+    // register an event listener that causes the handleKeyPress function to run whenever a key is pressed
+    window.addEventListener('keydown', handleKeyPress);
+
+    // register an event listener that causes the handleKeyUnPress function to run whenever a key is unpressed
+    window.addEventListener('keyup', handleKeyUnPress);
+
+    // return function to clean up the event listeners when the component is unmounted via. a page change
+    return () => {
+      window.removeEventListener('keydown', handleKeyPress);
+      window.removeEventListener('keyup', handleKeyUnPress);
+    };
+  }, [ player ]);
+
+  // allow for WASD and arrow key control when keys are pressed
+  const handleKeyPress = ( e: { key: string; } ) => {
+    switch (e.key) {
+      case 'ArrowUp':
+      case 'w':
+        pressUp();
+        break;
+      case 'ArrowDown':
+      case 's':
+        pressDown();
+        break;
+      case 'ArrowLeft':
+      case 'a':
+        pressLeft();
+        break;
+      case 'ArrowRight':
+      case 'd':
+        pressRight();
+        break;
+    }
+  }
+  // allow for WASD and arrow key control when keys are UNpressed
+  const handleKeyUnPress = ( e: { key: string; } ) => {
+    switch (e.key) {
+      case 'ArrowUp':
+      case 'w':
+        unPressUp();
+        break;
+      case 'ArrowDown':
+      case 's':
+        unPressDown();
+        break;
+      case 'ArrowLeft':
+      case 'a':
+        unPressLeft();
+        break;
+      case 'ArrowRight':
+      case 'd':
+        unPressRight();
+        break;
+    }
+  }
 
   // make the player go upwards upon pressing the up button
   const pressUp = () => {
