@@ -6,6 +6,9 @@ const theme = createTheme({
     h4: {
       fontFamily: `'Bebas Neue', sans-serif`,
     },
+    h5: {
+      fontFamily: `'Bebas Neue', sans-serif`,
+    },
     h6: {
       fontFamily: `'Bebas Neue', sans-serif`,
     },
