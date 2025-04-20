@@ -205,7 +205,7 @@ const Navbar: React.FC<Props> = ({
           >
             <ListItem button sx={{ paddingLeft: 0 }}>
               <ListItemIcon sx={{ minWidth: 30 }}>
-                <PersonIcon />
+                <PersonIcon sx={{ color: "#1e88e5" }} />
               </ListItemIcon>
               <ListItemText primary="User Profile" sx={{ marginLeft: 1 }} />
             </ListItem>
@@ -219,7 +219,7 @@ const Navbar: React.FC<Props> = ({
             >
               <ListItem button sx={{ paddingLeft: 0 }}>
                 <ListItemIcon sx={{ minWidth: 30 }}>
-                  <WorkIcon />
+                  <WorkIcon sx={{ color: "#43a047" }} />
                 </ListItemIcon>
                 <ListItemText primary="Vendor Profile" sx={{ marginLeft: 1 }} />
               </ListItem>
@@ -228,7 +228,7 @@ const Navbar: React.FC<Props> = ({
 
           <ListItem button onClick={handleLogout} sx={{ paddingLeft: 0 }}>
             <ListItemIcon sx={{ minWidth: 30 }}>
-              <LogoutIcon />
+              <LogoutIcon sx={{ color: "#e53935" }} />
             </ListItemIcon>
             <ListItemText primary="Log Out" sx={{ marginLeft: 1 }} />
           </ListItem>
