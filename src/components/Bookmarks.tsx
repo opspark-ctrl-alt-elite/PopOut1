@@ -31,6 +31,14 @@ interface Props {
 const Bookmarks: React.FC<Props> = ({ events }) => {
   if (!events || !Array.isArray(events) || events.length === 0) return null;
 
+  const now = new Date();
+
+  const upcomingEvents = events.filter(
+    (event) => new Date(event.endDate) >= now
+  );
+
+  if (upcomingEvents.length === 0) return null;
+
   return (
     <Box mt={6}>
       <Typography variant="h5" gutterBottom>
@@ -44,7 +52,7 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
           flexWrap: "wrap",
         }}
       >
-        {events.map((event) => (
+        {upcomingEvents.map((event) => (
           <Card
             key={event.id}
             sx={{
@@ -146,5 +154,6 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
     </Box>
   );
 };
+
 
 export default Bookmarks;
