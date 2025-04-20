@@ -12,14 +12,21 @@ import {
   Alert,
 } from '@mui/material';
 
+interface User {
+  id: string;
+  name: string;
+  profile_picture?: string;
+}
+
 interface Review {
-  id?: string;
+  id: string;
   rating: number;
   comment: string;
-  userId?: string;
+  userId: string;
   vendorId: string;
-  createdAt?: string;
-  updatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+  user?: User;
 }
 
 interface ReviewComponentProps {
@@ -37,41 +44,32 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
   onReviewUpdated,
   onReviewDeleted,
 }) => {
-  const [reviews, setReviews] = useState<Review[]>([]);
   const [userReview, setUserReview] = useState<Review | null>(null);
   const [rating, setRating] = useState<number>(0);
   const [comment, setComment] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchReviews = async () => {
+  const fetchUserReview = async () => {
     try {
       const response = await axios.get(`/vendors/${vendorId}/reviews`);
-      const reviewsArray = Array.isArray(response.data) ? response.data : 
-                         (response.data?.reviews ? response.data.reviews : []);
-      
-      setReviews(reviewsArray);
-      const existingReview = reviewsArray.find(
-        (review) => review.userId === currentUserId
+      const existingReview = response.data.find(
+        (review: Review) => review.userId === currentUserId
       ) || null;
       
       setUserReview(existingReview);
       if (existingReview) {
         setRating(existingReview.rating);
         setComment(existingReview.comment);
-      } else {
-        setRating(0);
-        setComment('');
       }
     } catch (err) {
-      console.error('Error fetching reviews:', err);
-      setError('Failed to fetch reviews. Please try again later.');
+      console.error('Error fetching user review:', err);
     }
   };
 
   useEffect(() => {
     if (vendorId) {
-      fetchReviews();
+      fetchUserReview();
     }
   }, [vendorId, currentUserId]);
 
@@ -87,21 +85,19 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
 
     try {
       if (userReview?.id) {
-        // Update existing review
         await axios.put(
           `/vendors/${vendorId}/reviews/${userReview.id}`,
           { rating, comment }
         );
         if (onReviewUpdated) onReviewUpdated();
       } else {
-        // Create new review
         await axios.post(
           `/vendors/${vendorId}/reviews`,
           { rating, comment }
         );
         if (onReviewAdded) onReviewAdded();
       }
-      await fetchReviews();
+      await fetchUserReview();
     } catch (err: any) {
       console.error('Error submitting review:', err);
       setError(err.response?.data?.error || 'Failed to submit review. Please try again.');
@@ -119,7 +115,9 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
     try {
       await axios.delete(`/vendors/${vendorId}/reviews/${userReview.id}`);
       if (onReviewDeleted) onReviewDeleted();
-      await fetchReviews();
+      setUserReview(null);
+      setRating(0);
+      setComment('');
     } catch (err) {
       console.error('Error deleting review:', err);
       setError('Failed to delete review. Please try again.');
@@ -135,12 +133,12 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
       </Typography>
 
       {error && (
-        <Alert severity="error" sx={{ mb: 2 }}>
+        <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError(null)}>
           {error}
         </Alert>
       )}
 
-      <Box component="form" onSubmit={handleSubmit} sx={{ mb: 3 }}>
+      <Box component="form" onSubmit={handleSubmit}>
         <Stack spacing={2}>
           <Box>
             <Typography component="legend">Rating</Typography>
@@ -184,45 +182,6 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
           </Stack>
         </Stack>
       </Box>
-
-      <Divider sx={{ my: 3 }} />
-
-      <Typography variant="h6" gutterBottom>
-        All Reviews
-      </Typography>
-
-      {reviews.length === 0 ? (
-        <Typography>No reviews yet</Typography>
-      ) : (
-        <Box
-          sx={{
-            maxWidth:200,
-            maxHeight: 300,
-            overflowY: 'auto',
-            border: '1px solid #eee',
-            borderRadius: 1,
-            p: 1,
-          }}
-        >
-          <Stack spacing={2}>
-            {reviews.map((review) => (
-              <Box key={review.id} sx={{ p: 2, border: '1px solid #eee', borderRadius: 1 }}>
-                <Stack direction="row" spacing={1} alignItems="center">
-                  <Rating value={review.rating} precision={0.5} readOnly />
-                  <Typography variant="body2" color="text.secondary">
-                    {review.createdAt ? new Date(review.createdAt).toLocaleDateString() : ''}
-                  </Typography>
-                </Stack>
-                {review.comment && (
-                  <Typography variant="body1" sx={{ mt: 1 }}>
-                    {review.comment}
-                  </Typography>
-                )}
-              </Box>
-            ))}
-          </Stack>
-        </Box>
-      )}
     </Box>
   );
 };

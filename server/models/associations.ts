@@ -50,3 +50,23 @@ Vendor.belongsToMany(User, { through: UserFollowsVendor, foreignKey: 'vendorId',
 
 User.belongsToMany(Event, { through: 'UserBookmarksEvent', foreignKey: 'userId', as: 'bookmarkedEvents', });
 Event.belongsToMany(User, { through: 'UserBookmarksEvent', foreignKey: 'eventId', as: 'usersWhoBookmarked', });
+
+Review.belongsTo(User, { 
+  foreignKey: 'userId',
+  as: 'user' 
+});
+
+Review.belongsTo(Vendor, {
+  foreignKey: 'vendorId',
+  as: 'vendor'
+});
+
+User.hasMany(Review, {
+  foreignKey: 'userId',
+  as: 'reviews'
+});
+
+Vendor.hasMany(Review, {
+  foreignKey: 'vendorId',
+  as: 'reviews'
+});
