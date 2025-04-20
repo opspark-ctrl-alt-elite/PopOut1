@@ -33,8 +33,11 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
 
   const now = new Date();
 
-  const upcomingEvents = events.filter(
-    (event) => new Date(event.endDate) >= now
+  const upcomingEvents = events
+  .filter((event) => new Date(event.endDate) >= now)
+  .sort(
+    (a, b) =>
+      new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
   );
 
   if (upcomingEvents.length === 0) return null;
