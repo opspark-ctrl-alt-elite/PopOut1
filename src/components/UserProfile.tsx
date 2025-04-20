@@ -12,7 +12,10 @@ import {
   Button,
   Divider,
   Card,
+  IconButton,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Tooltip from "@mui/material/Tooltip";
 
 type Category = { id: number; name: string };
 type Event = {
@@ -148,13 +151,30 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                   </Typography>
                 </Box>
               </Stack>
-              <Button
-                variant="outlined"
-                size="small"
-                onClick={() => setOpenEdit(true)}
-              >
-                Edit Profile
-              </Button>
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setOpenEdit(true)}
+                >
+                  Edit Profile
+                </Button>
+
+                <Tooltip title="Delete Account" arrow>
+                  <IconButton
+                    onClick={handleDeleteUser}
+                    color="error"
+                    sx={{
+                      padding: 0,
+                      "&:hover": {
+                        backgroundColor: "transparent",
+                      },
+                    }}
+                  >
+                    <DeleteIcon sx={{ fontSize: 36 }} />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
             </Stack>
 
             {bookmarkedEvents.length > 0 && (
@@ -225,39 +245,6 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
             ) : (
               <Typography>No preferences selected yet.</Typography>
             )}
-
-            <Stack spacing={2}>
-              {/* 🔥 Removed User Preferences button here */}
-              <Divider />
-              {user.is_vendor ? (
-                <Button
-                  component={RouterLink}
-                  to="/vendorprofile"
-                  variant="text"
-                  fullWidth
-                >
-                  View Vendor Profile
-                </Button>
-              ) : (
-                <Button
-                  component={RouterLink}
-                  to="/vendor-signup"
-                  variant="outlined"
-                  fullWidth
-                >
-                  Become a Vendor
-                </Button>
-              )}
-              <Divider />
-              <Button
-                variant="outlined"
-                color="error"
-                fullWidth
-                onClick={handleDeleteUser}
-              >
-                Delete My Account
-              </Button>
-            </Stack>
 
             <EditProfile
               open={openEdit}
