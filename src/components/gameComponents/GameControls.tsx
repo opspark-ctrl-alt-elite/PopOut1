@@ -1,23 +1,9 @@
-import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useEffect } from "react";
 
 import {
-  Box,
-  Modal,
   Button,
   Container,
-  Tooltip,
-  IconButton,
   Stack,
-  Typography,
-  Card,
-  Chip,
-  Grid2,
-  TextField,
-  AppBar,
-  Toolbar,
-  Avatar,
-  Divider,
 } from "@mui/material";
 
 import {
@@ -40,10 +26,6 @@ type Props = {
 };
 
 const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
-
-//   useEffect(()=>{
-//     console.log(player);
-//  },[player]);
 
   useEffect(() => {
 

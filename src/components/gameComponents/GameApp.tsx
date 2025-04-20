@@ -1,35 +1,18 @@
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GameControls from "./GameControls";
-import axios from "axios";
 
 import {
   Box,
   Modal,
   Button,
   Container,
-  Tooltip,
-  IconButton,
-  Stack,
   Typography,
-  Card,
-  Chip,
-  Grid2,
-  TextField,
-  AppBar,
-  Toolbar,
-  Avatar,
-  Divider,
 } from "@mui/material";
 
 import {
   Home
 } from "@mui/icons-material"
-
-// type Board = {
-//   height: number;
-//   width: number;
-// }
 
 type Mover = {
   type: string;
@@ -72,22 +55,6 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
     p: 4,
   };
 
-/*
-
-function isColliding(element1, element2) {
-    const rect1 = element1.getBoundingClientRect();
-    const rect2 = element2.getBoundingClientRect();
-
-    return !(
-        rect1.top > rect2.bottom ||
-        rect1.right < rect2.left ||
-        rect1.bottom < rect2.top ||
-        rect1.left > rect2.right
-    );
-}
-
-*/
-
   // create state to determine if the ending modal should be open or closed
   const [open, setOpen] = useState(false);
 
@@ -99,8 +66,6 @@ function isColliding(element1, element2) {
     xVel: 0,
     yVel: 0,
   });
-
-  //console.log(player);
 
   // create state to represent the target
   const [target, setTarget] = useState<Mover>({
@@ -117,26 +82,8 @@ function isColliding(element1, element2) {
   // create state to represent the current time
   const [time, setTime] = useState(0);
 
-  // // initiate reference to the score state
-  // const scoreRef = useRef(score);
-
-
-
-  // // create an interval only on the first time this component is rendered
-  // useEffect(() => {
-
-  //   // create an interval to call the masterUpdate function every 30 ms
-  //   const interval = setInterval(masterUpdate, 30);
-
-  //   // return a callback function that cleans up (destroys) the interval
-  //   return () => {
-  //     clearInterval(interval);
-  //   }
-  // }, []);
-
   // repeatedly call masterUpdate without making current states unusable in said function
   useEffect(() => {
-    console.log(time);
     // set the time to a different number after 30 ms to call this useEffect again after 30 ms
     setTimeout(() => {
       setTime(prev => {
@@ -162,16 +109,8 @@ function isColliding(element1, element2) {
     }
   }, [ captcha ])
 
-  // update current state values via useEffect side effect
-  // useEffect(() => {
-  //   console.log("skunk")
-  // }, [ score ])
-
   // update every element on every "frame" to keep things consistent
   const masterUpdate = () => {
-    // console.log(boardRef);
-    // console.log(targetRef);
-    // console.log(playerRef);
 
     // get a reference to the current game board HTML element
     let gameBoard = boardRef.current !== undefined ? boardRef.current : document.getElementById("gameBoard");
@@ -196,8 +135,6 @@ function isColliding(element1, element2) {
     let targetX = targetElement?.offsetLeft !== undefined ? targetElement?.offsetLeft : 200;
     let targetY = targetElement?.offsetTop !== undefined ? targetElement?.offsetTop : 200;
 
-    console.log(score);
-
     // make sure that the target is still inbounds
     setTarget(prev => {
 
@@ -207,7 +144,6 @@ function isColliding(element1, element2) {
 
       // make target begin moving in random direction upon new round after a round/score of 5
       if ((xVel === 0 || yVel === 0) && score > 5) {
-        console.log(prev);
         if (Math.floor(Math.random() * 2)) {
           xVel = 5;
         } else {
@@ -228,8 +164,6 @@ function isColliding(element1, element2) {
         xVel,
         yVel
       };
-
-      // console.log(score);
 
       return checkOutOfBounds(replacement, gameBoardWidth, gameBoardHeight, targetWidth, targetHeight);
     })
@@ -380,7 +314,6 @@ function isColliding(element1, element2) {
           </Button>
         </Box>
       </Modal>
-      {/* <iframe width="560" height="315" src="https://www.youtube.com/embed/B7gGacb8cO4"></iframe> */}
     </Container>
   );
 };
