@@ -52,7 +52,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
 
   const fetchUserReview = async () => {
     try {
-      const response = await axios.get(`/vendors/${vendorId}/reviews`);
+      const response = await axios.get(`/api/vendor/${vendorId}/reviews`);
       const existingReview = response.data.find(
         (review: Review) => review.userId === currentUserId
       ) || null;
@@ -68,7 +68,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
   };
 
   useEffect(() => {
-    if (vendorId) {
+    if (vendorId && currentUserId) {
       fetchUserReview();
     }
   }, [vendorId, currentUserId]);
@@ -86,21 +86,25 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
     try {
       if (userReview?.id) {
         await axios.put(
-          `/vendors/${vendorId}/reviews/${userReview.id}`,
-          { rating, comment }
+          `/api/vendor/${vendorId}/reviews/${userReview.id}`,
+          { rating, comment },
+          { headers: { 'Content-Type': 'application/json' } }
         );
         if (onReviewUpdated) onReviewUpdated();
       } else {
         await axios.post(
-          `/vendors/${vendorId}/reviews`,
-          { rating, comment }
+          `/api/vendor/${vendorId}/reviews`,
+          { rating, comment },
+          { headers: { 'Content-Type': 'application/json' } }
         );
         if (onReviewAdded) onReviewAdded();
       }
       await fetchUserReview();
     } catch (err: any) {
-      console.error('Error submitting review:', err);
-      setError(err.response?.data?.error || 'Failed to submit review. Please try again.');
+      const errorMessage = err.response?.data?.error || 
+                         err.response?.data?.message || 
+                         'Failed to submit review. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -113,21 +117,23 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
     setError(null);
 
     try {
-      await axios.delete(`/vendors/${vendorId}/reviews/${userReview.id}`);
+      await axios.delete(`/api/vendor/${vendorId}/reviews/${userReview.id}`);
       if (onReviewDeleted) onReviewDeleted();
       setUserReview(null);
       setRating(0);
       setComment('');
-    } catch (err) {
-      console.error('Error deleting review:', err);
-      setError('Failed to delete review. Please try again.');
+    } catch (err: any) {
+      const errorMessage = err.response?.data?.error || 
+                         err.response?.data?.message || 
+                         'Failed to delete review. Please try again.';
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box>
+    <Box sx={{ mt: 4 }}>
       <Typography variant="h6" gutterBottom>
         {userReview ? 'Update Your Review' : 'Add Your Review'}
       </Typography>

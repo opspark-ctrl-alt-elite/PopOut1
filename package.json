@@ -20,14 +20,23 @@
   "author": "",
   "license": "MIT",
   "jest": {
-  "preset": "ts-jest",
-  "testEnvironment": "jsdom",
-  "setupFilesAfterEnv": ["<rootDir>/jest.setup.js"],
-  "transform": {
-    "^.+\\.(ts|tsx)$": "babel-jest"
+    "preset": "ts-jest",
+    "testEnvironment": "jsdom",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest.setup.js"
+    ],
+    "transform": {
+      "^.+\\.(ts|tsx)$": "babel-jest"
+    },
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   },
-  "moduleFileExtensions": ["ts", "tsx", "js", "jsx", "json", "node"]
-},
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
@@ -39,6 +48,7 @@
     "@types/jest": "^29.5.14",
     "@types/multer": "^1.4.12",
     "@types/node": "^22.13.13",
+    "@types/sequelize": "^4.28.20",
     "axios": "^1.8.4",
     "cloudinary": "^2.6.0",
     "cors": "^2.8.5",
@@ -55,7 +65,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-router-dom": "^7.4.0",
-    "sequelize": "^6.37.6",
+    "sequelize": "^6.37.7",
     "style-loader": "^4.0.0",
     "ts-jest": "^29.3.0"
   },
