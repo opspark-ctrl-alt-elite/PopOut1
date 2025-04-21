@@ -2,58 +2,28 @@ import { Router, Request, Response } from 'express';
 import Review from '../models/Review';
 import Vendor from '../models/Vendor';
 import User from '../models/User';
-
+import  sequelize  from '../models/index'; 
 const router = Router();
 
-// Minimal authenticate middleware
+// Enhanced authenticate middleware
 const authenticate = (req: Request, res: Response, next: Function) => {
-  if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+  if (!req.user) {
+    return res.status(401).json({ 
+      error: 'Unauthorized',
+      message: 'Please login to perform this action'
+    });
+  }
   next();
 };
 
-router.post('/:vendorId/reviews', authenticate, async (req: Request, res: Response) => {
-  const { vendorId } = req.params;
-  const { rating, comment } = req.body;
-  const userId = (req.user as User).id; // Using the user's id from authentication
-
-  try {
-    // Confirm the vendor exists.
-    const vendor = await Vendor.findByPk(vendorId);
-    if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
-
-    // Confirm the user exists in the DB.
-    const user = await User.findByPk(userId);
-    if (!user) {
-      // This error indicates that the authentication process is returning a user ID that does not exist.
-      return res.status(404).json({ error: 'User not found in the database.' });
-    }
-
-    // Check if a review from this user for this vendor already exists.
-    const existingReview = await Review.findOne({ where: { vendorId, userId } });
-    if (existingReview) {
-      return res.status(400).json({ error: 'You have already reviewed this vendor.' });
-    }
-
-    // Create the review.
-    const review = await Review.create({ rating, comment, userId, vendorId });
-    res.status(201).json(review);
-  } catch (error) {
-    console.error('Review creation error:', error);
-    res.status(500).json({
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : String(error)
-    });
-  }
-});
-
-// Get all reviews for a vendor
+// GET all reviews for a vendor
 router.get('/:vendorId/reviews', async (req: Request, res: Response) => {
-  const { vendorId } = req.params;
   try {
     const reviews = await Review.findAll({
-      where: { vendorId },
+      where: { vendorId: req.params.vendorId },
       include: [{
         model: User,
+        as: 'user', // This must match the association alias
         attributes: ['id', 'name', 'profile_picture']
       }],
       order: [['createdAt', 'DESC']]
@@ -63,52 +33,80 @@ router.get('/:vendorId/reviews', async (req: Request, res: Response) => {
     console.error('Error fetching reviews:', error);
     res.status(500).json({ 
       error: 'Internal server error',
-      details: error instanceof Error ? error.message : String(error)
+      details: process.env.NODE_ENV === 'development' ? error : undefined
     });
   }
 });
 
-// Update a review
-router.put('/:vendorId/reviews/:reviewId', authenticate, async (req: Request, res: Response) => {
-  const { vendorId, reviewId } = req.params;
-  const { rating, comment } = req.body;
-  const userId = (req.user as User).id;
-
+// POST a new review
+router.post('/:vendorId/reviews', authenticate, async (req: Request, res: Response) => {
+  const transaction = await sequelize.transaction();
+  
   try {
-    const review = await Review.findOne({ 
-      where: { id: reviewId, vendorId, userId } 
-    });
-    if (!review) return res.status(404).json({ error: 'Review not found' });
+    const { vendorId } = req.params;
+    const { rating, comment } = req.body;
+    const userId = (req.user as User).id;
 
-    await review.update({ rating, comment });
-    res.json(review);
+    // Validate input
+    if (!rating || rating < 1 || rating > 5) {
+      await transaction.rollback();
+      return res.status(400).json({ error: 'Invalid rating value' });
+    }
+
+    // Verify vendor exists
+    const vendor = await Vendor.findByPk(vendorId, { transaction });
+    if (!vendor) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'Vendor not found' });
+    }
+
+    // Verify user exists
+    const user = await User.findByPk(userId, { transaction });
+    if (!user) {
+      await transaction.rollback();
+      return res.status(404).json({ error: 'User not found' });
+    }
+
+    // Check for existing review
+    const existingReview = await Review.findOne({ 
+      where: { userId, vendorId },
+      transaction
+    });
+    
+    if (existingReview) {
+      await transaction.rollback();
+      return res.status(409).json({ error: 'You have already reviewed this vendor' });
+    }
+
+    // Create review
+    const review = await Review.create({
+      rating,
+      comment: comment || null,
+      userId,
+      vendorId
+    }, { transaction });
+
+    // Fetch the complete review with user data
+    const reviewWithUser = await Review.findByPk(review.id, {
+      include: [{
+        model: User,
+        as: 'user',
+        attributes: ['id', 'name', 'profile_picture']
+      }],
+      transaction
+    });
+
+    await transaction.commit();
+    res.status(201).json(reviewWithUser);
   } catch (error) {
-    console.error('Error updating review:', error);
+    await transaction.rollback();
+    console.error('Database error:', error);
     res.status(500).json({ 
       error: 'Internal server error',
-      details: error instanceof Error ? error.message : String(error)
-    });
-  }
-});
-
-// Delete a review
-router.delete('/:vendorId/reviews/:reviewId', authenticate, async (req: Request, res: Response) => {
-  const { vendorId, reviewId } = req.params;
-  const userId = (req.user as User).id;
-
-  try {
-    const review = await Review.findOne({ 
-      where: { id: reviewId, vendorId, userId } 
-    });
-    if (!review) return res.status(404).json({ error: 'Review not found' });
-
-    await review.destroy();
-    res.status(204).end();
-  } catch (error) {
-    console.error('Error deleting review:', error);
-    res.status(500).json({ 
-      error: 'Internal server error',
-      details: error instanceof Error ? error.message : String(error)
+      details: process.env.NODE_ENV === 'development' ? {
+        message: error,
+        stack: error
+      } : undefined
     });
   }
 });
