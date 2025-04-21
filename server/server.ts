@@ -65,7 +65,7 @@ app.use('/users', userBookmarkRoutes);
 app.use('/vendors', statsRouter);
 app.use('/vendors', vendorRoutes);
 app.use('/vendors', reviewRoutes);
-
+app.use('/api/vendor', reviewRoutes);
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);
   next();
