@@ -6,7 +6,7 @@ Set Up Instructions
 4. Run the terminal command “npm install” to download the required dependencies.
 5. Run the terminal command “service mysql start” to start the mysql server (“sudo service mysql start” for WSL/Windows and “mysql.server start” for Mac). If desired, you can replace “start” with “stop” in these commands whenever you wish to stop the mysql server.
 6. Run the terminal command “mysql -u root” to open the mysql shell.
-7. In the mysql shell, run “create database popout” to create the “popout” database.
+7. In the mysql shell, run “create database popout;” to create the “popout” database.
 8. In a different terminal, run the command “npm run build” to create the dist (updated as code is changed).
 9. In a different terminal, run the command “npm start” to run the server (does update as code is changed without needing to restart the server, but the page must be restarted manually for changes to take effect).
 10. While starting the server allows the application to be used, it also creates the tables inside of the popout database for the first time. Go back to the terminal with the opened mysql shell and run these commands one after another:
