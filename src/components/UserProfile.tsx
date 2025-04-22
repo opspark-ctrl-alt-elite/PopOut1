@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate, Link as RouterLink } from "react-router-dom";
+import { Link as RouterLink } from "react-router-dom";
 import Bookmarks from "../components/Bookmarks";
+import EditProfile from "../components/EditProfile";
 import axios from "axios";
 import {
   Box,
@@ -11,14 +12,12 @@ import {
   Button,
   Divider,
   Card,
-  CardContent,
+  IconButton,
 } from "@mui/material";
+import DeleteIcon from "@mui/icons-material/Delete";
+import Tooltip from "@mui/material/Tooltip";
 
-type Category = {
-  id: number;
-  name: string;
-};
-
+type Category = { id: number; name: string };
 type Event = {
   id: string;
   title: string;
@@ -27,13 +26,12 @@ type Event = {
   endDate: string;
   venue_name: string;
 };
-
 type FollowedVendor = {
   id: string;
   businessName: string;
   profilePicture?: string;
 };
-
+type Preference = { userId: string; categoryId: number };
 type User = {
   id: string;
   name: string;
@@ -45,12 +43,34 @@ type User = {
 
 type Props = {
   user: User | null;
+  setUser: (user: User) => void;
+  categories: Category[] | null;
 };
 
-const UserProfile: React.FC<Props> = ({ user }) => {
-  const navigate = useNavigate();
+const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
   const [bookmarkedEvents, setBookmarkedEvents] = useState<Event[]>([]);
+  const [preferences, setPreferences] = useState<Category[]>([]);
   const [followedVendors, setFollowedVendors] = useState<FollowedVendor[]>([]);
+  const [openEdit, setOpenEdit] = useState(false);
+
+  useEffect(() => {
+    if (user && categories) getPreferences();
+  }, [user, categories]);
+
+  const getPreferences = async () => {
+    if (!user || !categories) return;
+    try {
+      const res = await axios.get(`/api/preferences/${user.id}`);
+      const prefCats: Category[] = res.data
+        .map((pref: Preference) =>
+          categories.find((cat) => cat.id === pref.categoryId)
+        )
+        .filter((c): c is Category => !!c);
+      setPreferences(prefCats);
+    } catch (err) {
+      console.error("Error fetching preferences:", err);
+    }
+  };
 
   useEffect(() => {
     if (!user) return;
@@ -58,26 +78,25 @@ const UserProfile: React.FC<Props> = ({ user }) => {
     const fetchFollowedVendors = async () => {
       try {
         const res = await axios.get(`/users/${user.id}/followed-vendors`);
-        const vendorsWithImages = await Promise.all(
+        const withImages = await Promise.all(
           res.data.map(async (vendor: FollowedVendor) => {
             try {
-              const imageRes = await axios.get(
+              const imgRes = await axios.get(
                 `/api/images/vendorId/${vendor.id}`
               );
-              const uploadedImage =
-                imageRes.data?.[0]?.referenceURL || vendor.profilePicture || "";
               return {
                 ...vendor,
-                profilePicture: uploadedImage,
+                profilePicture:
+                  imgRes.data?.[0]?.referenceURL || vendor.profilePicture,
               };
             } catch {
               return vendor;
             }
           })
         );
-        setFollowedVendors(vendorsWithImages);
+        setFollowedVendors(withImages);
       } catch (err) {
-        console.error("err fetching followed vendors", err);
+        console.error("Error fetching vendors:", err);
       }
     };
 
@@ -86,7 +105,7 @@ const UserProfile: React.FC<Props> = ({ user }) => {
         const res = await axios.get(`/users/${user.id}/bookmarked-events`);
         setBookmarkedEvents(res.data);
       } catch (err) {
-        console.error("err fetching bookmarked events", err);
+        console.error("Error fetching bookmarks:", err);
       }
     };
 
@@ -94,43 +113,30 @@ const UserProfile: React.FC<Props> = ({ user }) => {
     fetchBookmarkedEvents();
   }, [user]);
 
-  const handleDeleteUser = () => {
+  const handleDeleteUser = async () => {
     if (!user) return;
-
-    const confirmed = window.confirm(
-      "Are you sure you want to delete your account? This action cannot be undone."
-    );
-    if (!confirmed) return;
-
-    fetch(`/user/me`, {
-      method: "DELETE",
-      credentials: "include",
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error("Failed to delete user");
-        navigate("/");
-      })
-      .catch((err) => {
-        console.error("Error deleting user:", err);
-        alert("Failed to delete account.");
-      });
+    if (!window.confirm("Are you sure you want to delete your account?"))
+      return;
+    try {
+      await fetch(`/user/me`, { method: "DELETE", credentials: "include" });
+      window.location.href = "/";
+    } catch (err) {
+      console.error("Error deleting user:", err);
+    }
   };
 
   return (
     <Box>
       <Container maxWidth="md" sx={{ mt: 6 }}>
         {user ? (
-          <Box>
-            {/* header */}
+          <>
             <Stack
               direction="row"
-              alignItems="center"
               justifyContent="space-between"
-              spacing={4}
-              sx={{ mb: 4 }}
-              flexWrap="wrap"
+              alignItems="center"
+              mb={4}
             >
-              <Stack direction="row" spacing={2} alignItems="center">
+              <Stack direction="row" spacing={2}>
                 <Avatar
                   src={user.profile_picture}
                   alt={user.name}
@@ -145,25 +151,39 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                   </Typography>
                 </Box>
               </Stack>
-              <Button
-                variant="outlined"
-                size="small"
-                component={Link}
-                to="/edit-profile"
-              >
-                Edit Profile
-              </Button>
+              <Stack direction="row" spacing={1}>
+                <Button
+                  variant="outlined"
+                  size="small"
+                  onClick={() => setOpenEdit(true)}
+                >
+                  Edit Profile
+                </Button>
+
+                <Tooltip title="Delete Account" arrow>
+                  <IconButton
+                    onClick={handleDeleteUser}
+                    color="error"
+                    sx={{
+                      padding: 0,
+                      "&:hover": {
+                        backgroundColor: "transparent",
+                      },
+                    }}
+                  >
+                    <DeleteIcon sx={{ fontSize: 36 }} />
+                  </IconButton>
+                </Tooltip>
+              </Stack>
             </Stack>
 
-            {/* bookmarks */}
-            {user && bookmarkedEvents.length > 0 && (
+            {bookmarkedEvents.length > 0 && (
               <Bookmarks userId={user.id} events={bookmarkedEvents} />
             )}
 
-            {/* followed vendors */}
             {followedVendors.length > 0 && (
               <Box mt={4} mb={4}>
-                <Typography variant="h6" gutterBottom>
+                <Typography variant="h5" gutterBottom>
                   Following:
                 </Typography>
                 <Box
@@ -185,12 +205,6 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                           padding: 2,
                           borderRadius: 3,
                           boxShadow: 2,
-                          cursor: "pointer",
-                          transition: "transform 0.2s ease-in-out",
-                          "&:hover": {
-                            transform: "scale(1.02)",
-                            boxShadow: 4,
-                          },
                         }}
                       >
                         <Avatar
@@ -198,15 +212,9 @@ const UserProfile: React.FC<Props> = ({ user }) => {
                           alt={vendor.businessName}
                           sx={{ width: 48, height: 48 }}
                         />
-                        <Box>
-                          <Typography
-                            fontWeight="bold"
-                            variant="body1"
-                            color="text.primary"
-                          >
-                            {vendor.businessName}
-                          </Typography>
-                        </Box>
+                        <Typography fontWeight="bold">
+                          {vendor.businessName}
+                        </Typography>
                       </Card>
                     </RouterLink>
                   ))}
@@ -214,14 +222,12 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               </Box>
             )}
 
-            {/* prefs */}
-            <Typography variant="h6" fontWeight="bold" gutterBottom>
+            <Typography variant="h5" gutterBottom>
               Preferences:
             </Typography>
-
-            {user.categories && user.categories.length > 0 ? (
+            {preferences.length > 0 ? (
               <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
-                {user.categories.map((cat) => (
+                {preferences.map((cat) => (
                   <Box
                     key={cat.id}
                     sx={{
@@ -240,54 +246,15 @@ const UserProfile: React.FC<Props> = ({ user }) => {
               <Typography>No preferences selected yet.</Typography>
             )}
 
-            <Stack spacing={2}>
-              <Button
-                variant="contained"
-                fullWidth
-                component={Link}
-                to="/preferences"
-              >
-                User Preferences
-              </Button>
-
-              <Divider />
-
-              {user.is_vendor ? (
-                <Button
-                  component={Link}
-                  to="/vendorprofile"
-                  variant="text"
-                  fullWidth
-                >
-                  View Vendor Profile
-                </Button>
-              ) : (
-                <Button
-                  component={Link}
-                  to="/vendor-signup"
-                  variant="outlined"
-                  fullWidth
-                >
-                  Become a Vendor
-                </Button>
-              )}
-
-              <Divider />
-
-              <Button
-                variant="outlined"
-                color="error"
-                fullWidth
-                onClick={handleDeleteUser}
-              >
-                Delete My Account
-              </Button>
-            </Stack>
-          </Box>
+            <EditProfile
+              open={openEdit}
+              onClose={() => setOpenEdit(false)}
+              user={user}
+              setUser={setUser}
+            />
+          </>
         ) : (
-          <Typography textAlign="center" mt={4}>
-            No user found.
-          </Typography>
+          <Typography>No user found.</Typography>
         )}
       </Container>
     </Box>

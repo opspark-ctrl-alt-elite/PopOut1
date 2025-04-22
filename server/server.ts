@@ -21,6 +21,7 @@ import reviewRoutes from './routes/reviewRoutes';
 import userBookmarkRoutes from './routes/userBookmarkRoutes';
 import statsRouter from './routes/statsRoutes';
 import searchRoutes from './routes/searchRoutes';
+import preferenceRoutes from './routes/preferenceRoutes';
 
 dotenv.config();
 const app = express();
@@ -58,6 +59,7 @@ app.use('/api/events', eventRoutes);
 app.use('/api/categories', categoryRoutes);
 app.use('/api/images', imageRoutes);
 app.use('/api/notifications', notificationRoutes);
+app.use('/api/preferences', preferenceRoutes)
 app.use('/api', reviewRoutes);
 app.use('/vendors', reviewRoutes);
 app.use('/api', userBookmarkRoutes);
@@ -66,6 +68,7 @@ app.use('/vendors', statsRouter);
 app.use('/vendors', vendorRoutes);
 app.use('/vendors', reviewRoutes);
 app.use('/search', searchRoutes)
+app.use('/api/vendor', reviewRoutes);
 
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);

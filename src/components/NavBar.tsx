@@ -125,7 +125,7 @@ const Navbar: React.FC<Props> = ({
             <Typography
               component={Link}
               to="/"
-              variant="h5"
+              variant="h4"
               fontWeight="bold"
               sx={{
                 textDecoration: "none",
@@ -143,11 +143,12 @@ const Navbar: React.FC<Props> = ({
                 variant="outlined"
                 size="small"
                 sx={{
-                  color: "black",
-                  borderColor: "black",
+                  backgroundColor: "transparent",
+                  color: "#000",
+                  border: "1px solid #000",
                   "&:hover": {
-                    borderColor: "black",
-                    backgroundColor: "rgba(0, 0, 0, 0.1)",
+                    backgroundColor: "rgba(0, 0, 0, 0.05)",
+                    borderColor: "#000",
                   },
                 }}
               >
@@ -214,7 +215,7 @@ const Navbar: React.FC<Props> = ({
           >
             <ListItem button sx={{ paddingLeft: 0 }}>
               <ListItemIcon sx={{ minWidth: 30 }}>
-                <PersonIcon />
+                <PersonIcon sx={{ color: "#1e88e5" }} />
               </ListItemIcon>
               <ListItemText primary="User Profile" sx={{ marginLeft: 1 }} />
             </ListItem>
@@ -228,7 +229,7 @@ const Navbar: React.FC<Props> = ({
             >
               <ListItem button sx={{ paddingLeft: 0 }}>
                 <ListItemIcon sx={{ minWidth: 30 }}>
-                  <WorkIcon />
+                  <WorkIcon sx={{ color: "#43a047" }} />
                 </ListItemIcon>
                 <ListItemText primary="Vendor Profile" sx={{ marginLeft: 1 }} />
               </ListItem>
@@ -237,7 +238,7 @@ const Navbar: React.FC<Props> = ({
 
           <ListItem button onClick={handleLogout} sx={{ paddingLeft: 0 }}>
             <ListItemIcon sx={{ minWidth: 30 }}>
-              <LogoutIcon />
+              <LogoutIcon sx={{ color: "#e53935" }} />
             </ListItemIcon>
             <ListItemText primary="Log Out" sx={{ marginLeft: 1 }} />
           </ListItem>

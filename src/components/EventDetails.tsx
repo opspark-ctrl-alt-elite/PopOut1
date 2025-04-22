@@ -31,7 +31,7 @@ type Event = {
   vendor: {
     id: string;
     businessName: string;
-    averageRating?: number;
+    averageRating?: number; // optional but will be replaced with live data
   };
   Categories?: { name: string }[];
   latitude: number;
@@ -65,6 +65,7 @@ const EventDetails: React.FC<Props> = ({
   currentUserId,
 }) => {
   const [bookmarked, setBookmarked] = useState(false);
+  const [averageRating, setAverageRating] = useState<number>(0);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -78,8 +79,22 @@ const EventDetails: React.FC<Props> = ({
         );
         setBookmarked(alreadyBookmarked);
       })
-      .catch((err) => console.error("bookmark fail", err));
+      .catch((err) => console.error("bookmark check error", err));
   }, [event, currentUserId]);
+
+  useEffect(() => {
+    if (!event?.vendor?.id) return;
+
+    axios
+      .get(`/vendors/${event.vendor.id}/average-rating`)
+      .then((res) => {
+        setAverageRating(res.data.averageRating || 0);
+      })
+      .catch((err) => {
+        console.error("Error fetching vendor average rating", err);
+        setAverageRating(0);
+      });
+  }, [event?.vendor?.id]);
 
   const handleToggleBookmark = async () => {
     if (!event || !currentUserId) {
@@ -91,14 +106,12 @@ const EventDetails: React.FC<Props> = ({
       if (bookmarked) {
         await axios.delete(`/users/${currentUserId}/unbookmark/${event.id}`);
         setBookmarked(false);
-        console.log("bookmark removed");
       } else {
         await axios.post(`/${currentUserId}/bookmark/${event.id}`);
         setBookmarked(true);
-        console.log("event bookmarked");
       }
     } catch (err) {
-      console.error("bookmark err", err);
+      console.error("bookmark toggle error", err);
     }
   };
 
@@ -213,7 +226,7 @@ const EventDetails: React.FC<Props> = ({
               <strong>Average Rating:</strong>
             </Typography>
             <Rating
-              value={event.vendor.averageRating || 0}
+              value={averageRating}
               precision={0.5}
               readOnly
               sx={{ mt: 0.5 }}

@@ -108,8 +108,8 @@ User.init(
 User.hasOne(Vendor, { foreignKey: 'userId', onDelete: 'CASCADE' });
 Vendor.belongsTo(User, { foreignKey: 'userId' });
 
-User.belongsToMany(Category, { through: 'UserCategories', foreignKey: 'userId' });
-Category.belongsToMany(User, { through: 'UserCategories', foreignKey: 'categoryId' });
+// User.belongsToMany(Category, { through: 'UserCategories', foreignKey: 'userId' });
+// Category.belongsToMany(User, { through: 'UserCategories', foreignKey: 'categoryId' });
 
 export type UserType = InstanceType<typeof User>;
 

@@ -6,6 +6,9 @@ const theme = createTheme({
     h4: {
       fontFamily: `'Bebas Neue', sans-serif`,
     },
+    h5: {
+      fontFamily: `'Bebas Neue', sans-serif`,
+    },
     h6: {
       fontFamily: `'Bebas Neue', sans-serif`,
     },
@@ -16,7 +19,14 @@ const theme = createTheme({
         root: {
           fontFamily: `'Anton', sans-serif`,
           letterSpacing: '2px',
-          textTransform: 'uppercase',
+          textTransform: 'none',
+          borderRadius: 8,
+          boxShadow: 1,
+          backgroundColor: "#000",
+          color: "#fff",
+          "&:hover": {
+            backgroundColor: "#333",
+          },
         },
       },
     },

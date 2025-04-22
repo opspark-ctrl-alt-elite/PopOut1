@@ -72,12 +72,12 @@ const Preferences: React.FC<PreferencesProps> = ({ setUser }) => {
 
     console.log("📤 Selected categories:", selectedCategories);
 
-    fetch(`/users/${userId}/preferences`, {
-      method: "PATCH",
+    fetch(`/api/preferences/${userId}`, {
+      method: "PUT",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ categories: selectedCategories }),
+      body: JSON.stringify({ categoryNames: selectedCategories }),
     })
       .then((res) => {
         if (!res.ok) throw new Error("Failed to update preferences");

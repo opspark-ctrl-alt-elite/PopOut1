@@ -6,7 +6,7 @@ const router = Router();
 // GET /categories - get list of all category names
 router.get('/', async (_req, res) => {
   try {
-    const categories = await Category.findAll({ attributes: ['name'] });
+    const categories = await Category.findAll({});
     res.json(categories);
   } catch (err) {
     console.error('Error loading categories:', err);
