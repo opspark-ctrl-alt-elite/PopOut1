@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect } from "react";
 
 import {
   Button,
@@ -27,21 +27,9 @@ type Props = {
 
 const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
 
-  // initiate references to the button elements
-  const upButton = useRef(null);
-  const leftButton = useRef(null);
-  const downButton = useRef(null);
-  const rightButton = useRef(null);
-
-  // register event listeners for on-screen button controls
-  // useEffect(() => {
-  //   // register click,  event listener that causes the handleKeyPress function to run whenever a key is pressed
-  //   //upButton.current.addEventListener('keydown', handleKeyPress);
-
-  // }, []);
-
   // register event listeners for keyboard controls
   useEffect(() => {
+
     // register an event listener that causes the handleKeyPress function to run whenever a key is pressed
     window.addEventListener('keydown', handleKeyPress);
 
@@ -213,17 +201,17 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
   return (
     <Container>
       <Stack spacing={2} sx={{ alignItems: "center" }}>
-        <Button ref={upButton} variant="contained" onClick={pressUp} onMouseUp={unPressUp} onMouseOut={unPressUp}>
+        <Button variant="contained" onMouseDown={pressUp} onTouchStart={pressUp} onMouseUp={unPressUp} onMouseOut={unPressUp} onTouchEnd={unPressUp} onTouchCancel={unPressUp}>
           <ArrowDropUp />
         </Button>
         <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-          <Button ref={leftButton} variant="contained" onClick={pressLeft} onMouseUp={unPressLeft} onMouseOut={unPressLeft}>
+          <Button variant="contained" onMouseDown={pressLeft} onTouchStart={pressLeft} onMouseUp={unPressLeft} onMouseOut={unPressLeft} onTouchEnd={unPressLeft} onTouchCancel={unPressLeft}>
             <ArrowLeft />
           </Button>
-          <Button ref={downButton} variant="contained" onClick={pressDown} onMouseUp={unPressDown} onMouseOut={unPressDown}>
+          <Button variant="contained" onMouseDown={pressDown} onTouchStart={pressDown} onMouseUp={unPressDown} onMouseOut={unPressDown} onTouchEnd={unPressDown} onTouchCancel={unPressDown}>
             <ArrowDropDown />
           </Button>
-          <Button ref={rightButton} variant="contained" onClick={pressRight} onMouseUp={unPressRight} onMouseOut={unPressRight}>
+          <Button variant="contained" onMouseDown={pressRight} onTouchStart={pressRight} onMouseUp={unPressRight} onMouseOut={unPressRight} onTouchEnd={unPressRight} onTouchCancel={unPressRight}>
             <ArrowRight />
           </Button>
         </Stack>
