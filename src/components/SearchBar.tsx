@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   TextField,
   InputAdornment,
@@ -14,8 +14,20 @@ import SearchIcon from "@mui/icons-material/Search";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
+const useDebouncedValue = (value: string, delay = 500) => {
+  const [debounced, setDebounced] = useState(value);
+
+  useEffect(() => {
+    const handler = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+
+  return debounced;
+};
+
 const SearchBar: React.FC = () => {
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query);
   const [results, setResults] = useState<{ vendors: any[]; events: any[] }>({
     vendors: [],
     events: [],
@@ -23,24 +35,26 @@ const SearchBar: React.FC = () => {
   const [showResults, setShowResults] = useState(false);
   const navigate = useNavigate();
 
-  const handleSearch = async () => {
-    if (!query.trim()) return;
-
-    try {
-      const res = await axios.get("/search", { params: { query } });
-      setResults(res.data);
-      setShowResults(true);
-
-      const { vendors, events } = res.data;
-      if (vendors.length === 1) {
-        navigate(`/vendor/${vendors[0].id}`);
-      } else if (events.length === 1) {
-        navigate(`/vendor/${events[0].vendor_id}`);
+  useEffect(() => {
+    const fetchResults = async () => {
+      if (!debouncedQuery.trim()) {
+        setResults({ vendors: [], events: [] });
+        return;
       }
-    } catch (err) {
-      console.error("Search failed", err);
-    }
-  };
+
+      try {
+        const res = await axios.get("/search", {
+          params: { query: debouncedQuery },
+        });
+        setResults(res.data);
+        setShowResults(true);
+      } catch (err) {
+        console.error("Live search failed", err);
+      }
+    };
+
+    fetchResults();
+  }, [debouncedQuery]);
 
   const handleSelect = (vendorId: string) => {
     navigate(`/vendor/${vendorId}`);
@@ -55,12 +69,11 @@ const SearchBar: React.FC = () => {
         placeholder="Search vendors or events"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         onFocus={() => setShowResults(true)}
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton onClick={handleSearch}>
+              <IconButton onClick={() => setQuery(query)}>
                 <SearchIcon />
               </IconButton>
             </InputAdornment>
