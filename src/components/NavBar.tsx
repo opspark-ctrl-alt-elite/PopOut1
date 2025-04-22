@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import SearchBar from "./SearchBar";
 import {
   AppBar,
   Toolbar,
@@ -22,7 +23,6 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
-// import BusinessIcon from "@mui/icons-material/Business";
 import WorkIcon from "@mui/icons-material/Work";
 import { onMessageListener } from "../firebase/onMessageListener";
 
@@ -111,6 +111,7 @@ const Navbar: React.FC<Props> = ({
             py: 1,
           }}
         >
+
           <Stack direction="row" spacing={2} alignItems="center">
             <IconButton
               edge="start"
@@ -154,6 +155,15 @@ const Navbar: React.FC<Props> = ({
               </Button>
             )}
           </Stack>
+
+          {/* search bar */}
+          <Box sx={{ flexGrow: 1, maxWidth: 400 }}>
+            <SearchBar
+              onResults={(data) => {
+                console.log("search results", data);
+              }}
+            />
+          </Box>
 
           {user ? (
             <Stack direction="row" spacing={2} alignItems="center">
