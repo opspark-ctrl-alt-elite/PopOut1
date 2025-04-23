@@ -37,6 +37,7 @@ router.put("/:userId", async (req, res) => {
 
     // wait for the categories to resolve before continuing
     cats = await Promise.all(cats);
+    if (!cats) return res.status(404).json({ error: "Categories not found" });
 
     // create empty array to hold the new preferences
     const preferencesArr: { userId: string; categoryId: any }[] = [];
