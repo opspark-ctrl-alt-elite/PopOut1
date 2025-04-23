@@ -13,9 +13,10 @@ import {
   Divider,
   Card,
   IconButton,
+  Tooltip,
+  Modal,
 } from "@mui/material";
 import DeleteIcon from "@mui/icons-material/Delete";
-import Tooltip from "@mui/material/Tooltip";
 
 type Category = { id: number; name: string };
 type Event = {
@@ -52,6 +53,7 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
   const [preferences, setPreferences] = useState<Category[]>([]);
   const [followedVendors, setFollowedVendors] = useState<FollowedVendor[]>([]);
   const [openEdit, setOpenEdit] = useState(false);
+  const [confirmDelete, setConfirmDelete] = useState(false);
 
   useEffect(() => {
     if (user && categories) getPreferences();
@@ -115,8 +117,6 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
 
   const handleDeleteUser = async () => {
     if (!user) return;
-    if (!window.confirm("Are you sure you want to delete your account?"))
-      return;
     try {
       await fetch(`/user/me`, { method: "DELETE", credentials: "include" });
       window.location.href = "/";
@@ -159,16 +159,13 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                 >
                   Edit Profile
                 </Button>
-
                 <Tooltip title="Delete Account" arrow>
                   <IconButton
-                    onClick={handleDeleteUser}
+                    onClick={() => setConfirmDelete(true)}
                     color="error"
                     sx={{
                       padding: 0,
-                      "&:hover": {
-                        backgroundColor: "transparent",
-                      },
+                      "&:hover": { backgroundColor: "transparent" },
                     }}
                   >
                     <DeleteIcon sx={{ fontSize: 36 }} />
@@ -252,6 +249,41 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               user={user}
               setUser={setUser}
             />
+
+            {/* ✅ Inline Confirmation Modal */}
+            <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
+              <Box
+                sx={{
+                  backgroundColor: "white",
+                  p: 4,
+                  borderRadius: 2,
+                  maxWidth: 400,
+                  mx: "auto",
+                  my: "20vh",
+                  textAlign: "center",
+                  boxShadow: 24,
+                }}
+              >
+                <Typography variant="h6" mb={2}>
+                  Are you sure you want to delete your account?
+                </Typography>
+                <Stack direction="row" spacing={2} justifyContent="center">
+                  <Button
+                    variant="outlined"
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={handleDeleteUser}
+                  >
+                    Delete
+                  </Button>
+                </Stack>
+              </Box>
+            </Modal>
           </>
         ) : (
           <Typography>No user found.</Typography>
