@@ -12,6 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
+import { Fade } from "@mui/material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
@@ -131,24 +132,48 @@ const SearchBar: React.FC = () => {
         </Box>
       )}
 
-      {showResults &&
-        !loading &&
-        (results.vendors.length > 0 || results.events.length > 0) && (
-          <Paper
-            elevation={4}
-            sx={{
-              position: "absolute",
-              zIndex: 10,
-              width: "75%",
-              mt: 1,
-              maxHeight: 300,
-              overflowY: "auto",
-              borderRadius: "12px",
-              backdropFilter: "blur(10px)",
-              backgroundColor: "#fff",
-              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-            }}
-          >
+{showResults && loading && (
+        <Box
+          sx={{
+            position: "absolute",
+            zIndex: 10,
+            width: "100%",
+            mt: 1,
+            p: 2,
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            borderRadius: "12px",
+            backgroundColor: "white",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <CircularProgress size={24} />
+        </Box>
+      )}
+
+      <Fade
+        in={
+          showResults &&
+          !loading &&
+          (results.vendors.length > 0 || results.events.length > 0)
+        }
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            zIndex: 1300,
+            width: "100%",
+            mt: 1,
+            maxHeight: 300,
+            overflowY: "auto",
+            borderRadius: "12px",
+            backdropFilter: "blur(10px)",
+            backgroundColor: "#fff",
+            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+          }}
+        >
+          <Paper elevation={0}>
             <List dense>
               {results.vendors.length > 0 && (
                 <>
@@ -219,7 +244,8 @@ const SearchBar: React.FC = () => {
               )}
             </List>
           </Paper>
-        )}
+        </Box>
+      </Fade>
     </Box>
   );
 };
