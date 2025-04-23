@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   TextField,
   InputAdornment,
@@ -34,6 +34,7 @@ const SearchBar: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const navigate = useNavigate();
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const fetchResults = async () => {
@@ -60,13 +61,27 @@ const SearchBar: React.FC = () => {
     fetchResults();
   }, [debouncedQuery]);
 
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        containerRef.current &&
+        !containerRef.current.contains(event.target as Node)
+      ) {
+        setShowResults(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   const handleSelect = (vendorId: string) => {
     navigate(`/vendor/${vendorId}`);
     setShowResults(false);
   };
 
   return (
-    <Box width="100%" maxWidth={400} position="relative">
+    <Box ref={containerRef} width="100%" maxWidth={400} position="relative">
       <TextField
         fullWidth
         size="small"
