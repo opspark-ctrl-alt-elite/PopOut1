@@ -83,31 +83,29 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
     if (!user?.id) return;
 
     try {
-      //  PATCH user info
-      const updateRes = await fetch(`/api/users/${user.id}`, {
+      // Update user info (name & profile picture)
+      await fetch(`/api/users/${user.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, profile_picture: imageUrl }),
       });
 
-      if (!updateRes.ok) throw new Error("Failed to update profile");
-
-      //  PUT preferences
+      // Update preferences independently
       await fetch(`/api/preferences/${user.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ categoryNames: selectedCategories }),
       });
 
-      //  refetch latest user
-      const updatedRes = await fetch("/auth/me", { credentials: "include" });
-      const updatedUser = await updatedRes.json();
+      // Fetch updated user and update global state
+      const updatedUser = await fetch("/auth/me", {
+        credentials: "include",
+      }).then((res) => res.json());
 
-      // set new global user state & close modal
       setUser(updatedUser);
       onClose();
     } catch (err) {
-      console.error("Error saving changes:", err);
+      console.error("Error saving profile:", err);
     }
   };
 
