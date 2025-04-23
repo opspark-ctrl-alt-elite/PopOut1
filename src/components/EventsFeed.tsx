@@ -22,6 +22,12 @@ import {
 } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BrushIcon from "@mui/icons-material/Brush";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SportsHandballIcon from "@mui/icons-material/SportsHandball";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import PlaceIcon from "@mui/icons-material/Place";
 
 type Event = {
   id: string;
@@ -155,23 +161,120 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
   const visibleEvents = events.slice(currentIndex, currentIndex + itemsPerPage);
 
+  const categoryColors: { [key: string]: string } = {
+    "Food & Drink": "#FB8C00",
+    Art: "#8E24AA",
+    Music: "#E53935",
+    "Sports & Fitness": "#43A047",
+    Hobbies: "#FDD835",
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "Food & Drink":
+        return <RestaurantIcon fontSize="small" />;
+      case "Art":
+        return <BrushIcon fontSize="small" />;
+      case "Music":
+        return <MusicNoteIcon fontSize="small" />;
+      case "Sports & Fitness":
+        return <SportsHandballIcon fontSize="small" />;
+      case "Hobbies":
+        return <EmojiEmotionsIcon fontSize="small" />;
+      default:
+        return <PlaceIcon fontSize="small" />;
+    }
+  };
+
   return (
     <Box sx={{ mt: 4, px: { xs: 2, sm: 3, md: 6 } }}>
       {/* filters */}
       <Stack spacing={2} direction="row" flexWrap="wrap" mb={2}>
-        <FormControl sx={{ minWidth: 160 }} size="small">
-          <InputLabel>Category</InputLabel>
+        <FormControl
+          size="small"
+          sx={{
+            width: 180,
+            borderRadius: 9999,
+            "& .MuiOutlinedInput-root": {
+              borderRadius: 9999,
+              backgroundColor: "#f5f5f5",
+              paddingRight: "8px",
+              "& fieldset": {
+                border: "1px solid #ccc",
+              },
+              "&:hover fieldset": {
+                borderColor: "#aaa",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#aaa",
+              },
+            },
+          }}
+        >
           <Select
             value={filters.category}
-            label="Category"
             onChange={(e) =>
               setFilters((fil) => ({ ...fil, category: e.target.value }))
             }
+            displayEmpty
+            renderValue={(selected) =>
+              selected ? (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box
+                    sx={{
+                      color: "#fff",
+                      backgroundColor: categoryColors[selected] || "#999",
+                      borderRadius: "50%",
+                      p: 0.5,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 20,
+                      height: 20,
+                    }}
+                  >
+                    {getCategoryIcon(selected)}
+                  </Box>
+                  {selected}
+                </Box>
+              ) : (
+                <Box sx={{ color: "#777", pl: 1 }}>Category</Box>
+              )
+            }
+            sx={{
+              borderRadius: 9999,
+              pl: 1,
+              height: "36px",
+              display: "flex",
+              alignItems: "center",
+            }}
           >
-            <MenuItem value="">All</MenuItem>
+            <MenuItem value="">
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <PlaceIcon fontSize="small" sx={{ color: "#666" }} />
+                All
+              </Box>
+            </MenuItem>
             {categories.map((cat) => (
               <MenuItem key={cat} value={cat}>
-                {cat}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box
+                    sx={{
+                      color: "#fff",
+                      backgroundColor: categoryColors[cat] || "#999",
+                      borderRadius: "50%",
+                      p: 0.5,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 20,
+                      height: 20,
+                    }}
+                  >
+                    {getCategoryIcon(cat)}
+                  </Box>
+                  {cat}
+                </Box>
               </MenuItem>
             ))}
           </Select>
