@@ -8,11 +8,8 @@ import {
   Button,
   Container,
   Typography,
+  Stack,
 } from "@mui/material";
-
-import {
-  Home
-} from "@mui/icons-material"
 
 type Mover = {
   type: string;
@@ -82,7 +79,7 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
   // create state to represent the current time
   const [time, setTime] = useState(0);
 
-  // repeatedly call masterUpdate without making current states unusable in said function
+  // repeatedly call masterUpdate while ensuring that the state variables remain usable in said function
   useEffect(() => {
     // set the time to a different number after 30 ms to call this useEffect again after 30 ms
     setTimeout(() => {
@@ -100,12 +97,17 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
 
 
 
-  // check for when captcha is updated
+  // check for when captcha is updated or when game component is first rendered
   useEffect(() => {
     // if someone who wanted to be a vendor beat the game
     if (captcha.beatCaptcha && captcha.wantsToBeVendor) {
       // then redirect them to the vendor signup form
       navigate('/vendor-signup');
+    }
+    // else, if someone who wants to be a vendor and the game component rendered for the first time
+    else if (captcha.wantsToBeVendor) {
+      // then present a modal explaining to the user that they are about to complete a captcha
+      setOpen(true);
     }
   }, [ captcha ])
 
@@ -272,7 +274,7 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
 
   return (
     <Container>
-      <Typography variant="body2">Goal: Make the traveler touch the red map marker.</Typography>
+      <Typography variant="body2">{captcha.wantsToBeVendor ? "To beat the captcha and become a vendor" : "Goal"}: Make the traveler touch the red map marker.</Typography>
       <Typography>Score: {score} / 3</Typography>
       <Box ref={boardRef} id="gameBoard" justifySelf="center" position="relative" sx={{ mb: 3, borderStyle: "solid", borderWidth: "5px", backgroundImage: "url(https://th.bing.com/th/id/R.902afe9a18421368475057465511b326?rik=85WCbPfcOuo2BQ&riu=http%3a%2f%2fth24.st.depositphotos.com%2f1007566%2f8128%2fv%2f450%2fdepositphotos_81285524-stock-illustration-gps-map-design.jpg&ehk=AhpNDRA8uaY7bt7XNG%2fwu9jalFdKwuQew0Nkqrs3meY%3d&risl=&pid=ImgRaw&r=0)", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "60vw", height: "55vh" }}>
         <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundImage: "url(https://www.pngplay.com/wp-content/uploads/9/Map-Marker-Transparent-File-175x279.png)", backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
@@ -283,25 +285,40 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
       </Box>
       <Modal open={open}>
         <Box sx={style}>
-          <Typography variant="h6" component="h2">
-            Good Job!
-          </Typography>
-          <Button
-            onClick={() => {
-              navigate('/');
-            }}
-            variant="outlined"
-          >
-            Go To Home Page
-          </Button>
-          <Button
-            onClick={() => {
-              setOpen(false);
-            }}
-            variant="outlined"
-          >
-            Return To Game
-          </Button>
+          {captcha.wantsToBeVendor ? (
+            <Box>
+              <Typography variant="body1">
+                Before you can become a vendor, you must first complete this captcha game.
+              </Typography>
+              <br />
+              <Typography variant="body2">
+                Move the traveler to the map market 3 times to pass the captcha. Upon beating the captcha, you will be automatically redirected to the vendor creation form.
+              </Typography>
+            </Box>
+          ) : (
+            <Typography variant="h4" justifySelf="center">
+              Good Job!
+            </Typography>
+          )}
+          <Stack spacing={1}>
+            <Button
+              onClick={() => {
+                setOpen(false);
+              }}
+              variant="outlined"
+            >
+              {captcha.wantsToBeVendor ? "Proceed with captcha" : "Return To Game"}
+            </Button>
+            <Button
+              onClick={() => {
+                navigate('/');
+              }}
+              variant="outlined"
+              color={captcha.wantsToBeVendor ? "error" : undefined}
+            >
+              {captcha.wantsToBeVendor ? "Cancel" : "Go To Home Page"}
+            </Button>
+          </Stack>
         </Box>
       </Modal>
     </Container>

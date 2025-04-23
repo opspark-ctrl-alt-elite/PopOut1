@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 import {
   Button,
@@ -27,6 +27,11 @@ type Props = {
 };
 
 const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
+
+  //TODO:
+  // create states to handle button arrow colors
+  // const [upColor, setUpColor] = useState("primary");
+  // sx={{ color: "red" }}
 
   // register event listeners for keyboard controls
   useEffect(() => {
@@ -207,7 +212,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
             W
           </Typography>
           <Button variant="contained" onMouseDown={pressUp} onTouchStart={pressUp} onMouseUp={unPressUp} onMouseOut={unPressUp} onTouchEnd={unPressUp} onTouchCancel={unPressUp}>
-            <ArrowDropUp />
+            <ArrowDropUp/>
           </Button>
         </Stack>
         <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
