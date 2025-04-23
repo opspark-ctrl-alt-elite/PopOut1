@@ -101,6 +101,12 @@ const SearchBar: React.FC = () => {
         sx={{
           "& .MuiOutlinedInput-root": {
             borderRadius: "20px",
+            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+              borderColor: "#ccc",
+            },
+          },
+          "& .MuiOutlinedInput-notchedOutline": {
+            borderColor: "#ccc",
           },
         }}
       />
