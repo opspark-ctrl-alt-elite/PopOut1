@@ -283,7 +283,7 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
       <Box>
         <GameControls player={player} setPlayer={setPlayer}/>
       </Box>
-      <Modal open={open}>
+      <Modal open={open} onClose={() => { setOpen(false) }}>
         <Box sx={style}>
           {captcha.wantsToBeVendor ? (
             <Box>
