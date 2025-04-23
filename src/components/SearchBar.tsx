@@ -144,6 +144,9 @@ const SearchBar: React.FC = () => {
               maxHeight: 300,
               overflowY: "auto",
               borderRadius: "12px",
+              backdropFilter: "blur(10px)",
+              backgroundColor: "#fff",
+              boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
             }}
           >
             <List dense>

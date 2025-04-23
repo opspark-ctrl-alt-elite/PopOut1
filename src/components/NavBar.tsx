@@ -119,7 +119,7 @@ const Navbar: React.FC<Props> = ({
             gap: 2,
             px: 2,
             py: 1,
-            overflow: "hidden",
+            overflow: "visible",
           }}
         >
           <Stack direction="row" spacing={2} alignItems="center">
@@ -155,10 +155,11 @@ const Navbar: React.FC<Props> = ({
                   backdropFilter: "blur(6px)",
                   backgroundColor: "rgba(255, 255, 255, 0.3)",
                   border: "1px solid rgba(0, 0, 0, 0.2)",
-                  borderRadius: "16px",
+                  borderRadius: "999px",
                   px: 2,
                   color: "#000",
-                  fontWeight: "bold",
+                  // fontFamily: "'Bebas Neue', sans-serif",
+                  // fontWeight: "bold",
                   "&:hover": {
                     backgroundColor: "rgba(255, 255, 255, 0.5)",
                   },
