@@ -43,7 +43,7 @@ router.get('/', async (req, res) => {
             { venue_name: { [Op.like]: `%${query}%` } },
             { location: { [Op.like]: `%${query}%` } },
           ]
-        }s
+        }
       });
       return res.json({ events });
     }

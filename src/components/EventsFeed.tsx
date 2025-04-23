@@ -445,11 +445,16 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                   onClick={() => handleOpenModal(event)}
                   sx={{
                     mt: 2,
-                    borderRadius: 2,
+                    borderRadius: "999px",
                     textTransform: "none",
+                    // fontFamily: `'Barlow Semi Condensed', sans-serif`,
+                    // fontFamily: `'IBM Plex Sans', sans-serif`,
+                    // fontFamily: `'Work Sans', sans-serif`,
+                    fontFamily: `'DM Sans', sans-serif`,
                     boxShadow: 1,
-                    backgroundColor: "#000",
+                    backgroundColor: "#212121",
                     color: "#fff",
+
                     "&:hover": { backgroundColor: "#333" },
                   }}
                 >
