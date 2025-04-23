@@ -64,9 +64,7 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
     try {
       const res = await axios.get(`/api/preferences/${user.id}`);
       const prefCats: Category[] = res.data
-        .map((pref: Preference) =>
-          categories.find((cat) => cat.id === pref.categoryId)
-        )
+        .map((pref: Preference) => categories.find((cat) => cat.id === pref.categoryId))
         .filter((c): c is Category => !!c);
       setPreferences(prefCats);
     } catch (err) {
@@ -83,13 +81,10 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
         const withImages = await Promise.all(
           res.data.map(async (vendor: FollowedVendor) => {
             try {
-              const imgRes = await axios.get(
-                `/api/images/vendorId/${vendor.id}`
-              );
+              const imgRes = await axios.get(`/api/images/vendorId/${vendor.id}`);
               return {
                 ...vendor,
-                profilePicture:
-                  imgRes.data?.[0]?.referenceURL || vendor.profilePicture,
+                profilePicture: imgRes.data?.[0]?.referenceURL || vendor.profilePicture,
               };
             } catch {
               return vendor;
@@ -130,43 +125,23 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
       <Container maxWidth="md" sx={{ mt: 6 }}>
         {user ? (
           <>
-            <Stack
-              direction="row"
-              justifyContent="space-between"
-              alignItems="center"
-              mb={4}
-            >
+            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
               <Stack direction="row" spacing={2}>
-                <Avatar
-                  src={user.profile_picture}
-                  alt={user.name}
-                  sx={{ width: 56, height: 56 }}
-                />
+                <Avatar src={user.profile_picture} alt={user.name} sx={{ width: 56, height: 56 }} />
                 <Box>
-                  <Typography variant="h6" fontWeight="bold">
-                    {user.name}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {user.email}
-                  </Typography>
+                  <Typography variant="h6" fontWeight="bold">{user.name}</Typography>
+                  <Typography variant="body2" color="text.secondary">{user.email}</Typography>
                 </Box>
               </Stack>
               <Stack direction="row" spacing={1}>
-                <Button
-                  variant="outlined"
-                  size="small"
-                  onClick={() => setOpenEdit(true)}
-                >
+                <Button variant="outlined" size="small" onClick={() => setOpenEdit(true)}>
                   Edit Profile
                 </Button>
                 <Tooltip title="Delete Account" arrow>
                   <IconButton
                     onClick={() => setConfirmDelete(true)}
                     color="error"
-                    sx={{
-                      padding: 0,
-                      "&:hover": { backgroundColor: "transparent" },
-                    }}
+                    sx={{ padding: 0, "&:hover": { backgroundColor: "transparent" } }}
                   >
                     <DeleteIcon sx={{ fontSize: 36 }} />
                   </IconButton>
@@ -180,38 +155,17 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
 
             {followedVendors.length > 0 && (
               <Box mt={4} mb={4}>
-                <Typography variant="h5" gutterBottom>
-                  Following:
-                </Typography>
-                <Box
-                  display="grid"
-                  gridTemplateColumns="repeat(auto-fill, minmax(180px, 1fr))"
-                  gap={2}
-                >
+                <Typography variant="h5" gutterBottom>Following:</Typography>
+                <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(180px, 1fr))" gap={2}>
                   {followedVendors.map((vendor) => (
-                    <RouterLink
-                      key={vendor.id}
-                      to={`/vendor/${vendor.id}`}
-                      style={{ textDecoration: "none" }}
-                    >
-                      <Card
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          gap: 2,
-                          padding: 2,
-                          borderRadius: 3,
-                          boxShadow: 2,
-                        }}
-                      >
+                    <RouterLink key={vendor.id} to={`/vendor/${vendor.id}`} style={{ textDecoration: "none" }}>
+                      <Card sx={{ display: "flex", alignItems: "center", gap: 2, padding: 2, borderRadius: 3, boxShadow: 2 }}>
                         <Avatar
                           src={vendor.profilePicture || "/default-avatar.png"}
                           alt={vendor.businessName}
                           sx={{ width: 48, height: 48 }}
                         />
-                        <Typography fontWeight="bold">
-                          {vendor.businessName}
-                        </Typography>
+                        <Typography fontWeight="bold">{vendor.businessName}</Typography>
                       </Card>
                     </RouterLink>
                   ))}
@@ -219,22 +173,11 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               </Box>
             )}
 
-            <Typography variant="h5" gutterBottom>
-              Preferences:
-            </Typography>
+            <Typography variant="h5" gutterBottom>Preferences:</Typography>
             {preferences.length > 0 ? (
               <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
                 {preferences.map((cat) => (
-                  <Box
-                    key={cat.id}
-                    sx={{
-                      px: 2,
-                      py: 1,
-                      borderRadius: "8px",
-                      backgroundColor: "#e0e0e0",
-                      fontWeight: "bold",
-                    }}
-                  >
+                  <Box key={cat.id} sx={{ px: 2, py: 1, borderRadius: "8px", backgroundColor: "#e0e0e0", fontWeight: "bold" }}>
                     {cat.name}
                   </Box>
                 ))}
@@ -250,7 +193,7 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               setUser={setUser}
             />
 
-            {/* ✅ Inline Confirmation Modal */}
+            {/* Delete on Left */}
             <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
               <Box
                 sx={{
@@ -269,17 +212,17 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                 </Typography>
                 <Stack direction="row" spacing={2} justifyContent="center">
                   <Button
-                    variant="outlined"
-                    onClick={() => setConfirmDelete(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button
                     variant="contained"
                     color="error"
                     onClick={handleDeleteUser}
                   >
                     Delete
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setConfirmDelete(false)}
+                  >
+                    Cancel
                   </Button>
                 </Stack>
               </Box>
