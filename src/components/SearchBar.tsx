@@ -86,7 +86,7 @@ const SearchBar: React.FC = () => {
       <TextField
         fullWidth
         size="small"
-        placeholder="Search vendors or events"
+        placeholder="Search vendors or popups..."
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setShowResults(true)}
