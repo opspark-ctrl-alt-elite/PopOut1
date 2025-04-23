@@ -83,29 +83,25 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
     if (!user?.id) return;
 
     try {
-      // Update user info (name & profile picture)
       await fetch(`/api/users/${user.id}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, profile_picture: imageUrl }),
       });
 
-      // Update preferences independently
       await fetch(`/api/preferences/${user.id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ categoryNames: selectedCategories }),
       });
 
-      // Fetch updated user and update global state
-      const updatedUser = await fetch("/auth/me", {
-        credentials: "include",
-      }).then((res) => res.json());
+      const updatedRes = await fetch("/auth/me", { credentials: "include" });
+      const updatedUser = await updatedRes.json();
 
       setUser(updatedUser);
       onClose();
     } catch (err) {
-      console.error("Error saving profile:", err);
+      console.error("Error saving changes:", err);
     }
   };
 
@@ -146,12 +142,13 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
           component="label"
           fullWidth
           disabled={uploading}
+          sx={{ mb: 2, backgroundColor: "black", color: "white" }}
         >
           {uploading ? "Uploading..." : "Upload Profile Picture"}
           <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
         </Button>
 
-        <Typography variant="subtitle1" mt={3} mb={1}>
+        <Typography variant="subtitle1" mt={2} mb={1}>
           Select Your Preferences
         </Typography>
 
@@ -163,10 +160,10 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
               onClick={() => toggleCategory(category)}
               fullWidth
               sx={{
-                backgroundColor: selectedCategories.includes(category) ? "#3f0071" : undefined,
-                color: selectedCategories.includes(category) ? "#fff" : undefined,
+                backgroundColor: selectedCategories.includes(category) ? "black" : undefined,
+                color: selectedCategories.includes(category) ? "white" : undefined,
                 "&:hover": {
-                  boxShadow: "0 0 10px rgba(63,0,113,0.5)",
+                  boxShadow: "0 0 10px rgba(0,0,0,0.5)",
                 },
               }}
             >
@@ -175,14 +172,36 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
           ))}
         </Stack>
 
-        <Button
-          type="submit"
-          variant="contained"
-          fullWidth
-          sx={{ mt: 3, backgroundColor: "#3f0071" }}
-        >
-          Save Changes
-        </Button>
+        <Stack direction="row" justifyContent="space-between" mt={3}>
+          <Button
+            type="submit"
+            sx={{
+              backgroundColor: "black",
+              color: "white",
+              px: 3,
+              "&:hover": {
+                backgroundColor: "#333",
+              },
+            }}
+          >
+            Confirm
+          </Button>
+
+          <Button
+            type="button"
+            onClick={onClose}
+            sx={{
+              backgroundColor: "black",
+              color: "white",
+              px: 3,
+              "&:hover": {
+                backgroundColor: "#333",
+              },
+            }}
+          >
+            Cancel
+          </Button>
+        </Stack>
       </Box>
     </Modal>
   );
