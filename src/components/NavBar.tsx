@@ -24,6 +24,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
 import WorkIcon from "@mui/icons-material/Work";
+import RoomIcon from "@mui/icons-material/Room";
 import { onMessageListener } from "../firebase/onMessageListener";
 
 interface Props {
@@ -104,11 +105,12 @@ const Navbar: React.FC<Props> = ({
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar
           sx={{
-            flexWrap: "wrap",
+            flexWrap: "nowrap",
             justifyContent: "space-between",
             gap: 2,
             px: 2,
             py: 1,
+            overflow: "hidden",
           }}
         >
 
@@ -138,22 +140,24 @@ const Navbar: React.FC<Props> = ({
 
             {user && (
               <Button
-                component={Link}
-                to="/map"
-                variant="outlined"
-                size="small"
-                sx={{
-                  backgroundColor: "transparent",
-                  color: "#000",
-                  border: "1px solid #000",
-                  "&:hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.05)",
-                    borderColor: "#000",
-                  },
-                }}
-              >
-                View Map
-              </Button>
+              component={Link}
+              to="/map"
+              startIcon={<RoomIcon />}
+              sx={{
+                backdropFilter: "blur(6px)",
+                backgroundColor: "rgba(255, 255, 255, 0.3)",
+                border: "1px solid rgba(0, 0, 0, 0.2)",
+                borderRadius: "16px",
+                px: 2,
+                color: "#000",
+                fontWeight: "bold",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.5)",
+                },
+              }}
+            >
+              Map
+            </Button>
             )}
           </Stack>
 

@@ -81,7 +81,7 @@ const SearchBar: React.FC = () => {
   };
 
   return (
-    <Box ref={containerRef} width="100%" maxWidth={400} position="relative">
+    <Box ref={containerRef} width="75%" maxWidth={400} position="relative">
       <TextField
         fullWidth
         size="small"
@@ -116,7 +116,7 @@ const SearchBar: React.FC = () => {
           sx={{
             position: "absolute",
             zIndex: 10,
-            width: "100%",
+            width: "75%",
             mt: 1,
             p: 2,
             display: "flex",
@@ -139,7 +139,7 @@ const SearchBar: React.FC = () => {
             sx={{
               position: "absolute",
               zIndex: 10,
-              width: "100%",
+              width: "75%",
               mt: 1,
               maxHeight: 300,
               overflowY: "auto",
