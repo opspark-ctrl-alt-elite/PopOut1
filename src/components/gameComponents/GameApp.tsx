@@ -272,25 +272,15 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
 
   return (
     <Container>
-      <Typography variant="h5">{captcha.wantsToBeVendor ? "Captcha" : "Touchin' Squares"}</Typography>
-      <Typography variant="body2">Make the big blue square touch the small red square.</Typography>
+      <Typography variant="body2">Goal: Make the traveler touch the red map marker.</Typography>
       <Typography>Score: {score} / 3</Typography>
-      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, borderStyle: "solid", borderWidth: "5px", backgroundImage: "url(https://th.bing.com/th/id/R.902afe9a18421368475057465511b326?rik=85WCbPfcOuo2BQ&riu=http%3a%2f%2fth24.st.depositphotos.com%2f1007566%2f8128%2fv%2f450%2fdepositphotos_81285524-stock-illustration-gps-map-design.jpg&ehk=AhpNDRA8uaY7bt7XNG%2fwu9jalFdKwuQew0Nkqrs3meY%3d&risl=&pid=ImgRaw&r=0)", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "lg", height: "60vh" }}>
-        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ borderStyle: "solid", backgroundImage: "url(https://www.pngplay.com/wp-content/uploads/9/Map-Marker-Transparent-File-175x279.png)", backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
-        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ borderStyle: "solid", backgroundImage: "url(https://icon-library.com/images/tourist-icon/tourist-icon-23.jpg)", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>
+      <Box ref={boardRef} id="gameBoard" justifySelf="center" position="relative" sx={{ mb: 3, borderStyle: "solid", borderWidth: "5px", backgroundImage: "url(https://th.bing.com/th/id/R.902afe9a18421368475057465511b326?rik=85WCbPfcOuo2BQ&riu=http%3a%2f%2fth24.st.depositphotos.com%2f1007566%2f8128%2fv%2f450%2fdepositphotos_81285524-stock-illustration-gps-map-design.jpg&ehk=AhpNDRA8uaY7bt7XNG%2fwu9jalFdKwuQew0Nkqrs3meY%3d&risl=&pid=ImgRaw&r=0)", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "60vw", height: "55vh" }}>
+        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundImage: "url(https://www.pngplay.com/wp-content/uploads/9/Map-Marker-Transparent-File-175x279.png)", backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
+        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundImage: "url(https://icon-library.com/images/tourist-icon/tourist-icon-23.jpg)", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>
       </Box>
       <Box>
         <GameControls player={player} setPlayer={setPlayer}/>
       </Box>
-      <Link to="/">
-        <Button
-          variant="contained"
-          sx={{ mt: 3, backgroundColor: "primary" }}
-          startIcon={<Home />}
-        >
-          Back to Home
-        </Button>
-      </Link>
       <Modal open={open}>
         <Box sx={style}>
           <Typography variant="h6" component="h2">
