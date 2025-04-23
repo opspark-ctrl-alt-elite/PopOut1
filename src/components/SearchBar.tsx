@@ -98,6 +98,10 @@ const SearchBar: React.FC = () => {
               </IconButton>
             </InputAdornment>
           ),
+          sx: {
+            fontSize: "0.85rem",
+            fontFamily: "'Inter', sans-serif",
+          },
         }}
         sx={{
           "& .MuiOutlinedInput-root": {

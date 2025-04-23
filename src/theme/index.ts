@@ -33,6 +33,20 @@ const theme = createTheme({
         },
       },
     },
+    MuiSelect: {
+      styleOverrides: {
+        root: {
+          fontFamily: `'Inter', sans-serif`,
+        },
+      },
+    },
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          fontFamily: `'Inter', sans-serif`,
+        },
+      },
+    },
   },
 });
 

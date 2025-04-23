@@ -195,7 +195,9 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           sx={{
             width: 180,
             borderRadius: 9999,
+            fontFamily: "'Inter', sans-serif",
             "& .MuiOutlinedInput-root": {
+              fontFamily: "'Inter', sans-serif",
               borderRadius: 9999,
               backgroundColor: "#f5f5f5",
               paddingRight: "8px",
