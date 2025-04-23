@@ -397,14 +397,24 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                     sx={{ mt: 1, flexWrap: "wrap" }}
                   >
                     {event.Categories?.map((cat) => (
-                      <Chip
+                      <Box
                         key={cat.name}
-                        label={cat.name}
-                        variant="outlined"
-                        size="small"
-                        sx={{ fontSize: "0.75rem" }}
-                      />
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          backgroundColor: categoryColors[cat.name] || "#999",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#fff",
+                        }}
+                        title={cat.name}
+                      >
+                        {getCategoryIcon(cat.name)}
+                      </Box>
                     ))}
+
                     {event.isFree && (
                       <Chip
                         label="Free"
