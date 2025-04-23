@@ -275,9 +275,9 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
       <Typography variant="h5">{captcha.wantsToBeVendor ? "Captcha" : "Touchin' Squares"}</Typography>
       <Typography variant="body2">Make the big blue square touch the small red square.</Typography>
       <Typography>Score: {score} / 3</Typography>
-      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "60vh" }}>
-        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
-        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>
+      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, borderStyle: "solid", backgroundImage: "url(https://th.bing.com/th/id/R.21482347665c2040a90d230aac9cd80a?rik=gDgUBKI5WxRleg&pid=ImgRaw&r=0)", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "lg", height: "60vh" }}>
+        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ borderStyle: "solid", backgroundImage: "url(https://png.pngtree.com/png-vector/20240528/ourmid/pngtree-a-man-selling-fruits-and-vegetables-on-cart-clipart-with-transparent-png-image_12512900.png)", backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
+        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ borderStyle: "solid", backgroundImage: "url(https://static.vecteezy.com/system/resources/previews/023/374/290/original/beautiful-car-transparent-background-free-png.png)", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>
       </Box>
       <Box>
         <GameControls player={player} setPlayer={setPlayer}/>
