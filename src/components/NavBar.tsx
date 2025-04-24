@@ -120,12 +120,14 @@ const Navbar: React.FC<Props> = ({
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar
           sx={{
-            flexWrap: "nowrap",
+            display: "flex",
             justifyContent: "space-between",
-            gap: 2,
+            alignItems: "center",
             px: 2,
             py: 1,
-            overflow: "visible",
+            flexWrap: "nowrap",
+            gap: 1,
+            overflowX: "auto",
           }}
         >
           <Stack direction="row" spacing={2} alignItems="center">
