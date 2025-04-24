@@ -34,13 +34,13 @@ router.put("/:userId", async (req, res) => {
     if (!cats) return res.status(404).json({ error: "Categories not found" });
 
     // Filter out any null values 
-    const validCategories = categories.filter((c): c is Category => !!c);
+    const validCategories = cats.filter((c: any): c is Category => !!c);
 
     // Delete old preferences
     await Preferences.destroy({ where: { userId } });
 
     // Create new ones
-    const newPrefs = validCategories.map((cat) => ({
+    const newPrefs = validCategories.map((cat: { id: any; }) => ({
       userId,
       categoryId: cat.id,
     }));
