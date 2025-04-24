@@ -317,14 +317,25 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       </Stack>
 
       {/* header */}
-      <Stack
-        direction="row"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={1}
-      >
-        <Typography variant="h4">Upcoming Popups</Typography>
-        <Box>
+      <Box sx={{ position: "relative", mb: 1 }}>
+        <Typography variant="h4" sx={{ textAlign: "left", mb: 1 }}>
+          Upcoming Popups
+        </Typography>
+
+        <Box
+          sx={{
+            position: "absolute",
+            right: {
+              xs: "16px",
+              sm: "32px",
+              md: "60px",
+              lg: "80px",
+            },
+            top: 0,
+            display: "flex",
+            gap: 1,
+          }}
+        >
           <IconButton onClick={() => handleArrowClick("left")}>
             <ArrowBackIosIcon />
           </IconButton>
@@ -332,7 +343,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
             <ArrowForwardIosIcon />
           </IconButton>
         </Box>
-      </Stack>
+      </Box>
 
       {/* events */}
       <Box
