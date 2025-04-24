@@ -27,6 +27,9 @@ import WorkIcon from "@mui/icons-material/Work";
 import RoomIcon from "@mui/icons-material/Room";
 import SvgIcon from "@mui/material/SvgIcon";
 import { onMessageListener } from "../firebase/onMessageListener";
+import Lottie from "lottie-react";
+import locationPinAnimation from "../assets/lottie/wired-outline-18-location-pin-hover-jump.json";
+
 
 interface Props {
   user: {
@@ -148,25 +151,28 @@ const Navbar: React.FC<Props> = ({
 
             {user && (
               <Button
-                component={Link}
-                to="/map"
-                startIcon={<RoomIcon />}
-                sx={{
-                  backdropFilter: "blur(6px)",
-                  backgroundColor: "rgba(255, 255, 255, 0.3)",
-                  border: "1px solid rgba(0, 0, 0, 0.2)",
-                  borderRadius: "999px",
-                  px: 2,
-                  color: "#000",
-                  // fontFamily: "'Bebas Neue', sans-serif",
-                  // fontWeight: "bold",
-                  "&:hover": {
-                    backgroundColor: "rgba(255, 255, 255, 0.5)",
-                  },
-                }}
-              >
-                Map
-              </Button>
+              component={Link}
+              to="/map"
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: 1,
+                backdropFilter: "blur(6px)",
+                backgroundColor: "rgba(255, 255, 255, 0.3)",
+                border: "1px solid rgba(0, 0, 0, 0.2)",
+                borderRadius: "999px",
+                px: 2,
+                color: "#000",
+                "&:hover": {
+                  backgroundColor: "rgba(255, 255, 255, 0.5)",
+                },
+              }}
+            >
+              <Box sx={{ width: 24, height: 24 }}>
+                <Lottie animationData={locationPinAnimation} loop autoplay />
+              </Box>
+              Map
+            </Button>
             )}
           </Stack>
 
