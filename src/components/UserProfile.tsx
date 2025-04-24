@@ -12,11 +12,8 @@ import {
   Button,
   Divider,
   Card,
-  IconButton,
-  Tooltip,
   Modal,
 } from "@mui/material";
-import DeleteIcon from "@mui/icons-material/Delete";
 
 type Category = { id: number; name: string };
 type Event = {
@@ -133,20 +130,19 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                   <Typography variant="body2" color="text.secondary">{user.email}</Typography>
                 </Box>
               </Stack>
-              <Stack direction="row" spacing={1}>
-                <Button variant="outlined" size="small" onClick={() => setOpenEdit(true)}>
-                  Edit Profile
-                </Button>
-                <Tooltip title="Delete Account" arrow>
-                  <IconButton
-                    onClick={() => setConfirmDelete(true)}
-                    color="error"
-                    sx={{ padding: 0, "&:hover": { backgroundColor: "transparent" } }}
-                  >
-                    <DeleteIcon sx={{ fontSize: 36 }} />
-                  </IconButton>
-                </Tooltip>
-              </Stack>
+
+              <Button
+                variant="contained"
+                onClick={() => setOpenEdit(true)}
+                sx={{
+                  backgroundColor: "black",
+                  color: "white",
+                  "&:hover": { backgroundColor: "#333" },
+                  textTransform: "none",
+                }}
+              >
+                Edit Profile
+              </Button>
             </Stack>
 
             {bookmarkedEvents.length > 0 && (
@@ -186,6 +182,19 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               <Typography>No preferences selected yet.</Typography>
             )}
 
+            {/* Delete Button (bottom of page) */}
+            <Box display="flex" justifyContent="center" mt={6}>
+              <Button
+                variant="contained"
+                color="error"
+                onClick={() => setConfirmDelete(true)}
+                size="medium"
+                sx={{ textTransform: "none" }}
+              >
+                Delete Account
+              </Button>
+            </Box>
+
             <EditProfile
               open={openEdit}
               onClose={() => setOpenEdit(false)}
@@ -193,7 +202,6 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               setUser={setUser}
             />
 
-            {/* Delete on Left */}
             <Modal open={confirmDelete} onClose={() => setConfirmDelete(false)}>
               <Box
                 sx={{
