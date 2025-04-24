@@ -26,11 +26,12 @@ router.put("/:userId", async (req, res) => {
     const user = await User.findByPk(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    const categories = await Promise.all(
-      categoryNames.map((name: string) =>
-        Category.findOne({ where: { name } })
-      )
-    );
+    // retrieve each category associated with each category name
+    let cats = categoryNames.map((name: string) => Category.findOne({ where: { name }}));
+
+    // wait for the categories to resolve before continuing
+    cats = await Promise.all(cats);
+    if (!cats) return res.status(404).json({ error: "Categories not found" });
 
     // Filter out any null values 
     const validCategories = categories.filter((c): c is Category => !!c);

@@ -1,37 +1,21 @@
-import React, { useEffect, useState, useRef, useContext } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import GameControls from "./GameControls";
-import axios from "axios";
 
 import {
   Box,
   Modal,
   Button,
   Container,
-  Tooltip,
-  IconButton,
-  Stack,
   Typography,
-  Card,
-  Chip,
-  Grid2,
-  TextField,
-  AppBar,
-  Toolbar,
-  Avatar,
-  Divider,
 } from "@mui/material";
 
 import {
   Home
 } from "@mui/icons-material"
 
-// type Board = {
-//   height: number;
-//   width: number;
-// }
-
 type Mover = {
+  type: string;
   x: number;
   y: number;
   xVel: number;
@@ -71,37 +55,21 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
     p: 4,
   };
 
-/*
-
-function isColliding(element1, element2) {
-    const rect1 = element1.getBoundingClientRect();
-    const rect2 = element2.getBoundingClientRect();
-
-    return !(
-        rect1.top > rect2.bottom ||
-        rect1.right < rect2.left ||
-        rect1.bottom < rect2.top ||
-        rect1.left > rect2.right
-    );
-}
-
-*/
-
   // create state to determine if the ending modal should be open or closed
   const [open, setOpen] = useState(false);
 
   // create state to represent the player
   const [player, setPlayer] = useState<Mover>({
+    type: "player",
     x: 0,
     y: 0,
     xVel: 0,
     yVel: 0,
   });
 
-  //console.log(player);
-
   // create state to represent the target
   const [target, setTarget] = useState<Mover>({
+    type: "target",
     x: 200,
     y: 200,
     xVel: 0,
@@ -114,26 +82,8 @@ function isColliding(element1, element2) {
   // create state to represent the current time
   const [time, setTime] = useState(0);
 
-  // // initiate reference to the score state
-  // const scoreRef = useRef(score);
-
-
-
-  // // create an interval only on the first time this component is rendered
-  // useEffect(() => {
-
-  //   // create an interval to call the masterUpdate function every 30 ms
-  //   const interval = setInterval(masterUpdate, 30);
-
-  //   // return a callback function that cleans up (destroys) the interval
-  //   return () => {
-  //     clearInterval(interval);
-  //   }
-  // }, []);
-
   // repeatedly call masterUpdate without making current states unusable in said function
   useEffect(() => {
-    console.log(time);
     // set the time to a different number after 30 ms to call this useEffect again after 30 ms
     setTimeout(() => {
       setTime(prev => {
@@ -159,16 +109,8 @@ function isColliding(element1, element2) {
     }
   }, [ captcha ])
 
-  // update current state values via useEffect side effect
-  // useEffect(() => {
-  //   console.log("skunk")
-  // }, [ score ])
-
   // update every element on every "frame" to keep things consistent
   const masterUpdate = () => {
-    // console.log(boardRef);
-    // console.log(targetRef);
-    // console.log(playerRef);
 
     // get a reference to the current game board HTML element
     let gameBoard = boardRef.current !== undefined ? boardRef.current : document.getElementById("gameBoard");
@@ -193,22 +135,37 @@ function isColliding(element1, element2) {
     let targetX = targetElement?.offsetLeft !== undefined ? targetElement?.offsetLeft : 200;
     let targetY = targetElement?.offsetTop !== undefined ? targetElement?.offsetTop : 200;
 
-    console.log(score);
-
     // make sure that the target is still inbounds
     setTarget(prev => {
 
-      // // set up replacement object
-      // const replacement = {
-      //   x: prev.x + prev.xVel,
-      //   y: prev.y + prev.yVel,
-      //   xVel: prev.xVel,
-      //   yVel: prev.yVel
-      // };
+      // numbers to set the target's velocities to
+      let xVel = prev.xVel;
+      let yVel = prev.yVel;
 
-      // console.log(score);
+      // make target begin moving in random direction upon new round after a round/score of 5
+      if ((xVel === 0 || yVel === 0) && score > 5) {
+        if (Math.floor(Math.random() * 2)) {
+          xVel = 5;
+        } else {
+          xVel = -5;
+        }
+        if (Math.floor(Math.random() * 2)) {
+          yVel = 5;
+        } else {
+          yVel = -5;
+        }
+      }
 
-      return checkOutOfBounds(prev, gameBoardWidth, gameBoardHeight, targetWidth, targetHeight);
+      // set up replacement object
+      const replacement = {
+        type: prev.type,
+        x: prev.x + prev.xVel,
+        y: prev.y + prev.yVel,
+        xVel,
+        yVel
+      };
+
+      return checkOutOfBounds(replacement, gameBoardWidth, gameBoardHeight, targetWidth, targetHeight);
     })
 
 
@@ -217,6 +174,7 @@ function isColliding(element1, element2) {
 
       // set up replacement object
       const replacement = {
+        type: prev.type,
         x: prev.x + prev.xVel,
         y: prev.y + prev.yVel,
         xVel: prev.xVel,
@@ -260,6 +218,7 @@ function isColliding(element1, element2) {
 
         // randomly place the target somewhere else on the board
         setTarget({
+          type: "target",
           x: newTargetCoords[0],
           y: newTargetCoords[1],
           xVel: 0,
@@ -284,15 +243,27 @@ function isColliding(element1, element2) {
       // horizontal handling
       if (replacement.x < 0) {
         replacement.x = 0;
+        if (replacement.type === "target" && score > 5) {
+          replacement.xVel = 5;
+        }
       } else if (replacement.x + entWidth > gameBoardWidth) {
         replacement.x = gameBoardWidth - entWidth;
+        if (replacement.type === "target" && score > 5) {
+          replacement.xVel = -5;
+        }
       }
 
       // vertical handling
       if (replacement.y < 0) {
         replacement.y = 0;
+        if (replacement.type === "target" && score > 5) {
+          replacement.yVel = 5;
+        }
       } else if (replacement.y + entHeight > gameBoardHeight) {
         replacement.y = gameBoardHeight - entHeight;
+        if (replacement.type === "target" && score > 5) {
+          replacement.yVel = -5;
+        }
       }
 
       // set new state for player
@@ -304,9 +275,9 @@ function isColliding(element1, element2) {
       <Typography variant="h5">{captcha.wantsToBeVendor ? "Captcha" : "Touchin' Squares"}</Typography>
       <Typography variant="body2">Make the big blue square touch the small red square.</Typography>
       <Typography>Score: {score} / 3</Typography>
-      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, backgroundColor: "gray", width: "lg", height: "60vh" }}>
-        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ backgroundColor: "red", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
-        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ backgroundColor: "blue", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>
+      <Box ref={boardRef} id="gameBoard" position="relative" sx={{ mb: 3, borderStyle: "solid", backgroundImage: "url(https://th.bing.com/th/id/R.21482347665c2040a90d230aac9cd80a?rik=gDgUBKI5WxRleg&pid=ImgRaw&r=0)", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "lg", height: "60vh" }}>
+        <Box ref={targetRef} id="targetElement" position="absolute" left={target.x} top={target.y} sx={{ borderStyle: "solid", backgroundImage: "url(https://png.pngtree.com/png-vector/20240528/ourmid/pngtree-a-man-selling-fruits-and-vegetables-on-cart-clipart-with-transparent-png-image_12512900.png)", backgroundSize: "contain", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "5vw", maxWidth: "70px", minWidth: "25px", aspectRatio: "1/1" }}></Box>
+        <Box ref={playerRef} id="playerElement" position="absolute" left={player.x} top={player.y} sx={{ borderStyle: "solid", backgroundImage: "url(https://static.vecteezy.com/system/resources/previews/023/374/290/original/beautiful-car-transparent-background-free-png.png)", backgroundSize: "cover", backgroundRepeat: "no-repeat", backgroundPosition: "center", width: "8vw", maxWidth: "100px", minWidth: "40px", aspectRatio: "1/1" }}></Box>
       </Box>
       <Box>
         <GameControls player={player} setPlayer={setPlayer}/>
@@ -343,7 +314,6 @@ function isColliding(element1, element2) {
           </Button>
         </Box>
       </Modal>
-      {/* <iframe width="560" height="315" src="https://www.youtube.com/embed/B7gGacb8cO4"></iframe> */}
     </Container>
   );
 };
