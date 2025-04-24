@@ -169,7 +169,7 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               </Box>
             )}
 
-            <Typography variant="h5" gutterBottom>Preferences:</Typography>
+            <Typography variant="h5" gutterBottom>Interests:</Typography>
             {preferences.length > 0 ? (
               <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
                 {preferences.map((cat) => (
@@ -179,10 +179,10 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                 ))}
               </Stack>
             ) : (
-              <Typography>No preferences selected yet.</Typography>
+              <Typography>No interests selected yet.</Typography>
             )}
 
-            {/* Delete Button (bottom of page) */}
+            {/* Delete Button at Bottom */}
             <Box display="flex" justifyContent="center" mt={6}>
               <Button
                 variant="contained"
