@@ -45,6 +45,14 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     store: "",
     profilePicture: "",
   });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [uploading, setUploading] = useState(false);
+  const [modal, setModal] = useState({
+    open: false,
+    title: '',
+    message: '',
+    success: false,
+  });
 
   // states used to toggle the modals
   const [openAlertS, setOpenAlertS] = React.useState(false);
@@ -91,6 +99,19 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     }
   }, [ captcha ]);
 
+  // function to determine whether or not the form is ready to be submitted
+  const validate = () => {
+    const newErrors: { [key: string]: string } = {};
+    if (!formData.businessName) newErrors.businessName = 'Business name is required';
+    if (!formData.description) newErrors.description = 'Description is required';
+    if (!formData.email) newErrors.email = 'Email is required';
+    if (formData.facebook.slice(0, 24) !== 'https://www.facebook.com') newErrors.facebook = 'Facebook link must start with "https://www.facebook.com"';
+    if (formData.instagram.slice(0, 25) !== 'https://www.instagram.com') newErrors.venue_name = 'Instagram link must start with "https://www.instagram.com"';
+    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////if (!form.location) newErrors.location = 'Location is required';
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -101,6 +122,13 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // validate the form inputs first
+    if (!validate()) {
+      setModal({ open: true, title: 'Error', message: 'Please fix the errors in the form.', success: false });
+      return;
+    }
+
     try {
       const res = await fetch(`/api/vendor/${user?.id}`, {
         method: "POST",
@@ -171,16 +199,18 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             name="businessName"
-            label="Business Name *"
+            label="Business Name"
             fullWidth
             required
             margin="normal"
             value={formData.businessName}
             onChange={handleChange}
+            error={!!errors.businessName}
+            helperText={errors.businessName}
           />
           <TextField
             name="description"
-            label="Business Description *"
+            label="Business Description"
             fullWidth
             required
             multiline
@@ -188,15 +218,19 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
             margin="normal"
             value={formData.description}
             onChange={handleChange}
+            error={!!errors.description}
+            helperText={errors.description}
           />
           <TextField
             name="email"
-            label="Business Email *"
+            label="Business Email"
             fullWidth
             required
             margin="normal"
             value={formData.email}
             onChange={handleChange}
+            error={!!errors.email}
+            helperText={errors.email}
           />
           <TextField
             name="facebook"
@@ -205,6 +239,8 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
             margin="normal"
             value={formData.facebook}
             onChange={handleChange}
+            error={!!errors.email}
+            helperText={errors.email}
           />
           <TextField
             name="instagram"
@@ -213,6 +249,8 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
             margin="normal"
             value={formData.instagram}
             onChange={handleChange}
+            error={!!errors.email}
+            helperText={errors.email}
           />
           <TextField
             name="store"
@@ -221,6 +259,8 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
             margin="normal"
             value={formData.store}
             onChange={handleChange}
+            error={!!errors.email}
+            helperText={errors.email}
           />
 
           {/* Two different methods for adding a vendor profile */}
