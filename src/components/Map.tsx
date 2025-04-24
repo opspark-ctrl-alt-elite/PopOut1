@@ -137,7 +137,7 @@ const Map: React.FC<Props> = ({ user }) => {
         const data = await res.json();
         setEvents(data);
       } catch (err) {
-        console.error("Error fetching events", err);
+        console.error("Error fetching popups", err);
       }
     };
 

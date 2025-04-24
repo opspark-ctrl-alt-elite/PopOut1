@@ -153,10 +153,10 @@ const CreateEvent = () => {
         longitude: parseFloat(form.longitude),
       };
       await axios.post('/api/events', payload, { withCredentials: true });
-      setModal({ open: true, title: 'Success', message: 'Event created!', success: true });
+      setModal({ open: true, title: 'Success', message: 'Popup created!', success: true });
     } catch (err) {
       console.error(err);
-      setModal({ open: true, title: 'Error', message: 'Error creating event.', success: false });
+      setModal({ open: true, title: 'Error', message: 'Error creating popup.', success: false });
     }
   };
 

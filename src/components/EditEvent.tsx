@@ -57,7 +57,7 @@ const EditEvent = () => {
           setModal({
             open: true,
             title: "Error",
-            message: "Event not found",
+            message: "Popup not found",
             success: false,
           });
           return;
@@ -70,11 +70,11 @@ const EditEvent = () => {
         });
         setAvailableCategories(categoriesRes.data.map((cat: any) => cat.name));
       } catch (err) {
-        console.error("Failed to fetch event or categories:", err);
+        console.error("Failed to fetch popup or categories:", err);
         setModal({
           open: true,
           title: "Error",
-          message: "Failed to load event data",
+          message: "Failed to load popup data",
           success: false,
         });
       }
@@ -180,10 +180,10 @@ const EditEvent = () => {
         longitude: parseFloat(form.longitude),
       };
       await axios.put(`/api/events/${id}`, payload, { withCredentials: true });
-      setModal({ open: true, title: "Success", message: "Event updated!", success: true });
+      setModal({ open: true, title: "Success", message: "Popup updated!", success: true });
     } catch (err) {
-      console.error("Error updating event:", err);
-      setModal({ open: true, title: "Error", message: "Error updating event.", success: false });
+      console.error("Error updating popup:", err);
+      setModal({ open: true, title: "Error", message: "Error updating popup.", success: false });
     }
   };
 
@@ -197,7 +197,7 @@ const EditEvent = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Typography variant="h4" gutterBottom>Edit Event</Typography>
+        <Typography variant="h4" gutterBottom>Edit Popup</Typography>
         <Stack spacing={3}>
           <TextField
             name="title"
@@ -292,7 +292,7 @@ const EditEvent = () => {
                 <Box mt={2}>
                   <img
                     src={form.image_url}
-                    alt="Event"
+                    alt="Popup"
                     style={{ width: "100%", maxHeight: "200px", objectFit: "cover" }}
                   />
                 </Box>
@@ -349,7 +349,7 @@ const EditEvent = () => {
               "&:hover": { backgroundColor: "#333" },
             }}
           >
-            Update Event
+            Update Popup
           </Button>
         </Stack>
 
