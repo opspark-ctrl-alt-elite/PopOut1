@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import SearchBar from "./SearchBar";
+import SideNav from "./SideNav";
+
 import {
   AppBar,
   Toolbar,
@@ -151,50 +153,50 @@ const Navbar: React.FC<Props> = ({
 
             {user && (
               <Button
-              component={Link}
-              to="/map"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                backgroundColor: "rgba(240, 240, 240, 0.4)",
-                backdropFilter: "blur(10px)",
-                border: "1px solid rgba(0, 0, 0, 0.1)",
-                boxShadow:
-                  "inset 0 0 0 1px rgba(255,255,255,0.2), 0 3px 8px rgba(0,0,0,0.08)",
-                borderRadius: "999px",
-                px: 2,
-                py: 0.8,
-                color: "#000",
-                // fontFamily: `'Barlow Semi Condensed', sans-serif`,
-                // fontFamily: `'IBM Plex Sans', sans-serif`,
-                // fontFamily: `'Work Sans', sans-serif`,
-                fontFamily: `'DM Sans', sans-serif`,
-                fontWeight: 600,
-                transition: "all 0.3s ease",
-                "&:hover": {
-                  backgroundColor: "rgba(240, 240, 240, 0.6)",
-                  borderColor: "rgba(0, 0, 0, 0.25)",
-                  boxShadow:
-                    "inset 0 0 0 1px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.1)",
-                  "& .scale-icon": {
-                    transform: "scale(1.4)",
-                  },
-                },
-              }}
-            >
-              <Box
-                className="scale-icon"
+                component={Link}
+                to="/map"
                 sx={{
-                  width: 24,
-                  height: 24,
-                  transition: "transform 0.3s ease",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  backgroundColor: "rgba(240, 240, 240, 0.4)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(0, 0, 0, 0.1)",
+                  boxShadow:
+                    "inset 0 0 0 1px rgba(255,255,255,0.2), 0 3px 8px rgba(0,0,0,0.08)",
+                  borderRadius: "999px",
+                  px: 2,
+                  py: 0.8,
+                  color: "#000",
+                  // fontFamily: `'Barlow Semi Condensed', sans-serif`,
+                  // fontFamily: `'IBM Plex Sans', sans-serif`,
+                  // fontFamily: `'Work Sans', sans-serif`,
+                  fontFamily: `'DM Sans', sans-serif`,
+                  fontWeight: 600,
+                  transition: "all 0.3s ease",
+                  "&:hover": {
+                    backgroundColor: "rgba(240, 240, 240, 0.6)",
+                    borderColor: "rgba(0, 0, 0, 0.25)",
+                    boxShadow:
+                      "inset 0 0 0 1px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.1)",
+                    "& .scale-icon": {
+                      transform: "scale(1.4)",
+                    },
+                  },
                 }}
               >
-                <Lottie animationData={blueLocationPin} loop autoplay />
-              </Box>
-              Map
-            </Button>
+                <Box
+                  className="scale-icon"
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    transition: "transform 0.3s ease",
+                  }}
+                >
+                  <Lottie animationData={blueLocationPin} loop autoplay />
+                </Box>
+                Map
+              </Button>
             )}
           </Stack>
 
@@ -366,94 +368,12 @@ const Navbar: React.FC<Props> = ({
       </Popover>
 
       {/* sidenav */}
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={toggleDrawer(false)}
-        sx={{
-          transition: "transform 0.3s ease",
-          "& .MuiDrawer-paper": {
-            width: 250,
-            bgcolor: "#000",
-            color: "#fff",
-            paddingTop: 2,
-            paddingBottom: 0,
-          },
-        }}
-      >
-        <Box
-          role="presentation"
-          onClick={toggleDrawer(false)}
-          onKeyDown={toggleDrawer(false)}
-        >
-          <List sx={{ paddingTop: 2 }}>
-            {/* Home */}
-            <ListItem
-              component={Link}
-              to="/"
-              button
-              sx={{ "&:hover": { bgcolor: "#444" } }}
-            >
-              <ListItemText
-                primary="Home"
-                sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-              />
-            </ListItem>
-
-            {user && !user.is_vendor && (
-              <ListItem
-                component={Link}
-                to="/vendor-signup"
-                button
-                sx={{ "&:hover": { bgcolor: "#444" } }}
-              >
-                <ListItemText
-                  primary="Become a Vendor"
-                  sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-                />
-              </ListItem>
-            )}
-
-            <ListItem
-              component={Link}
-              to="/game"
-              button
-              sx={{ "&:hover": { bgcolor: "#444" } }}
-            >
-              <ListItemText
-                primary="Play Game"
-                sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-              />
-            </ListItem>
-
-            <ListItem
-              component={Link}
-              to="/map"
-              button
-              sx={{ "&:hover": { bgcolor: "#444" } }}
-            >
-              <ListItemText
-                primary="View Map"
-                sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-              />
-            </ListItem>
-
-            {!user && (
-              <ListItem
-                component="a"
-                href="/auth/google"
-                button
-                sx={{ "&:hover": { bgcolor: "#444" } }}
-              >
-                <ListItemText
-                  primary="Login with Google"
-                  sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-                />
-              </ListItem>
-            )}
-          </List>
-        </Box>
-      </Drawer>
+      <SideNav
+        user={user}
+        drawerOpen={drawerOpen}
+        toggleDrawer={toggleDrawer}
+        handleLogout={handleLogout}
+      />
     </>
   );
 };

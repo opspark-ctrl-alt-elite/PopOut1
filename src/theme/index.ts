@@ -1,8 +1,11 @@
-import { createTheme } from '@mui/material/styles';
+import { createTheme } from "@mui/material/styles";
 
 const theme = createTheme({
   typography: {
     fontFamily: `'Inter', sans-serif`,
+    h3: {
+      fontFamily: `'Bebas Neue', sans-serif`,
+    },
     h4: {
       fontFamily: `'Bebas Neue', sans-serif`,
     },
@@ -13,6 +16,12 @@ const theme = createTheme({
       fontFamily: `'Bebas Neue', sans-serif`,
     },
   },
+  navItem: {
+    fontFamily: `'Inter', sans-serif`,
+    fontSize: "0.85rem",
+    fontWeight: 400,
+    color: "#fff",
+  },
   components: {
     MuiButton: {
       styleOverrides: {
@@ -21,8 +30,8 @@ const theme = createTheme({
           // fontFamily: `'Work Sans', sans-serif`,
           // fontFamily: `'Barlow Semi Condensed', sans-serif`,
           fontFamily: `'DM Sans', sans-serif`,
-          letterSpacing: '2px',
-          textTransform: 'none',
+          letterSpacing: "2px",
+          textTransform: "none",
           borderRadius: 8,
           boxShadow: 1,
           backgroundColor: "#212121",
