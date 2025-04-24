@@ -24,11 +24,11 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
 import WorkIcon from "@mui/icons-material/Work";
-import RoomIcon from "@mui/icons-material/Room";
+// import RoomIcon from "@mui/icons-material/Room";
 import SvgIcon from "@mui/material/SvgIcon";
 import { onMessageListener } from "../firebase/onMessageListener";
 import Lottie from "lottie-react";
-import locationPinAnimation from "../assets/lottie/monoicon.json";
+// import locationPinAnimation from "../assets/lottie/monoicon.json";
 import blueLocationPin from "../assets/lottie/blueicon.json";
 
 interface Props {
@@ -166,7 +166,11 @@ const Navbar: React.FC<Props> = ({
                 px: 2,
                 py: 0.8,
                 color: "#000",
-                fontWeight: 500,
+                // fontFamily: `'Barlow Semi Condensed', sans-serif`,
+                // fontFamily: `'IBM Plex Sans', sans-serif`,
+                // fontFamily: `'Work Sans', sans-serif`,
+                fontFamily: `'DM Sans', sans-serif`,
+                fontWeight: 600,
                 transition: "all 0.3s ease",
                 "&:hover": {
                   backgroundColor: "rgba(240, 240, 240, 0.6)",
@@ -191,7 +195,6 @@ const Navbar: React.FC<Props> = ({
               </Box>
               Map
             </Button>
-            
             )}
           </Stack>
 

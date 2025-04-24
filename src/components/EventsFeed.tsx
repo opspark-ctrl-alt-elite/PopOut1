@@ -243,6 +243,17 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                 <Box sx={{ color: "#777", pl: 1 }}>Category</Box>
               )
             }
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  backgroundColor: "rgba(255, 255, 255, 0.75)",
+                  backdropFilter: "blur(12px)",
+                  boxShadow: "0px 8px 16px rgba(0,0,0,0.1)",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                },
+              },
+            }}
             sx={{
               borderRadius: 9999,
               pl: 1,
