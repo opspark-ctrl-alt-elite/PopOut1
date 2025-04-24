@@ -151,7 +151,7 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
         </Button>
 
         <Typography variant="subtitle1" mt={2} mb={1}>
-          Select Your Preferences
+          Select Your Interests
         </Typography>
 
         <Stack spacing={1}>
