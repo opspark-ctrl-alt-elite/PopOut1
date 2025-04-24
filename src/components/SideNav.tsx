@@ -5,9 +5,19 @@ import {
   List,
   ListItem,
   ListItemText,
+  ListItemIcon,
   Box,
   Typography,
 } from "@mui/material";
+
+import HomeIcon from "@mui/icons-material/Home";
+import MapIcon from "@mui/icons-material/Room";
+import PersonIcon from "@mui/icons-material/Person";
+import WorkIcon from "@mui/icons-material/Work";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
+import LogoutIcon from "@mui/icons-material/Logout";
+import LoginIcon from "@mui/icons-material/Login";
+import StorefrontIcon from "@mui/icons-material/Storefront";
 
 interface Props {
   user: {
@@ -85,7 +95,7 @@ const SideNav: React.FC<Props> = ({
               color: "#fff",
               fontFamily: "'Bebas Neue', sans-serif",
               letterSpacing: "1px",
-              textShadow: "1px 1px 4px rgba(0,0,0,0.3)"
+              textShadow: "1px 1px 4px rgba(0,0,0,0.3)",
             }}
           >
             PopOut
@@ -93,54 +103,68 @@ const SideNav: React.FC<Props> = ({
         </Box>
 
         <List>
-          {navItems.map(({ label, path }) => (
-            <ListItem
-              key={label}
-              component={Link}
-              to={path}
-              button
-              dense
-              sx={{
-                py: 1,
-                px: 2,
-                "&:hover": { bgcolor: "#444" },
-              }}
-            >
-              <ListItemText {...listTextStyles} primary={label} />
+          <ListItem component={Link} to="/" button dense>
+            <ListItemIcon sx={{ color: "#fff", minWidth: 32 }}>
+              <HomeIcon />
+            </ListItemIcon>
+            <ListItemText {...listTextStyles} primary="Home" />
+          </ListItem>
+
+          <ListItem component={Link} to="/map" button dense>
+            <ListItemIcon sx={{ color: "#fff", minWidth: 32 }}>
+              <MapIcon />
+            </ListItemIcon>
+            <ListItemText {...listTextStyles} primary="View Map" />
+          </ListItem>
+
+          {user && (
+            <ListItem component={Link} to="/userprofile" button dense>
+              <ListItemIcon sx={{ color: "#fff", minWidth: 32 }}>
+                <PersonIcon />
+              </ListItemIcon>
+              <ListItemText {...listTextStyles} primary="User Profile" />
             </ListItem>
-          ))}
+          )}
+
+          {user?.is_vendor && (
+            <ListItem component={Link} to="/vendorprofile" button dense>
+              <ListItemIcon sx={{ color: "#fff", minWidth: 32 }}>
+                <WorkIcon />
+              </ListItemIcon>
+              <ListItemText {...listTextStyles} primary="Vendor Profile" />
+            </ListItem>
+          )}
+
+          <ListItem component={Link} to="/game" button dense>
+            <ListItemIcon sx={{ color: "#fff", minWidth: 32 }}>
+              <SportsEsportsIcon />
+            </ListItemIcon>
+            <ListItemText {...listTextStyles} primary="Play Game" />
+          </ListItem>
 
           {!user && (
-            <ListItem
-              component="a"
-              href="/auth/google"
-              button
-              dense
-              sx={{ py: 1, px: 2, "&:hover": { bgcolor: "#444" } }}
-            >
-              <ListItemText {...listTextStyles} primary="Login with Google" />
+            <ListItem component="a" href="/auth/google" button dense>
+              <ListItemIcon sx={{ color: "#fff", minWidth: 32 }}>
+                <LoginIcon />
+              </ListItemIcon>
+              <ListItemText {...listTextStyles} primary="Sign in with Google" />
             </ListItem>
           )}
 
           {user && !user.is_vendor && (
-            <ListItem
-              component={Link}
-              to="/vendor-signup"
-              button
-              dense
-              sx={{ py: 1, px: 2, "&:hover": { bgcolor: "#444" } }}
-            >
+            <ListItem component={Link} to="/vendor-signup" button dense>
+              <ListItemIcon sx={{ color: "#fff", minWidth: 32 }}>
+                <StorefrontIcon />
+              </ListItemIcon>
               <ListItemText {...listTextStyles} primary="Become a Vendor" />
             </ListItem>
           )}
 
           {user && (
-            <ListItem
-              button
-              onClick={handleLogout}
-              dense
-              sx={{ py: 1, px: 2, "&:hover": { bgcolor: "#444" } }}
-            >
+            <ListItem button onClick={handleLogout} dense>
+              <ListItemIcon sx={{ color: "#fff", minWidth: 32 }}>
+                <LogoutIcon />
+              </ListItemIcon>
               <ListItemText {...listTextStyles} primary="Log Out" />
             </ListItem>
           )}
