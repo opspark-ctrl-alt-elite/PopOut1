@@ -113,8 +113,10 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
         sx={{
           backgroundColor: "white",
           width: 400,
+          maxHeight: "80vh",
+          overflowY: "auto",
           mx: "auto",
-          my: "15vh",
+          my: "10vh",
           borderRadius: 2,
           p: 4,
           boxShadow: 24,
