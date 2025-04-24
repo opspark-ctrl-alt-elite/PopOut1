@@ -30,6 +30,7 @@ Image.init(
     referenceURL: {
       type: DataTypes.STRING,
       allowNull: false,
+      // TODO: make false maybe
       unique: true,
     },
     // Establish foreign keys
