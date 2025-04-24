@@ -36,7 +36,6 @@ interface ReviewComponentProps {
   onReviewUpdated?: () => void;
   onReviewDeleted?: () => void;
 }
-
 const ReviewComponent: React.FC<ReviewComponentProps> = ({
   vendorId,
   currentUserId,
@@ -49,6 +48,9 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
   const [comment, setComment] = useState<string>('');
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
+  const [refreshKey, setRefreshKey] = useState(0);
+
+
 
   const fetchUserReview = async () => {
     try {
@@ -56,7 +58,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
       const existingReview = response.data.find(
         (review: Review) => review.userId === currentUserId
       ) || null;
-      
+
       setUserReview(existingReview);
       if (existingReview) {
         setRating(existingReview.rating);
@@ -71,9 +73,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
     if (vendorId && currentUserId) {
       fetchUserReview();
     }
-  }, [vendorId, currentUserId]);
-
-  const handleSubmit = async (event: FormEvent) => {
+  }, [vendorId, currentUserId, refreshKey]);const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
     if (!rating) {
       setError('Please provide a rating');
@@ -99,20 +99,21 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
         );
         if (onReviewAdded) onReviewAdded();
       }
-      await fetchUserReview();
+        if(onReviewAdded || onReviewUpdated){
+(onReviewAdded || onReviewUpdated)?.()
+}
+      setRefreshKey(prev => prev + 1)
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 
-                         err.response?.data?.message || 
+      const errorMessage = err.response?.data?.error ||
+                         err.response?.data?.message ||
                          'Failed to submit review. Please try again.';
       setError(errorMessage);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleDelete = async () => {
+  }; const handleDelete = async () => {
     if (!userReview?.id) return;
-    
+
     setLoading(true);
     setError(null);
 
@@ -122,9 +123,10 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
       setUserReview(null);
       setRating(0);
       setComment('');
+      setRefreshKey(prev => prev + 1)
     } catch (err: any) {
-      const errorMessage = err.response?.data?.error || 
-                         err.response?.data?.message || 
+      const errorMessage = err.response?.data?.error ||
+                         err.response?.data?.message ||
                          'Failed to delete review. Please try again.';
       setError(errorMessage);
     } finally {
@@ -147,14 +149,13 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
       <Box component="form" onSubmit={handleSubmit}>
         <Stack spacing={2}>
           <Box>
-            <Typography component="legend">Rating</Typography>
-            <Rating
+            <Typography component="legend">Rating</Typography> <Rating
               value={rating}
               onChange={(_, newValue) => setRating(newValue || 0)}
               precision={0.5}
             />
           </Box>
-          
+
           <TextField
             label="Comment (optional)"
             multiline
@@ -171,10 +172,10 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
               variant="contained"
               disabled={loading || rating === 0}
             >
-              {loading ? <CircularProgress size={24} /> : 
+              {loading ? <CircularProgress size={24} /> :
                userReview ? 'Update Review' : 'Submit Review'}
             </Button>
-            
+
             {userReview && (
               <Button
                 variant="outlined"
@@ -183,8 +184,7 @@ const ReviewComponent: React.FC<ReviewComponentProps> = ({
                 disabled={loading}
               >
                 Delete Review
-              </Button>
-            )}
+              </Button> )}
           </Stack>
         </Stack>
       </Box>
