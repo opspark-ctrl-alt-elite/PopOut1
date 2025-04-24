@@ -34,7 +34,7 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare fcm_token: string | null;
   declare created_at: CreationOptional<Date>;
   declare FollowedVendors?: Vendor[];
-  
+
   // mixins
   declare getCategories: HasManyGetAssociationsMixin<Category>;
   declare setCategories: HasManySetAssociationsMixin<Category, string>;
@@ -43,9 +43,8 @@ export class User extends Model<InferAttributes<User>, InferCreationAttributes<U
   declare removeFollowedVendor: BelongsToManyRemoveAssociationMixin<Vendor, string>;
   declare addBookmarkedEvent: BelongsToManyAddAssociationMixin<Event, string>;
   declare getBookmarkedEvents: BelongsToManyGetAssociationsMixin<Event>;
-  declare removeBookmarkedEvent: BelongsToManyRemoveAssociationMixin<Event, string>;
-  //  FollowedVendors: any;
-  
+  declare removeBookmarkedEvent: BelongsToManyRemoveAssociationMixin<Event, string>; //  FollowedVendors: any;
+
 
   public toJSON(): InferAttributes<User> {
     return super.toJSON();
@@ -91,8 +90,7 @@ User.init(
     fcm_token: {
       type: DataTypes.STRING,
       allowNull: true,
-    },
-    created_at: {
+    }, created_at: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
