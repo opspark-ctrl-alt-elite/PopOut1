@@ -45,8 +45,7 @@ Review.init({
       model: 'vendors',
       key: 'id'
     }
-  },
-  eventId: {
+  }, eventId: {
     type: DataTypes.UUID,
     allowNull: true,
     references: {

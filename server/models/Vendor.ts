@@ -44,8 +44,7 @@ Vendor.init(
     profilePicture: {
       type: DataTypes.STRING,
       allowNull: true,
-    },
-    description: {
+    }, description: {
       type: DataTypes.STRING,
       allowNull: false,
     },

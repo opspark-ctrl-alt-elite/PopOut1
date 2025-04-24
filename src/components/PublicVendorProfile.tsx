@@ -34,7 +34,6 @@ import {
 import formatDate from "../utils/formatDate";
 import ReviewComponent from "./Review";
 import EventDetails from "./EventDetails";
-
 type Props = {
   user: {
     id: string;
@@ -73,9 +72,7 @@ type Vendor = {
   instagram?: string;
   website?: string;
   email?: string;
-};
-
-type Review = {
+};type Review = {
   id: string;
   rating: number;
   comment: string;
@@ -113,7 +110,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       });
     }
   };
-
   const handleOpenModal = (event: Event) => {
     setSelectedEvent(event);
     setModalOpen(true);
@@ -129,15 +125,14 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     try {
       setLoading(true);
       setError(null);
-      
+
       const [vendorRes, imageRes, eventRes, ratingRes] = await Promise.all([
         axios.get(`/api/vendor/public/${vendorId}`),
         axios.get(`/api/images/vendorId/${vendorId}`),
         axios.get(`/api/events/vendor/${vendorId}`),
-        axios.get(`/vendors/${vendorId}/average-rating`),
-      ]);
-
-      const vendorData = vendorRes.data;
+        axios.get(`/api/vendor/${vendorId}/average-rating`),
+        axios.get(`/api/vendor/${vendorId}/reviews`)
+      ]);const vendorData = vendorRes.data;
       const vendorWithId = { ...vendorData, id: vendorId };
       setVendor(vendorWithId);
 
@@ -157,7 +152,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       setAvgRating(parseFloat(ratingRes.data.averageRating) || 0);
       setReviewCount(parseInt(ratingRes.data.reviewCount, 10) || 0);
 
-      const reviewRes = await axios.get(`/vendors/${vendorId}/reviews`);
+      const reviewRes = await axios.get(`/api/vendor/${vendorId}/reviews`);
       setReviews(reviewRes.data.map((review: Review) => ({
         ...review,
         user: review.user || { name: "Anonymous" }
@@ -168,8 +163,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       setError("Failed to load vendor data. Please try again.");
     } finally {
       setLoading(false);
-    }
-  };
+    }};
 
   const handleFollowToggle = async () => {
     if (!user) return;
@@ -177,7 +171,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       const route = isFollowing
         ? `/api/users/${user.id}/unfollow/${vendorId}`
         : `/api/users/${user.id}/follow/${vendorId}`;
-      
+
       await axios.post(route);
       setIsFollowing(!isFollowing);
     } catch (err) {
@@ -196,9 +190,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         .then((res) => setIsFollowing(res.data.isFollowing))
         .catch(() => setIsFollowing(false));
     }
-  }, [vendorId, user]);
-
-  const now = new Date();
+  }, [vendorId, user]);  const now = new Date();
   const filteredEvents = tabIndex === 0
     ? events.filter((e) => new Date(e.endDate) >= now)
     : events.filter((e) => new Date(e.endDate) < now);
@@ -235,8 +227,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                   backgroundColor: isFollowing ? "#e4e6eb" : "#1b74e4",
                   color: isFollowing ? "#050505" : "#fff",
                   "&:hover": { backgroundColor: isFollowing ? "#d8dadf" : "#1a6ed8" },
-                }}
-              >
+                }} >
                 {isFollowing ? "Following" : "Follow"}
               </Button>
             )}
@@ -274,8 +265,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                   <Typography variant="body2" sx={{ mt: 1 }}>{event.description}</Typography>
                   <Stack direction="row" spacing={1} sx={{ mt: 1, flexWrap: "wrap" }}>
                     {event.Categories?.map((cat) => (
-                      <Chip key={cat.name} label={cat.name} variant="outlined" size="small" />
-                    ))}
+                      <Chip key={cat.name} label={cat.name} variant="outlined" size="small" />))}
                     {event.isFree && <Chip label="Free" size="small" />}
                     {event.isKidFriendly && <Chip label="Kid-Friendly" size="small" />}
                     {event.isSober && <Chip label="Sober" size="small" />}
@@ -293,9 +283,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
             ))}
           </Box>
         </Box>
-      )}
-
-      <Box sx={{ mt: 4 }}>
+      )} <Box sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>Reviews ({reviewCount})</Typography>
         {reviewCount > 0 && (
           <List sx={{ maxHeight: 300, overflow: "auto", border: "1px solid #eee", borderRadius: 1, p: 1 }}>
@@ -334,8 +322,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                 onReviewDeleted={handleReviewUpdate}
               />
             ) : (
-              <Typography>Please sign in to add your review.</Typography>
-            )}
+              <Typography>Please sign in to add your review.</Typography> )}
           </>
         )}
       </Box>
