@@ -96,7 +96,7 @@ const Map: React.FC<Props> = ({ user }) => {
   const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
-  const [activeEvent, setActiveEvent] = useState<any | null>(null); // Track the active event
+  const [activeEvent, setActiveEvent] = useState<any | null>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
 
   const location = useLocation();

@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import SearchBar from "./SearchBar";
+import SideNav from "./SideNav";
+
 import {
   AppBar,
   Toolbar,
@@ -22,9 +25,13 @@ import NotificationsIcon from "@mui/icons-material/Notifications";
 import LogoutIcon from "@mui/icons-material/Logout";
 import MenuIcon from "@mui/icons-material/Menu";
 import PersonIcon from "@mui/icons-material/Person";
-// import BusinessIcon from "@mui/icons-material/Business";
 import WorkIcon from "@mui/icons-material/Work";
+// import RoomIcon from "@mui/icons-material/Room";
+import SvgIcon from "@mui/material/SvgIcon";
 import { onMessageListener } from "../firebase/onMessageListener";
+import Lottie from "lottie-react";
+// import locationPinAnimation from "../assets/lottie/monoicon.json";
+import blueLocationPin from "../assets/lottie/blueicon.json";
 
 interface Props {
   user: {
@@ -99,16 +106,25 @@ const Navbar: React.FC<Props> = ({
       setDrawerOpen(open);
     };
 
+  function GoogleIcon(props: any) {
+    return (
+      <SvgIcon {...props}>
+        <path d="M21.35 11.1h-9.18v2.92h5.3c-.23 1.27-1.36 3.7-5.3 3.7-3.19 0-5.8-2.63-5.8-5.86s2.61-5.86 5.8-5.86c1.81 0 3.02.77 3.72 1.43l2.55-2.48C17.64 3.83 15.2 2.8 12.5 2.8 7.91 2.8 4.24 6.53 4.24 11s3.67 8.2 8.26 8.2c4.77 0 7.92-3.36 7.92-8.08 0-.52-.07-1.02-.17-1.52z" />
+      </SvgIcon>
+    );
+  }
+
   return (
     <>
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar
           sx={{
-            flexWrap: "wrap",
+            flexWrap: "nowrap",
             justifyContent: "space-between",
             gap: 2,
             px: 2,
             py: 1,
+            overflow: "visible",
           }}
         >
           <Stack direction="row" spacing={2} alignItems="center">
@@ -139,22 +155,59 @@ const Navbar: React.FC<Props> = ({
               <Button
                 component={Link}
                 to="/map"
-                variant="outlined"
-                size="small"
                 sx={{
-                  backgroundColor: "transparent",
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  backgroundColor: "rgba(240, 240, 240, 0.4)",
+                  backdropFilter: "blur(10px)",
+                  border: "1px solid rgba(0, 0, 0, 0.1)",
+                  boxShadow:
+                    "inset 0 0 0 1px rgba(255,255,255,0.2), 0 3px 8px rgba(0,0,0,0.08)",
+                  borderRadius: "999px",
+                  px: 2,
+                  py: 0.8,
                   color: "#000",
-                  border: "1px solid #000",
+                  // fontFamily: `'Barlow Semi Condensed', sans-serif`,
+                  // fontFamily: `'IBM Plex Sans', sans-serif`,
+                  // fontFamily: `'Work Sans', sans-serif`,
+                  fontFamily: `'DM Sans', sans-serif`,
+                  fontWeight: 600,
+                  transition: "all 0.3s ease",
                   "&:hover": {
-                    backgroundColor: "rgba(0, 0, 0, 0.05)",
-                    borderColor: "#000",
+                    backgroundColor: "rgba(240, 240, 240, 0.6)",
+                    borderColor: "rgba(0, 0, 0, 0.25)",
+                    boxShadow:
+                      "inset 0 0 0 1px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.1)",
+                    "& .scale-icon": {
+                      transform: "scale(1.4)",
+                    },
                   },
                 }}
               >
-                View Map
+                <Box
+                  className="scale-icon"
+                  sx={{
+                    width: 24,
+                    height: 24,
+                    transition: "transform 0.3s ease",
+                  }}
+                >
+                  <Lottie animationData={blueLocationPin} loop autoplay />
+                </Box>
+                Map
               </Button>
             )}
           </Stack>
+
+          {/* search bar */}
+          <Box sx={{ flexGrow: 1, maxWidth: 400 }}>
+            <SearchBar
+              onResults={(data) => {
+                console.log("search results", data);
+              }}
+            />
+          </Box>
 
           {user ? (
             <Stack direction="row" spacing={2} alignItems="center">
@@ -169,9 +222,61 @@ const Navbar: React.FC<Props> = ({
               </IconButton>
             </Stack>
           ) : (
-            <Button variant="contained" href="/auth/google">
-              Login with Google
-            </Button>
+            <Box
+              component="a"
+              href="/auth/google"
+              sx={{
+                display: "inline-flex",
+                alignItems: "center",
+                textDecoration: "none",
+                backgroundColor: "#000",
+                border: "1px solid #000",
+                borderRadius: "999px",
+                padding: "8px 20px",
+                // fontWeight: "bold",
+                fontSize: "1.1rem",
+                // fontFamily: "'Bebas Neue', sans-serif",
+                fontFamily: "'Roboto', sans-serif",
+                fontWeight: 500,
+                color: "#fff",
+                transition: "background-color 0.2s, box-shadow 0.2s",
+                "&:hover": {
+                  backgroundColor: "#111",
+                  boxShadow: "0px 2px 6px rgba(0,0,0,0.2)",
+                },
+              }}
+            >
+              <Box
+                component="span"
+                sx={{ display: "inline-flex", alignItems: "center", mr: 1 }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 48 48"
+                  width="20"
+                  height="20"
+                >
+                  <path
+                    fill="#EA4335"
+                    d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"
+                  />
+                  <path
+                    fill="#4285F4"
+                    d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"
+                  />
+                  <path
+                    fill="#FBBC05"
+                    d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"
+                  />
+                  <path
+                    fill="#34A853"
+                    d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"
+                  />
+                  <path fill="none" d="M0 0h48v48H0z" />
+                </svg>
+              </Box>
+              Sign In
+            </Box>
           )}
         </Toolbar>
       </AppBar>
@@ -263,94 +368,12 @@ const Navbar: React.FC<Props> = ({
       </Popover>
 
       {/* sidenav */}
-      <Drawer
-        anchor="left"
-        open={drawerOpen}
-        onClose={toggleDrawer(false)}
-        sx={{
-          transition: "transform 0.3s ease",
-          "& .MuiDrawer-paper": {
-            width: 250,
-            bgcolor: "#000",
-            color: "#fff",
-            paddingTop: 2,
-            paddingBottom: 0,
-          },
-        }}
-      >
-        <Box
-          role="presentation"
-          onClick={toggleDrawer(false)}
-          onKeyDown={toggleDrawer(false)}
-        >
-          <List sx={{ paddingTop: 2 }}>
-            {/* Home */}
-            <ListItem
-              component={Link}
-              to="/"
-              button
-              sx={{ "&:hover": { bgcolor: "#444" } }}
-            >
-              <ListItemText
-                primary="Home"
-                sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-              />
-            </ListItem>
-
-            {user && !user.is_vendor && (
-              <ListItem
-                component={Link}
-                to="/vendor-signup"
-                button
-                sx={{ "&:hover": { bgcolor: "#444" } }}
-              >
-                <ListItemText
-                  primary="Become a Vendor"
-                  sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-                />
-              </ListItem>
-            )}
-
-            <ListItem
-              component={Link}
-              to="/game"
-              button
-              sx={{ "&:hover": { bgcolor: "#444" } }}
-            >
-              <ListItemText
-                primary="Play Game"
-                sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-              />
-            </ListItem>
-
-            <ListItem
-              component={Link}
-              to="/map"
-              button
-              sx={{ "&:hover": { bgcolor: "#444" } }}
-            >
-              <ListItemText
-                primary="View Map"
-                sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-              />
-            </ListItem>
-
-            {!user && (
-              <ListItem
-                component="a"
-                href="/auth/google"
-                button
-                sx={{ "&:hover": { bgcolor: "#444" } }}
-              >
-                <ListItemText
-                  primary="Login with Google"
-                  sx={{ fontFamily: "'Inter', sans-serif", color: "#fff" }}
-                />
-              </ListItem>
-            )}
-          </List>
-        </Box>
-      </Drawer>
+      <SideNav
+        user={user}
+        drawerOpen={drawerOpen}
+        toggleDrawer={toggleDrawer}
+        handleLogout={handleLogout}
+      />
     </>
   );
 };

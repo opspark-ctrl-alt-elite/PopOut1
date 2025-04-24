@@ -20,7 +20,9 @@ import vendorSpotlightRouter from './routes/vendorSpotlightRoutes';
 import reviewRoutes from './routes/reviewRoutes';
 import userBookmarkRoutes from './routes/userBookmarkRoutes';
 import statsRouter from './routes/statsRoutes';
+import searchRoutes from './routes/searchRoutes';
 import preferenceRoutes from './routes/preferenceRoutes';
+
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,7 +53,7 @@ app.use(express.static(path.join(__dirname, "..", "dist")));
 app.use(authRoutes);
 app.use("/api/map", mapRoutes);
 app.use("/api/vendor", vendorRoutes);
-app.use('/vendors', vendorSpotlightRouter); 
+app.use('/vendors', vendorSpotlightRouter);
 app.use('/api/users', userRoutes);
 app.use('/api/events', eventRoutes);
 app.use('/api/categories', categoryRoutes);
@@ -65,7 +67,9 @@ app.use('/users', userBookmarkRoutes);
 app.use('/vendors', statsRouter);
 app.use('/vendors', vendorRoutes);
 app.use('/vendors', reviewRoutes);
+app.use('/search', searchRoutes)
 app.use('/api/vendor', reviewRoutes);
+
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);
   next();
