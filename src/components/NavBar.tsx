@@ -28,8 +28,8 @@ import RoomIcon from "@mui/icons-material/Room";
 import SvgIcon from "@mui/material/SvgIcon";
 import { onMessageListener } from "../firebase/onMessageListener";
 import Lottie from "lottie-react";
-import locationPinAnimation from "../assets/lottie/wired-outline-18-location-pin-hover-jump.json";
-
+import locationPinAnimation from "../assets/lottie/monoicon.json";
+import blueLocationPin from "../assets/lottie/blueicon.json";
 
 interface Props {
   user: {
@@ -157,22 +157,41 @@ const Navbar: React.FC<Props> = ({
                 display: "flex",
                 alignItems: "center",
                 gap: 1,
-                backdropFilter: "blur(6px)",
-                backgroundColor: "rgba(255, 255, 255, 0.3)",
-                border: "1px solid rgba(0, 0, 0, 0.2)",
+                backgroundColor: "rgba(240, 240, 240, 0.4)",
+                backdropFilter: "blur(10px)",
+                border: "1px solid rgba(0, 0, 0, 0.1)",
+                boxShadow:
+                  "inset 0 0 0 1px rgba(255,255,255,0.2), 0 3px 8px rgba(0,0,0,0.08)",
                 borderRadius: "999px",
                 px: 2,
+                py: 0.8,
                 color: "#000",
+                fontWeight: 500,
+                transition: "all 0.3s ease",
                 "&:hover": {
-                  backgroundColor: "rgba(255, 255, 255, 0.5)",
+                  backgroundColor: "rgba(240, 240, 240, 0.6)",
+                  borderColor: "rgba(0, 0, 0, 0.25)",
+                  boxShadow:
+                    "inset 0 0 0 1px rgba(255,255,255,0.3), 0 4px 12px rgba(0,0,0,0.1)",
+                  "& .scale-icon": {
+                    transform: "scale(1.4)",
+                  },
                 },
               }}
             >
-              <Box sx={{ width: 24, height: 24 }}>
-                <Lottie animationData={locationPinAnimation} loop autoplay />
+              <Box
+                className="scale-icon"
+                sx={{
+                  width: 24,
+                  height: 24,
+                  transition: "transform 0.3s ease",
+                }}
+              >
+                <Lottie animationData={blueLocationPin} loop autoplay />
               </Box>
               Map
             </Button>
+            
             )}
           </Stack>
 
