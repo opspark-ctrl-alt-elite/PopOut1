@@ -143,7 +143,7 @@ const Navbar: React.FC<Props> = ({
                 src={Logo}
                 alt="PopOut Logo"
                 style={{
-                  height: "40px",
+                  height: "30px",
                   objectFit: "contain",
                   display: "block",
                 }}
