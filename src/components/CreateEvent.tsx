@@ -128,6 +128,7 @@ const CreateEvent = () => {
 
     try {
       setUploading(true);
+      // TODO: fix this
       const response = await axios.post('/api/images/event/new', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
       });
