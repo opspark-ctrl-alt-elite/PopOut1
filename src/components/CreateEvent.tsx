@@ -153,10 +153,10 @@ const CreateEvent = () => {
         longitude: parseFloat(form.longitude),
       };
       await axios.post('/api/events', payload, { withCredentials: true });
-      setModal({ open: true, title: 'Success', message: 'Event created!', success: true });
+      setModal({ open: true, title: 'Success', message: 'Popup created!', success: true });
     } catch (err) {
       console.error(err);
-      setModal({ open: true, title: 'Error', message: 'Error creating event.', success: false });
+      setModal({ open: true, title: 'Error', message: 'Error creating popup.', success: false });
     }
   };
 
@@ -170,12 +170,12 @@ const CreateEvent = () => {
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Typography variant="h4" gutterBottom>Create Event</Typography>
+        <Typography variant="h4" gutterBottom>Create Popup</Typography>
 
         <Stack spacing={3}>
           <TextField
             name="title"
-            label="Event Title *"
+            label="Popup Title *"
             value={form.title}
             onChange={handleChange}
             error={!!errors.title}
@@ -241,7 +241,7 @@ const CreateEvent = () => {
               component="label"
               sx={{ mt: 2 }}
             >
-              Upload Event Image
+              Upload Popup Image
               <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
             </Button>
             {uploading && <Typography mt={1}>Uploading...</Typography>}
@@ -249,7 +249,7 @@ const CreateEvent = () => {
               <Box mt={2}>
                 <img
                   src={form.image_url}
-                  alt="Event"
+                  alt="Popup"
                   style={{ width: '100%', maxHeight: 250, objectFit: 'cover' }}
                 />
               </Box>

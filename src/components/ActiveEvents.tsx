@@ -80,7 +80,7 @@ const ActiveEvents: React.FC = () => {
       setEvents(upcoming);
       setPastEvents(past);
     } catch (err) {
-      console.error("Failed to fetch vendor events:", err);
+      console.error("Failed to fetch vendor popups:", err);
       setEvents([]);
       setPastEvents([]);
     } finally {
@@ -93,7 +93,7 @@ const ActiveEvents: React.FC = () => {
       await axios.delete(`/api/events/${eventId}`);
       fetchEvents();
     } catch (err) {
-      console.error("Error deleting event:", err);
+      console.error("Error deleting popup:", err);
     }
   };
 
@@ -290,20 +290,20 @@ const ActiveEvents: React.FC = () => {
           onChange={(_, newValue) => setTabIndex(newValue)}
           sx={{ mb: 3 }}
         >
-          <Tab label="Upcoming Events" />
-          <Tab label="Past Events" />
+          <Tab label="Upcoming Popups" />
+          <Tab label="Past Popups" />
         </Tabs>
 
         {loading ? (
           <CircularProgress />
         ) : tabIndex === 0 ? (
           events.length === 0 ? (
-            <Typography>No upcoming events.</Typography>
+            <Typography>No upcoming popups.</Typography>
           ) : (
             <Stack spacing={3}>{events.map(renderEventCard)}</Stack>
           )
         ) : pastEvents.length === 0 ? (
-          <Typography>No past events.</Typography>
+          <Typography>No past popups.</Typography>
         ) : (
           renderPastEvents()
         )}

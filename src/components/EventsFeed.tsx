@@ -104,7 +104,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       setEvents(upcomingEvents);
       setCurrentIndex(0);
     } catch (err) {
-      console.error("Error fetching events:", err);
+      console.error("Error fetching popups:", err);
       setEvents([]);
     }
   }, [filters]);
