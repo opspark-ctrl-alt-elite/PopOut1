@@ -178,7 +178,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     };
   }, [events.length, itemsPerPage, isHovered, modalOpen, filters, isMobile]);
 
-
   const handleArrowClick = (direction: "left" | "right") => {
     setCurrentIndex((prev) => {
       const step = 1;
@@ -213,10 +212,11 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
   // : [];
 
   const visibleEvents = isMobile
-  ? events
-  : events.length
-    ? Array.from({ length: Math.min(itemsPerPage, events.length) }, (_, i) =>
-        events[(currentIndex + i) % events.length]
+    ? events
+    : events.length
+    ? Array.from(
+        { length: Math.min(itemsPerPage, events.length) },
+        (_, i) => events[(currentIndex + i) % events.length]
       )
     : [];
 
@@ -417,6 +417,14 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       </Box>
 
       {/* events */}
+      {visibleEvents.length === 0 && (
+        <Box sx={{ textAlign: "center", mt: 4 }}>
+          <Typography variant="h6" color="text.secondary">
+            No upcoming popups match your filters. Try adjusting them!
+          </Typography>
+        </Box>
+      )}
+
       <Box
         ref={scrollRef}
         onMouseEnter={() => setIsHovered(true)}
