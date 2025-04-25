@@ -48,7 +48,8 @@ const ActiveEvents: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [tabIndex, setTabIndex] = useState(0);
-  const scrollRef = useRef<HTMLDivElement>(null);
+  const upcomingScrollRef = useRef<HTMLDivElement>(null);
+  const pastScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchUser();
@@ -97,10 +98,10 @@ const ActiveEvents: React.FC = () => {
     }
   };
 
-  const scroll = (direction: "left" | "right") => {
+  const scroll = (direction: "left" | "right", ref: React.RefObject<HTMLDivElement>) => {
     const scrollAmount = 320;
-    if (scrollRef.current) {
-      scrollRef.current.scrollBy({
+    if (ref.current) {
+      ref.current.scrollBy({
         left: direction === "left" ? -scrollAmount : scrollAmount,
         behavior: "smooth",
       });
@@ -157,10 +158,14 @@ const ActiveEvents: React.FC = () => {
     </Card>
   );
 
-  const renderPastEvents = () => (
+  const renderScrollableEvents = (
+    eventList: Event[],
+    scrollRef: React.RefObject<HTMLDivElement>,
+    label: string
+  ) => (
     <Box sx={{ position: "relative", mt: 2 }}>
       <IconButton
-        onClick={() => scroll("left")}
+        onClick={() => scroll("left", scrollRef)}
         sx={{
           position: "absolute",
           top: "35%",
@@ -174,7 +179,7 @@ const ActiveEvents: React.FC = () => {
         <ArrowBackIosIcon />
       </IconButton>
       <IconButton
-        onClick={() => scroll("right")}
+        onClick={() => scroll("right", scrollRef)}
         sx={{
           position: "absolute",
           top: "35%",
@@ -199,42 +204,17 @@ const ActiveEvents: React.FC = () => {
           "&::-webkit-scrollbar": { display: "none" },
         }}
       >
-        {pastEvents.map(renderEventCard)}
+        {eventList.length === 0 ? (
+          <Typography>No {label.toLowerCase()} events.</Typography>
+        ) : (
+          eventList.map(renderEventCard)
+        )}
       </Box>
     </Box>
   );
 
   return (
     <Box>
-      {/* Navbar */}
-      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
-        <Toolbar sx={{ justifyContent: "space-between", px: 2, py: 1 }}>
-          <Typography
-            component={Link}
-            to="/"
-            variant="h5"
-            fontWeight="bold"
-            sx={{ textDecoration: "none", color: "inherit" }}
-          >
-            PopOut
-          </Typography>
-          {user && (
-            <Stack direction="row" spacing={2} alignItems="center">
-              <IconButton component={Link} to="/userprofile">
-                <Avatar
-                  src={user.profile_picture}
-                  alt={user.name}
-                  sx={{ width: 40, height: 40 }}
-                />
-              </IconButton>
-              <Button variant="outlined" href="/auth/logout" color="error">
-                Logout
-              </Button>
-            </Stack>
-          )}
-        </Toolbar>
-      </AppBar>
-
       {/* Profile Info */}
       {user && (
         <Container maxWidth="md" sx={{ mt: 4 }}>
@@ -297,15 +277,9 @@ const ActiveEvents: React.FC = () => {
         {loading ? (
           <CircularProgress />
         ) : tabIndex === 0 ? (
-          events.length === 0 ? (
-            <Typography>No upcoming events.</Typography>
-          ) : (
-            <Stack spacing={3}>{events.map(renderEventCard)}</Stack>
-          )
-        ) : pastEvents.length === 0 ? (
-          <Typography>No past events.</Typography>
+          renderScrollableEvents(events, upcomingScrollRef, "Upcoming")
         ) : (
-          renderPastEvents()
+          renderScrollableEvents(pastEvents, pastScrollRef, "Past")
         )}
       </Container>
     </Box>
