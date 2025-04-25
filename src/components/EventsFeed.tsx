@@ -159,7 +159,12 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     setSelectedEvent(null);
   };
 
-  const visibleEvents = events.slice(currentIndex, currentIndex + itemsPerPage);
+  // const visibleEvents = events.slice(currentIndex, currentIndex + itemsPerPage);
+  const visibleEvents = events.length
+  ? Array.from({ length: Math.min(itemsPerPage, events.length) }, (_, i) =>
+      events[(currentIndex + i) % events.length]
+    )
+  : [];
 
   const categoryColors: { [key: string]: string } = {
     "Food & Drink": "#FB8C00",
