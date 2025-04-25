@@ -1,6 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 import {
   Container,
   Typography,
@@ -23,12 +22,13 @@ import {
   Grid,
   Alert,
   AlertTitle,
-  styled,
-} from "@mui/material";
-import { Autocomplete, useLoadScript } from "@react-google-maps/api";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+  styled
+} from '@mui/material';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Autocomplete, useLoadScript } from '@react-google-maps/api';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import {
   Upload as UploadIcon,
   Cancel as CancelIcon,
@@ -37,50 +37,33 @@ import {
   Info as InfoIcon,
   ChildCare as ChildCareIcon,
   FreeBreakfast as FreeBreakfastIcon,
-  Paid as PaidIcon,
-} from "@mui/icons-material";
+  Paid as PaidIcon
+} from '@mui/icons-material';
 
 const libraries: ("places")[] = ["places"];
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "12px",
-    "& fieldset": {
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '12px',
+    '& fieldset': {
       borderColor: theme.palette.grey[300],
     },
-    "&:hover fieldset": {
+    '&:hover fieldset': {
       borderColor: theme.palette.primary.main,
     },
   },
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
-  borderRadius: "12px",
-  textTransform: "none",
-  padding: "8px 16px",
+  borderRadius: '12px',
+  textTransform: 'none',
+  padding: '8px 16px',
   fontWeight: 600,
-  boxShadow: "none",
-  "&:hover": {
-    boxShadow: "none",
+  boxShadow: 'none',
+  '&:hover': {
+    boxShadow: 'none',
   },
 }));
-
-type EventFormData = {
-  title: string;
-  description: string;
-  startDate: string;
-  endDate: string;
-  venue_name: string;
-  location: string;
-  latitude: string;
-  longitude: string;
-  isFree: boolean;
-  isKidFriendly: boolean;
-  isSober: boolean;
-  categories: string[];
-  image_url: string;
-  image_publicId?: string;
-};
 
 const EditEvent = () => {
   const { id } = useParams();
@@ -91,34 +74,11 @@ const EditEvent = () => {
     libraries,
   });
 
-  const [form, setForm] = useState<EventFormData>({
-    title: "",
-    description: "",
-    startDate: "",
-    endDate: "",
-    venue_name: "",
-    location: "",
-    latitude: "",
-    longitude: "",
-    isFree: false,
-    isKidFriendly: false,
-    isSober: false,
-    categories: [],
-    image_url: "",
-    image_publicId: "",
-  });
+  const [form, setForm] = useState<any>(null);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
   const [uploading, setUploading] = useState(false);
-  const [uploadProgress, setUploadProgress] = useState(0);
-  const [modal, setModal] = useState<{
-    open: boolean;
-    title: string;
-    message: string;
-    success: boolean;
-    onConfirm?: () => void;
-  }>({
+  const [modal, setModal] = useState({
     open: false,
     title: "",
     message: "",
@@ -127,137 +87,88 @@ const EditEvent = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const loadData = async () => {
+    const fetchEvent = async () => {
       try {
-        setLoading(true);
         const [eventRes, categoriesRes] = await Promise.all([
-          axios.get(`/api/events/${id}`, { withCredentials: true }),
+          axios.get("/api/events", { withCredentials: true }),
           axios.get("/api/categories"),
         ]);
-        const event = eventRes.data;
-        console.log("Fetched event data:", event); // Debug log
-
-        // Simulate the event data for demonstration
-        const simulatedEvent = {
-          title: "Spring Art Festival",
-          description: "A celebration of local artists and their work.",
-          startDate: "2025-05-01T10:00:00Z",
-          endDate: "2025-05-01T18:00:00Z",
-          venue_name: "Downtown Park",
-          location: "123 Main St, Cityville",
-          latitude: 40.7128,
-          longitude: -74.0060,
-          isFree: true,
-          isKidFriendly: true,
-          isSober: false,
-          Categories: [{ name: "Art" }, { name: "Music" }],
-          image_url: "https://example.com/images/spring-art-festival.jpg",
-          image_publicId: "spring-art-festival-123",
-        };
-
+        const event = eventRes.data.find((e: any) => e.id === id);
+        if (!event) {
+          setModal({
+            open: true,
+            title: "Error",
+            message: "Event not found",
+            success: false,
+          });
+          return;
+        }
         setForm({
-          title: simulatedEvent.title || "",
-          description: simulatedEvent.description || "",
-          startDate: simulatedEvent.startDate ? new Date(simulatedEvent.startDate).toISOString() : "",
-          endDate: simulatedEvent.endDate ? new Date(simulatedEvent.endDate).toISOString() : "",
-          venue_name: simulatedEvent.venue_name || "",
-          location: simulatedEvent.location || "",
-          latitude: simulatedEvent.latitude ? simulatedEvent.latitude.toString() : "",
-          longitude: simulatedEvent.longitude ? simulatedEvent.longitude.toString() : "",
-          isFree: !!simulatedEvent.isFree,
-          isKidFriendly: !!simulatedEvent.isKidFriendly,
-          isSober: !!simulatedEvent.isSober,
-          categories: Array.isArray(simulatedEvent.Categories)
-            ? simulatedEvent.Categories.map((c: any) => c.name || "")
-            : [],
-          image_url: simulatedEvent.image_url || "",
-          image_publicId: simulatedEvent.image_publicId || "",
+          ...event,
+          location: event.location || "",
+          categories: event.categories?.map((c: any) => c.name) || [],
+          image_publicId: event.image_publicId || "",
         });
-
-        const touchedFields: { [key: string]: boolean } = {
-          title: false,
-          description: false,
-          startDate: false,
-          endDate: false,
-          venue_name: false,
-          location: false,
-        };
-        setTouched(touchedFields);
-
-        setAvailableCategories(
-          Array.isArray(categoriesRes.data)
-            ? categoriesRes.data.map((c: any) => c.name)
-            : ["Art", "Food & Drink", "Hobbies", "Music", "Sports & Fitness"]
-        );
+        setAvailableCategories(categoriesRes.data.map((cat: any) => cat.name));
       } catch (err) {
-        console.error("Load error:", err);
+        console.error("Failed to fetch event or categories:", err);
         setModal({
           open: true,
           title: "Error",
-          message: "Failed to load event data. Please try again.",
+          message: "Failed to load event data",
           success: false,
         });
       } finally {
         setLoading(false);
       }
     };
-    loadData();
+    fetchEvent();
   }, [id]);
 
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
     if (!form.title) newErrors.title = "Title is required";
     if (!form.description) newErrors.description = "Description is required";
-    if (form.description && form.description.length > 100) {
-      newErrors.description = "Description must be 100 characters or less";
-    }
     if (!form.startDate) newErrors.startDate = "Start date is required";
     if (!form.endDate) newErrors.endDate = "End date is required";
     if (!form.venue_name) newErrors.venue_name = "Venue is required";
     if (!form.location) newErrors.location = "Location is required";
-    if (
-      form.startDate &&
-      form.endDate &&
-      new Date(form.endDate) <= new Date(form.startDate)
-    ) {
+    if (form.startDate && form.endDate && new Date(form.endDate) <= new Date(form.startDate)) {
       newErrors.endDate = "End date must be after start date";
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleBlur = (field: string) => {
-    setTouched((prev) => ({ ...prev, [field]: true }));
-    validate();
-  };
-
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
+    setForm((prev: any) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
   };
 
   const handleCategoryToggle = (category: string) => {
-    setForm((prev) => {
-      const has = prev.categories.includes(category);
-      const cats = has
-        ? prev.categories.filter((c) => c !== category)
-        : [...prev.categories, category];
-      return { ...prev, categories: cats };
+    setForm((prev: any) => {
+      const alreadySelected = prev.categories.includes(category);
+      return {
+        ...prev,
+        categories: alreadySelected
+          ? prev.categories.filter((c: string) => c !== category)
+          : [...prev.categories, category],
+      };
     });
   };
 
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current?.getPlace();
-    const loc = place?.geometry?.location;
-    if (place && loc) {
-      setForm((prev) => ({
+    const location = place?.geometry?.location;
+    if (place && location) {
+      setForm((prev: any) => ({
         ...prev,
         location: place.formatted_address || "",
-        latitude: loc.lat().toString(),
-        longitude: loc.lng().toString(),
+        latitude: location.lat().toString(),
+        longitude: location.lng().toString(),
       }));
     }
   };
@@ -265,57 +176,31 @@ const EditEvent = () => {
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    const valid = ["image/jpeg", "image/png", "image/gif"];
-    if (!valid.includes(file.type)) {
-      setModal({
-        open: true,
-        title: "Invalid File",
-        message: "Please upload a JPEG, PNG, or GIF image.",
-        success: false,
-      });
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      setModal({
-        open: true,
-        title: "File Too Large",
-        message: "Maximum file size is 5MB.",
-        success: false,
-      });
-      return;
-    }
+
     const formData = new FormData();
     formData.append("imageUpload", file);
+
     try {
-      setUploading(true);
-      setUploadProgress(0);
-      const url = form.image_publicId
+      const endpoint = form.image_publicId
         ? `/api/images/${form.image_publicId}`
         : `/api/images/event/${id}`;
-      const res = await axios.post(url, formData, {
+      const response = await axios.post(endpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
-        onUploadProgress: (ev) => {
-          if (ev.total)
-            setUploadProgress(Math.round((ev.loaded * 100) / ev.total));
-        },
       });
-      const result = Array.isArray(res.data) ? res.data[0] : res.data;
-      setForm((prev) => ({
+      const uploadResult = Array.isArray(response.data) ? response.data[0] : response.data;
+      setForm((prev: any) => ({
         ...prev,
-        image_url: result.secure_url || result.url,
-        image_publicId: result.public_id || prev.image_publicId,
+        image_url: uploadResult.secure_url || uploadResult.url,
+        image_publicId: uploadResult.public_id || prev.image_publicId,
       }));
     } catch (err) {
-      console.error("Upload error:", err);
+      console.error("Error uploading image:", err);
       setModal({
         open: true,
         title: "Upload Failed",
         message: "There was an error uploading your image. Please try again.",
-        success: false,
+        success: false
       });
-    } finally {
-      setUploading(false);
-      setUploadProgress(0);
     }
   };
 
@@ -325,25 +210,29 @@ const EditEvent = () => {
       await axios.delete("/api/images", {
         data: { publicIds: [form.image_publicId] },
       });
-      setForm((prev) => ({ ...prev, image_url: "", image_publicId: "" }));
+      setForm((prev: any) => ({
+        ...prev,
+        image_url: "",
+        image_publicId: "",
+      }));
     } catch (err) {
-      console.error("Delete error:", err);
+      console.error("Error deleting image:", err);
       setModal({
         open: true,
         title: "Delete Failed",
         message: "Failed to delete image. Please try again.",
-        success: false,
+        success: false
       });
     }
   };
 
   const handleSubmit = async () => {
     if (!validate()) {
-      setModal({
-        open: true,
-        title: "Form Errors",
-        message: "Please fix the errors in the form before submitting.",
-        success: false,
+      setModal({ 
+        open: true, 
+        title: "Form Errors", 
+        message: "Please fix the errors in the form before submitting.", 
+        success: false 
       });
       return;
     }
@@ -353,212 +242,165 @@ const EditEvent = () => {
         latitude: parseFloat(form.latitude),
         longitude: parseFloat(form.longitude),
       };
-      await axios.put(`/api/events/${id}`, payload, {
-        withCredentials: true,
-      });
-      setModal({
-        open: true,
-        title: "Success!",
-        message: "Your popup has been updated successfully.",
-        success: true,
-      });
+      await axios.put(`/api/events/${id}`, payload, { withCredentials: true });
+      setModal({ open: true, title: "Success", message: "Event updated!", success: true });
     } catch (err) {
-      console.error("Submit error:", err);
-      setModal({
-        open: true,
-        title: "Error",
-        message: "There was an error updating your popup. Please try again.",
-        success: false,
-      });
+      console.error("Error updating event:", err);
+      setModal({ open: true, title: "Error", message: "Error updating event.", success: false });
     }
   };
 
-  const handleCancel = () => navigate(-1);
+  const handleCancel = () => {
+    navigate(-1);
+  };
+
   const handleModalClose = () => {
-    setModal((prev) => ({ ...prev, open: false }));
+    setModal((prev: any) => ({ ...prev, open: false }));
     if (modal.success) navigate("/active-events");
   };
 
-  if (loading)
-    return (
-      <Container
-        maxWidth="md"
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "80vh",
-        }}
-      >
-        <Stack alignItems="center" spacing={2}>
-          <CircularProgress size={60} />
-          <Typography variant="h6">Loading popup data...</Typography>
-        </Stack>
-      </Container>
-    );
-
-  if (loadError || !isLoaded)
+  if (loadError) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="error">
+        <Alert severity="error" sx={{ mb: 3 }}>
           <AlertTitle>Google Maps Error</AlertTitle>
           Failed to load Google Maps functionality. Please refresh the page or try again later.
         </Alert>
       </Container>
     );
+  }
+
+  if (!isLoaded || loading || !form) {
+    return (
+      <Container maxWidth="md" sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '80vh' 
+      }}>
+        <Stack alignItems="center" spacing={2}>
+          <CircularProgress size={60} />
+          <Typography variant="h6">Loading Event Editor...</Typography>
+        </Stack>
+      </Container>
+    );
+  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
         <Paper elevation={0} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4 }}>
           <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
-            Edit Popup
+            Edit Event
           </Typography>
+          
           <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
             Fields marked with * are required. All changes are subject to review.
           </Alert>
+
           <Stack spacing={4}>
             {/* Image Upload Section */}
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Popup Image
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                Event Image
               </Typography>
               <Typography variant="body2" color="text.secondary" gutterBottom>
-                Upload a high-quality image that represents your popup (JPEG, PNG, GIF, max 5MB)
+                Upload a high-quality image that represents your event (JPEG, PNG, GIF, max 5MB)
               </Typography>
-              <StyledButton
-                variant="contained"
-                component="label"
-                startIcon={<UploadIcon />}
-                disabled={uploading}
-                sx={{
-                  backgroundColor: "primary.main",
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "primary.dark",
-                  },
-                  "&:disabled": {
-                    backgroundColor: "grey.300",
-                  },
-                }}
-              >
-                {form.image_url ? "Replace Image" : "Upload Image"}
-                <input
-                  type="file"
-                  hidden
-                  accept="image/*"
-                  onChange={handleImageUpload}
-                />
-              </StyledButton>
-              {uploading && (
-                <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2" gutterBottom>
-                    Uploading: {uploadProgress}%
-                  </Typography>
-                  <Box
-                    sx={{
-                      width: "100%",
-                      height: 8,
-                      backgroundColor: "grey.200",
-                      borderRadius: 4,
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: `${uploadProgress}%`,
-                        height: "100%",
-                        backgroundColor: "primary.main",
-                        borderRadius: 4,
-                        transition: "width 0.3s ease",
+              
+              <Box>
+                <StyledButton
+                  variant="contained"
+                  component="label"
+                  startIcon={<UploadIcon />}
+                  disabled={uploading}
+                  sx={{
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    '&:disabled': {
+                      backgroundColor: 'grey.300',
+                    }
+                  }}
+                >
+                  {form.image_url ? "Replace Image" : "Upload Image"}
+                  <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+                </StyledButton>
+                
+                {form.image_url && (
+                  <Box sx={{ position: 'relative', mt: 2 }}>
+                    <img
+                      src={form.image_url}
+                      alt="Event preview"
+                      style={{
+                        width: '100%',
+                        maxHeight: '400px',
+                        objectFit: 'cover',
+                        borderRadius: '12px',
                       }}
                     />
+                    <IconButton
+                      onClick={() => {
+                        setModal({
+                          open: true,
+                          title: "Confirm Delete",
+                          message: "Are you sure you want to delete this image?",
+                          success: false,
+                          onConfirm: handleDeleteImage,
+                        });
+                      }}
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                        }
+                      }}
+                    >
+                      <CancelIcon />
+                    </IconButton>
                   </Box>
-                </Box>
-              )}
-              {form.image_url && (
-                <Box sx={{ position: "relative", mt: 2 }}>
-                  <img
-                    src={form.image_url}
-                    alt="Popup preview"
-                    style={{
-                      width: "100%",
-                      maxHeight: 400,
-                      objectFit: "cover",
-                      borderRadius: 12,
-                    }}
-                  />
-                  <IconButton
-                    onClick={() => {
-                      setModal({
-                        open: true,
-                        title: "Confirm Delete",
-                        message: "Are you sure you want to delete this image?",
-                        success: false,
-                        onConfirm: handleDeleteImage,
-                      });
-                    }}
-                    sx={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      backgroundColor: "rgba(0,0,0,0.5)",
-                      color: "white",
-                      "&:hover": {
-                        backgroundColor: "rgba(0,0,0,0.7)",
-                      },
-                    }}
-                  >
-                    <CancelIcon />
-                  </IconButton>
-                </Box>
-              )}
+                )}
+              </Box>
             </Box>
 
-            {/* Basic Information Section */}
+            {/* Basic Info Section */}
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                 Basic Information
               </Typography>
+              
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <StyledTextField
                     name="title"
-                    label="Popup Title *"
+                    label="Event Title *"
                     value={form.title}
                     onChange={handleChange}
-                    onBlur={() => handleBlur("title")}
-                    error={touched.title && !!errors.title}
-                    helperText={touched.title && errors.title}
+                    error={!!errors.title}
+                    helperText={errors.title}
                     fullWidth
                     variant="outlined"
-                    InputProps={{
-                      endAdornment: touched.title && !errors.title && (
-                        <InputAdornment position="end">
-                          <CheckCircleIcon color="success" />
-                        </InputAdornment>
-                      ),
-                    }}
                   />
                 </Grid>
+                
                 <Grid item xs={12}>
                   <StyledTextField
                     name="description"
                     label="Description *"
                     value={form.description}
                     onChange={handleChange}
-                    onBlur={() => handleBlur("description")}
-                    error={touched.description && !!errors.description}
-                    helperText={
-                      touched.description &&
-                      (errors.description || `${form.description.length}/100 characters`)
-                    }
+                    error={!!errors.description}
+                    helperText={errors.description}
                     fullWidth
                     multiline
                     rows={4}
                     variant="outlined"
-                    inputProps={{
-                      maxLength: 100,
-                    }}
                   />
                 </Grid>
               </Grid>
@@ -566,51 +408,49 @@ const EditEvent = () => {
 
             {/* Date & Time Section */}
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                 Date & Time
               </Typography>
+              
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <DateTimePicker
                     label="Start Date & Time *"
                     value={form.startDate ? new Date(form.startDate) : null}
-                    onChange={(newVal) =>
-                      setForm((prev) => ({
+                    onChange={(newValue) =>
+                      setForm((prev: any) => ({
                         ...prev,
-                        startDate: newVal ? newVal.toISOString() : "",
+                        startDate: newValue ? newValue.toISOString() : "",
                       }))
                     }
-                    onClose={() => handleBlur("startDate")}
                     renderInput={(params) => (
                       <StyledTextField
                         {...params}
                         fullWidth
-                        error={touched.startDate && !!errors.startDate}
-                        helperText={touched.startDate && errors.startDate}
+                        error={!!errors.startDate}
+                        helperText={errors.startDate}
                       />
                     )}
                   />
                 </Grid>
+                
                 <Grid item xs={12} md={6}>
                   <DateTimePicker
                     label="End Date & Time *"
                     value={form.endDate ? new Date(form.endDate) : null}
-                    onChange={(newVal) =>
-                      setForm((prev) => ({
+                    onChange={(newValue) =>
+                      setForm((prev: any) => ({
                         ...prev,
-                        endDate: newVal ? newVal.toISOString() : "",
+                        endDate: newValue ? newValue.toISOString() : "",
                       }))
                     }
-                    onClose={() => handleBlur("endDate")}
-                    minDateTime={
-                      form.startDate ? new Date(form.startDate) : undefined
-                    }
+                    minDateTime={form.startDate ? new Date(form.startDate) : undefined}
                     renderInput={(params) => (
                       <StyledTextField
                         {...params}
                         fullWidth
-                        error={touched.endDate && !!errors.endDate}
-                        helperText={touched.endDate && errors.endDate}
+                        error={!!errors.endDate}
+                        helperText={errors.endDate}
                       />
                     )}
                   />
@@ -620,9 +460,10 @@ const EditEvent = () => {
 
             {/* Location Section */}
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                 Location
               </Typography>
+              
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <StyledTextField
@@ -630,39 +471,35 @@ const EditEvent = () => {
                     label="Venue Name *"
                     value={form.venue_name}
                     onChange={handleChange}
-                    onBlur={() => handleBlur("venue_name")}
-                    error={touched.venue_name && !!errors.venue_name}
-                    helperText={touched.venue_name && errors.venue_name}
+                    error={!!errors.venue_name}
+                    helperText={errors.venue_name}
                     fullWidth
+                    variant="outlined"
                   />
                 </Grid>
+                
                 <Grid item xs={12}>
-                  <Autocomplete
-                    onLoad={(a) => (autocompleteRef.current = a)}
+                  <Autocomplete 
+                    onLoad={(a) => (autocompleteRef.current = a)} 
                     onPlaceChanged={handlePlaceChanged}
-                    fields={["geometry", "formatted_address"]}
                   >
                     <StyledTextField
+                      label="Location *"
                       name="location"
-                      label="Address *"
                       value={form.location}
                       onChange={handleChange}
-                      onBlur={() => handleBlur("location")}
-                      error={touched.location && !!errors.location}
-                      helperText={
-                        touched.location
-                          ? errors.location || "Start typing to search for a location"
-                          : ""
-                      }
+                      error={!!errors.location}
+                      helperText={errors.location || "Type to search..."}
                       fullWidth
+                      variant="outlined"
                       InputProps={{
                         endAdornment: (
                           <InputAdornment position="end">
                             <IconButton edge="end">
-                              <img
-                                src="https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png"
-                                alt="Powered by Google"
-                                style={{ height: 16 }}
+                              <img 
+                                src="https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png" 
+                                alt="Powered by Google" 
+                                style={{ height: '16px' }} 
                               />
                             </IconButton>
                           </InputAdornment>
@@ -674,22 +511,15 @@ const EditEvent = () => {
               </Grid>
             </Box>
 
-            {/* Features Section */}
+            {/* Event Features */}
             <Box>
-              <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                Popup Features
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                Event Features
               </Typography>
+              
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={4}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      border: "1px solid",
-                      borderColor: form.isFree ? "primary.main" : "grey.200",
-                    }}
-                  >
+                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isFree ? 'primary.main' : 'grey.200' }}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -702,28 +532,17 @@ const EditEvent = () => {
                       }
                       label={
                         <Box>
-                          <Typography variant="body1" fontWeight={600}>
-                            Free Popup
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            No admission fee
-                          </Typography>
+                          <Typography variant="body1" fontWeight={600}>Free Event</Typography>
+                          <Typography variant="body2" color="text.secondary">No admission fee</Typography>
                         </Box>
                       }
-                      sx={{ width: "100%" }}
+                      sx={{ width: '100%' }}
                     />
                   </Paper>
                 </Grid>
+                
                 <Grid item xs={12} sm={4}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      border: "1px solid",
-                      borderColor: form.isKidFriendly ? "primary.main" : "grey.200",
-                    }}
-                  >
+                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isKidFriendly ? 'primary.main' : 'grey.200' }}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -736,28 +555,17 @@ const EditEvent = () => {
                       }
                       label={
                         <Box>
-                          <Typography variant="body1" fontWeight={600}>
-                            Kid-Friendly
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            Suitable for children
-                          </Typography>
+                          <Typography variant="body1" fontWeight={600}>Kid-Friendly</Typography>
+                          <Typography variant="body2" color="text.secondary">Suitable for children</Typography>
                         </Box>
                       }
-                      sx={{ width: "100%" }}
+                      sx={{ width: '100%' }}
                     />
                   </Paper>
                 </Grid>
+                
                 <Grid item xs={12} sm={4}>
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 2,
-                      borderRadius: 2,
-                      border: "1px solid",
-                      borderColor: form.isSober ? "primary.main" : "grey.200",
-                    }}
-                  >
+                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isSober ? 'primary.main' : 'grey.200' }}>
                     <FormControlLabel
                       control={
                         <Checkbox
@@ -768,15 +576,11 @@ const EditEvent = () => {
                       }
                       label={
                         <Box>
-                          <Typography variant="body1" fontWeight={600}>
-                            Sober Popup
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            No alcohol served
-                          </Typography>
+                          <Typography variant="body1" fontWeight={600}>Sober Event</Typography>
+                          <Typography variant="body2" color="text.secondary">No alcohol served</Typography>
                         </Box>
                       }
-                      sx={{ width: "100%" }}
+                      sx={{ width: '100%' }}
                     />
                   </Paper>
                 </Grid>
@@ -786,29 +590,30 @@ const EditEvent = () => {
             {/* Categories Section */}
             {availableCategories.length > 0 && (
               <Box>
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                   Categories
                 </Typography>
                 <Typography variant="body2" color="text.secondary" gutterBottom>
-                  Select up to 3 categories
+                  Select all that apply
                 </Typography>
-                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                  {availableCategories.map((cat) => (
+                
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {availableCategories.map((category) => (
                     <Chip
-                      key={cat}
-                      label={cat}
+                      key={category}
+                      label={category}
                       clickable
-                      variant={form.categories.includes(cat) ? "filled" : "outlined"}
-                      color={form.categories.includes(cat) ? "primary" : "default"}
-                      onClick={() => handleCategoryToggle(cat)}
+                      variant={form.categories.includes(category) ? 'filled' : 'outlined'}
+                      color={form.categories.includes(category) ? 'primary' : 'default'}
+                      onClick={() => handleCategoryToggle(category)}
                       sx={{
                         borderRadius: 1,
                         px: 1,
                         py: 1.5,
-                        fontSize: "0.875rem",
-                        "& .MuiChip-label": {
+                        fontSize: '0.875rem',
+                        '& .MuiChip-label': {
                           px: 1.5,
-                        },
+                        }
                       }}
                     />
                   ))}
@@ -817,57 +622,61 @@ const EditEvent = () => {
             )}
 
             {/* Action Buttons */}
-            <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2, pt: 2 }}>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pt: 2 }}>
               <StyledButton
                 variant="outlined"
                 onClick={handleCancel}
                 startIcon={<CancelIcon />}
                 sx={{
-                  borderColor: "grey.300",
-                  color: "text.primary",
-                  "&:hover": {
-                    borderColor: "grey.400",
-                  },
+                  borderColor: 'grey.300',
+                  color: 'text.primary',
+                  '&:hover': {
+                    borderColor: 'grey.400',
+                  }
                 }}
               >
                 Cancel
               </StyledButton>
+              
               <StyledButton
                 variant="contained"
                 onClick={handleSubmit}
                 disabled={uploading}
                 startIcon={<CheckCircleIcon />}
                 sx={{
-                  backgroundColor: "primary.main",
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: "primary.dark",
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
                   },
-                  "&:disabled": {
-                    backgroundColor: "grey.300",
-                  },
+                  '&:disabled': {
+                    backgroundColor: 'grey.300',
+                  }
                 }}
               >
-                {uploading ? "Updating..." : "Update Popup"}
+                Update Event
               </StyledButton>
             </Box>
           </Stack>
         </Paper>
 
         {/* Success/Error Modal */}
-        <Dialog
-          open={modal.open}
+        <Dialog 
+          open={modal.open} 
           onClose={handleModalClose}
-          PaperProps={{ sx: { borderRadius: 3, minWidth: 400 } }}
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              minWidth: '400px'
+            }
+          }}
         >
-          <DialogTitle
-            sx={{
-              display: "flex",
-              alignItems: "center",
-              gap: 1.5,
-              color: modal.success ? "success.main" : "error.main",
-            }}
-          >
+          <DialogTitle sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1.5,
+            color: modal.success ? 'success.main' : 'error.main'
+          }}>
             {modal.success ? (
               <CheckCircleIcon color="success" fontSize="large" />
             ) : (
@@ -875,9 +684,13 @@ const EditEvent = () => {
             )}
             {modal.title}
           </DialogTitle>
+          
           <DialogContent>
-            <DialogContentText>{modal.message}</DialogContentText>
+            <DialogContentText>
+              {modal.message}
+            </DialogContentText>
           </DialogContent>
+          
           <DialogActions sx={{ p: 2 }}>
             {modal.onConfirm ? (
               <>
@@ -885,8 +698,8 @@ const EditEvent = () => {
                   variant="outlined"
                   onClick={handleModalClose}
                   sx={{
-                    borderColor: "grey.300",
-                    color: "text.primary",
+                    borderColor: 'grey.300',
+                    color: 'text.primary',
                   }}
                 >
                   Cancel
@@ -898,10 +711,10 @@ const EditEvent = () => {
                     handleModalClose();
                   }}
                   sx={{
-                    backgroundColor: "error.main",
-                    color: "white",
-                    "&:hover": {
-                      backgroundColor: "error.dark",
+                    backgroundColor: 'error.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'error.dark',
                     },
                   }}
                 >
@@ -914,14 +727,14 @@ const EditEvent = () => {
                 variant="contained"
                 onClick={handleModalClose}
                 sx={{
-                  backgroundColor: modal.success ? "success.main" : "error.main",
-                  color: "white",
-                  "&:hover": {
-                    backgroundColor: modal.success ? "success.dark" : "error.dark",
+                  backgroundColor: modal.success ? 'success.main' : 'error.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: modal.success ? 'success.dark' : 'error.dark',
                   },
                 }}
               >
-                {modal.success ? "View Popups" : "Got It"}
+                {modal.success ? 'View Events' : 'Got It'}
               </StyledButton>
             )}
           </DialogActions>
