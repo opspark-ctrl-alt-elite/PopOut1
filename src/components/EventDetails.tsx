@@ -98,7 +98,7 @@ const EventDetails: React.FC<Props> = ({
 
   const handleToggleBookmark = async () => {
     if (!event || !currentUserId) {
-      console.warn("no event/id");
+      console.warn("no popup/id");
       return;
     }
 

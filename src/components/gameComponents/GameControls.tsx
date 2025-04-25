@@ -1,9 +1,10 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 
 import {
   Button,
   Container,
   Stack,
+  Typography
 } from "@mui/material";
 
 import {
@@ -26,6 +27,11 @@ type Props = {
 };
 
 const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
+
+  //TODO:
+  // create states to handle button arrow colors
+  // const [upColor, setUpColor] = useState("primary");
+  // sx={{ color: "red" }}
 
   // register event listeners for keyboard controls
   useEffect(() => {
@@ -200,20 +206,40 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
 
   return (
     <Container>
-      <Stack spacing={2} sx={{ alignItems: "center" }}>
-        <Button variant="contained" onMouseDown={pressUp} onTouchStart={pressUp} onMouseUp={unPressUp} onMouseOut={unPressUp} onTouchEnd={unPressUp} onTouchCancel={unPressUp}>
-          <ArrowDropUp />
-        </Button>
+      <Stack sx={{ alignItems: "center" }}>
+        <Stack sx={{ alignItems: "center" }}>
+          <Typography>
+            W
+          </Typography>
+          <Button variant="contained" onMouseDown={pressUp} onTouchStart={pressUp} onMouseUp={unPressUp} onMouseOut={unPressUp} onTouchEnd={unPressUp} onTouchCancel={unPressUp}>
+            <ArrowDropUp/>
+          </Button>
+        </Stack>
         <Stack direction="row" spacing={2} sx={{ justifyContent: "center" }}>
-          <Button variant="contained" onMouseDown={pressLeft} onTouchStart={pressLeft} onMouseUp={unPressLeft} onMouseOut={unPressLeft} onTouchEnd={unPressLeft} onTouchCancel={unPressLeft}>
-            <ArrowLeft />
-          </Button>
-          <Button variant="contained" onMouseDown={pressDown} onTouchStart={pressDown} onMouseUp={unPressDown} onMouseOut={unPressDown} onTouchEnd={unPressDown} onTouchCancel={unPressDown}>
-            <ArrowDropDown />
-          </Button>
-          <Button variant="contained" onMouseDown={pressRight} onTouchStart={pressRight} onMouseUp={unPressRight} onMouseOut={unPressRight} onTouchEnd={unPressRight} onTouchCancel={unPressRight}>
-            <ArrowRight />
-          </Button>
+          <Stack sx={{ alignItems: "center" }}>
+            <Typography>
+              A
+            </Typography>
+            <Button variant="contained" onMouseDown={pressLeft} onTouchStart={pressLeft} onMouseUp={unPressLeft} onMouseOut={unPressLeft} onTouchEnd={unPressLeft} onTouchCancel={unPressLeft}>
+              <ArrowLeft />
+            </Button>
+          </Stack>
+          <Stack sx={{ alignItems: "center" }}>
+            <Typography>
+              S
+            </Typography>
+            <Button variant="contained" onMouseDown={pressDown} onTouchStart={pressDown} onMouseUp={unPressDown} onMouseOut={unPressDown} onTouchEnd={unPressDown} onTouchCancel={unPressDown}>
+              <ArrowDropDown />
+            </Button>
+          </Stack>
+          <Stack sx={{ alignItems: "center" }}>
+            <Typography>
+              D
+            </Typography>
+            <Button variant="contained" onMouseDown={pressRight} onTouchStart={pressRight} onMouseUp={unPressRight} onMouseOut={unPressRight} onTouchEnd={unPressRight} onTouchCancel={unPressRight}>
+              <ArrowRight />
+            </Button>
+          </Stack>
         </Stack>
       </Stack>
     </Container>
