@@ -185,8 +185,9 @@ const SearchBar: React.FC = () => {
                     <ListItemText
                       primary="Vendors"
                       primaryTypographyProps={{
-                        fontWeight: "bold",
-                        fontSize: 12,
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 16,
+                        letterSpacing: 0.5,
                         px: 2,
                         pt: 1,
                       }}
@@ -218,8 +219,9 @@ const SearchBar: React.FC = () => {
                     <ListItemText
                       primary="Events"
                       primaryTypographyProps={{
-                        fontWeight: "bold",
-                        fontSize: 12,
+                        fontFamily: "'Bebas Neue', sans-serif",
+                        fontSize: 16,
+                        letterSpacing: 0.5,
                         px: 2,
                         pt: 1,
                       }}
