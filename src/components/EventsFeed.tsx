@@ -124,7 +124,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       filters.isKidFriendly ||
       filters.isSober;
 
-    if (modalOpen || isHovered || hasFilters) return;
+    if (isMobile || modalOpen || isHovered || hasFilters) return;
 
     const interval = setInterval(() => {
       setCurrentIndex((prev) =>
@@ -133,7 +133,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     }, 10000);
 
     return () => clearInterval(interval);
-  }, [events.length, itemsPerPage, isHovered, modalOpen, filters]);
+  }, [events.length, itemsPerPage, isHovered, modalOpen, filters, isMobile]);
 
   const handleArrowClick = (direction: "left" | "right") => {
     setCurrentIndex((prev) => {
@@ -363,8 +363,8 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           <Fade key={`${event.id}-${index}`} in={true} timeout={600}>
             <Card
               sx={{
-                minWidth: 300,
-                maxWidth: 300,
+                minWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
+                maxWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
                 flex: "0 0 auto",
                 boxShadow: 3,
               }}
