@@ -104,7 +104,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       setEvents(upcomingEvents);
       setCurrentIndex(0);
     } catch (err) {
-      console.error("Error fetching events:", err);
+      console.error("Error fetching popups:", err);
       setEvents([]);
     }
   }, [filters]);
@@ -379,9 +379,12 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                 maxWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
                 flex: "0 0 auto",
                 boxShadow: 3,
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
               }}
             >
-              <CardContent>
+              <CardContent sx={{ flexGrow: 1 }}>
                 {event.image_url && (
                   <Box mb={2}>
                     <img
@@ -419,7 +422,19 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                 <Typography variant="body2">
                   {formatDate(event.startDate, event.endDate)}
                 </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    mt: 1,
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: 3,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'pre-line',
+                    wordBreak: 'break-word'
+                  }}
+                >
                   {event.description}
                 </Typography>
 
@@ -483,14 +498,10 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                     mt: 2,
                     borderRadius: "999px",
                     textTransform: "none",
-                    // fontFamily: `'Barlow Semi Condensed', sans-serif`,
-                    // fontFamily: `'IBM Plex Sans', sans-serif`,
-                    // fontFamily: `'Work Sans', sans-serif`,
                     fontFamily: `'DM Sans', sans-serif`,
                     boxShadow: 1,
                     backgroundColor: "#212121",
                     color: "#fff",
-
                     "&:hover": { backgroundColor: "#333" },
                   }}
                 >
@@ -504,7 +515,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
       <EventDetails
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleCloseModal}
         event={selectedEvent}
         currentUserId={user?.id}
       />

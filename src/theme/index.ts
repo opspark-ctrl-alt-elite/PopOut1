@@ -23,6 +23,26 @@ let theme = createTheme({
     h6: {
       fontFamily: `'Bebas Neue', sans-serif`,
     },
+
+    // ellipsis
+    bodyEllipsis: {
+      fontFamily: `'Inter', sans-serif`,
+      display: '-webkit-box',
+      WebkitBoxOrient: 'vertical',
+      WebkitLineClamp: 3,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'normal',
+    },
+    captionEllipsis: {
+      fontFamily: `'Inter', sans-serif`,
+      display: '-webkit-box',
+      WebkitBoxOrient: 'vertical',
+      WebkitLineClamp: 2,
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      whiteSpace: 'normal',
+    }
   },
   navItem: {
     fontFamily: `'Inter', sans-serif`,
@@ -34,9 +54,6 @@ let theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          // fontFamily: `'IBM Plex Sans', sans-serif`,
-          // fontFamily: `'Work Sans', sans-serif`,
-          // fontFamily: `'Barlow Semi Condensed', sans-serif`,
           fontFamily: `'DM Sans', sans-serif`,
           letterSpacing: "2px",
           textTransform: "none",
@@ -64,8 +81,82 @@ let theme = createTheme({
         },
       },
     },
+    MuiTextField: {
+      styleOverrides: {
+        root: {
+          '& .MuiInputBase-multiline': {
+            '& textarea': {
+              display: '-webkit-box',
+              WebkitBoxOrient: 'vertical',
+              WebkitLineClamp: 4,
+              overflow: 'hidden',
+              textOverflow: 'ellipsis',
+              whiteSpace: 'normal',
+              maxHeight: 'calc(4 * 1.5em)',
+            },
+            '&.Mui-focused textarea': {
+              WebkitLineClamp: 'unset',
+              overflow: 'auto',
+            }
+          }
+        }
+      }
+    },
+    MuiTypography: {
+      variants: [
+        {
+          props: { variant: 'bodyEllipsis' },
+          style: {
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 3,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'normal',
+          }
+        },
+        {
+          props: { variant: 'captionEllipsis' },
+          style: {
+            display: '-webkit-box',
+            WebkitBoxOrient: 'vertical',
+            WebkitLineClamp: 2,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'normal',
+          }
+        }
+      ]
+    }
   },
 });
+
+// typeScript module augmentations
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    bodyEllipsis: true;
+    captionEllipsis: true;
+  }
+}
+
+declare module '@mui/material/styles' {
+  interface Theme {
+    navItem: {
+      fontFamily: string;
+      fontSize: string;
+      fontWeight: number;
+      color: string;
+    };
+  }
+  interface ThemeOptions {
+    navItem?: {
+      fontFamily?: string;
+      fontSize?: string;
+      fontWeight?: number;
+      color?: string;
+    };
+  }
+}
 
 theme = responsiveFontSizes(theme);
 

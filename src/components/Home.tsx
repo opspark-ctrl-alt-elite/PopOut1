@@ -121,7 +121,7 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
             {user && !user.is_vendor && (
               <Grid item xs={12} sm={6} textAlign="center">
                 <Typography variant="h6" gutterBottom>
-                  Want to host events?
+                  Want to host popups?
                 </Typography>
                 <Button
                   component={Link}
