@@ -80,6 +80,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const itemsPerPage = isMobile ? 2 : 3;
+  const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   const fetchCategories = async () => {
     const res = await axios.get("/api/categories");
@@ -117,6 +118,34 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     fetchEvents();
   }, [fetchEvents]);
 
+  // useEffect(() => {
+  //   const hasFilters =
+  //     filters.category !== "" ||
+  //     filters.isFree ||
+  //     filters.isKidFriendly ||
+  //     filters.isSober;
+
+  //   if (isMobile || modalOpen || isHovered || hasFilters) return;
+
+  //   const interval = setInterval(() => {
+  //     setCurrentIndex((prev) =>
+  //       events.length ? (prev + itemsPerPage) % events.length : 0
+  //     );
+  //   }, 10000);
+
+  //   return () => clearInterval(interval);
+  // }, [events.length, itemsPerPage, isHovered, modalOpen, filters, isMobile]);
+
+  // // const handleArrowClick = (direction: "left" | "right") => {
+  // //   setCurrentIndex((prev) => {
+  // //     const newIndex =
+  // //       direction === "left"
+  // //         ? (prev - itemsPerPage + events.length) % events.length
+  // //         : (prev + itemsPerPage) % events.length;
+  // //     return newIndex;
+  // //   });
+  // // };
+
   useEffect(() => {
     const hasFilters =
       filters.category !== "" ||
@@ -124,26 +153,31 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       filters.isKidFriendly ||
       filters.isSober;
 
-    if (isMobile || modalOpen || isHovered || hasFilters) return;
+    if (isMobile || modalOpen || isHovered || hasFilters) {
+      if (autoScrollTimerRef.current) {
+        clearInterval(autoScrollTimerRef.current);
+        autoScrollTimerRef.current = null;
+      }
+      return;
+    }
 
-    const interval = setInterval(() => {
+    if (autoScrollTimerRef.current) {
+      clearInterval(autoScrollTimerRef.current);
+    }
+
+    autoScrollTimerRef.current = setInterval(() => {
       setCurrentIndex((prev) =>
         events.length ? (prev + itemsPerPage) % events.length : 0
       );
     }, 10000);
 
-    return () => clearInterval(interval);
+    return () => {
+      if (autoScrollTimerRef.current) {
+        clearInterval(autoScrollTimerRef.current);
+      }
+    };
   }, [events.length, itemsPerPage, isHovered, modalOpen, filters, isMobile]);
 
-  // const handleArrowClick = (direction: "left" | "right") => {
-  //   setCurrentIndex((prev) => {
-  //     const newIndex =
-  //       direction === "left"
-  //         ? (prev - itemsPerPage + events.length) % events.length
-  //         : (prev + itemsPerPage) % events.length;
-  //     return newIndex;
-  //   });
-  // };
 
   const handleArrowClick = (direction: "left" | "right") => {
     setCurrentIndex((prev) => {
@@ -171,11 +205,20 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
   };
 
   // const visibleEvents = events.slice(currentIndex, currentIndex + itemsPerPage);
-  const visibleEvents = events.length
-  ? Array.from({ length: Math.min(itemsPerPage, events.length) }, (_, i) =>
-      events[(currentIndex + i) % events.length]
-    )
-  : [];
+
+  // const visibleEvents = events.length
+  // ? Array.from({ length: Math.min(itemsPerPage, events.length) }, (_, i) =>
+  //     events[(currentIndex + i) % events.length]
+  //   )
+  // : [];
+
+  const visibleEvents = isMobile
+  ? events
+  : events.length
+    ? Array.from({ length: Math.min(itemsPerPage, events.length) }, (_, i) =>
+        events[(currentIndex + i) % events.length]
+      )
+    : [];
 
   const categoryColors: { [key: string]: string } = {
     "Food & Drink": "#FB8C00",
@@ -408,7 +451,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                   height: "100%",
                 }}
               >
-                {/* Top: Image and Info */}
+                {/* image & info */}
                 <Box>
                   {event.image_url && (
                     <Box mb={2}>
@@ -515,7 +558,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                   )}
                 </Box>
 
-                {/* Bottom: Details Button */}
+                {/* details*/}
                 <Box mt={2}>
                   <Button
                     variant="contained"
