@@ -119,18 +119,22 @@ const Navbar: React.FC<Props> = ({
     <>
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
         <Toolbar
+          disableGutters
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            flexWrap: "nowrap",
+            overflow: "hidden",
+            minWidth: 0,
             px: 2,
             py: 1,
-            flexWrap: "nowrap",
-            gap: 1,
-            overflowX: "auto",
+            gap: 2,
           }}
         >
-          <Stack direction="row" spacing={2} alignItems="center">
+          <Stack direction="row" spacing={2} alignItems="center"
+          sx={{ flexShrink: 1, minWidth: 0 }}
+          >
             <IconButton
               edge="start"
               color="inherit"
@@ -202,7 +206,7 @@ const Navbar: React.FC<Props> = ({
           </Stack>
 
           {/* search bar */}
-          <Box sx={{ flexGrow: 1, maxWidth: 400 }}>
+          <Box sx={{ flexGrow: 1, maxWidth: 400, minWidth: 0 }}>
             <SearchBar
               onResults={(data) => {
                 console.log("search results", data);
