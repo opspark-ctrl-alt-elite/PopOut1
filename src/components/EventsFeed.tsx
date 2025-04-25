@@ -135,12 +135,23 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     return () => clearInterval(interval);
   }, [events.length, itemsPerPage, isHovered, modalOpen, filters, isMobile]);
 
+  // const handleArrowClick = (direction: "left" | "right") => {
+  //   setCurrentIndex((prev) => {
+  //     const newIndex =
+  //       direction === "left"
+  //         ? (prev - itemsPerPage + events.length) % events.length
+  //         : (prev + itemsPerPage) % events.length;
+  //     return newIndex;
+  //   });
+  // };
+
   const handleArrowClick = (direction: "left" | "right") => {
     setCurrentIndex((prev) => {
+      const step = 1;
       const newIndex =
         direction === "left"
-          ? (prev - itemsPerPage + events.length) % events.length
-          : (prev + itemsPerPage) % events.length;
+          ? (prev - step + events.length) % events.length
+          : (prev + step) % events.length;
       return newIndex;
     });
   };
