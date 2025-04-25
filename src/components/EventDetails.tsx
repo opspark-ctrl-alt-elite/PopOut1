@@ -31,7 +31,7 @@ type Event = {
   vendor: {
     id: string;
     businessName: string;
-    averageRating?: number; // optional but will be replaced with live data
+    averageRating?: number;
   };
   Categories?: { name: string }[];
   latitude: number;
@@ -153,7 +153,15 @@ const EventDetails: React.FC<Props> = ({
         </Typography>
 
         {event.description && (
-          <Typography variant="body2" sx={{ mt: 1, mb: 1 }}>
+          <Typography 
+            variant="body2" 
+            sx={{ 
+              mt: 1, 
+              mb: 1,
+              whiteSpace: 'pre-line',
+              wordBreak: 'break-word'
+            }}
+          >
             {event.description}
           </Typography>
         )}
