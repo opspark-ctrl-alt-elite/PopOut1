@@ -355,34 +355,39 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         <Chip
           label="Free"
           clickable
-          color={filters.isFree ? "primary" : "default"}
-          variant={filters.isFree ? "filled" : "outlined"}
           onClick={() => toggleChip("isFree")}
+          variant={filters.isFree ? "filled" : "outlined"}
           sx={{
-            backgroundColor: "#fff",
-            border: "1px solid #ccc",
+            backgroundColor: filters.isFree ? "#42A5F5" : "#fff",
+            color: filters.isFree ? "#fff" : "text.primary",
+            border: filters.isFree ? "none" : "1px solid #ccc",
+            fontWeight: 500,
           }}
         />
+
         <Chip
           label="Kid-Friendly"
           clickable
-          color={filters.isKidFriendly ? "primary" : "default"}
-          variant={filters.isKidFriendly ? "filled" : "outlined"}
           onClick={() => toggleChip("isKidFriendly")}
+          variant={filters.isKidFriendly ? "filled" : "outlined"}
           sx={{
-            backgroundColor: "#fff",
-            border: "1px solid #ccc",
+            backgroundColor: filters.isKidFriendly ? "#42A5F5" : "#fff",
+            color: filters.isKidFriendly ? "#fff" : "text.primary",
+            border: filters.isKidFriendly ? "none" : "1px solid #ccc",
+            fontWeight: 500,
           }}
         />
+
         <Chip
           label="Sober"
           clickable
-          color={filters.isSober ? "primary" : "default"}
-          variant={filters.isSober ? "filled" : "outlined"}
           onClick={() => toggleChip("isSober")}
+          variant={filters.isSober ? "filled" : "outlined"}
           sx={{
-            backgroundColor: "#fff",
-            border: "1px solid #ccc",
+            backgroundColor: filters.isSober ? "#42A5F5" : "#fff",
+            color: filters.isSober ? "#fff" : "text.primary",
+            border: filters.isSober ? "none" : "1px solid #ccc",
+            fontWeight: 500,
           }}
         />
       </Stack>
