@@ -90,14 +90,39 @@ const TopVendorSpotlight: React.FC = () => {
         Vendor Spotlight
       </Typography>
 
-      <Grid container spacing={2}>
+      <Box
+        sx={{
+          display: "flex",
+          gap: 2,
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          scrollBehavior: "smooth",
+          pb: 1,
+          scrollSnapType: "x mandatory",
+          "& > *": {
+            scrollSnapAlign: "start",
+          },
+          "&::-webkit-scrollbar": { display: "none" },
+          "-ms-overflow-style": "none",
+          scrollbarWidth: "none",
+        }}
+      >
         {topVendors.map((vendor, index) => (
-          <Grid item xs={12} sm={6} md={3} key={vendor.id}>
+          <Box
+            key={vendor.id}
+            component={Link}
+            to={`/vendor/${vendor.id}`}
+            sx={{
+              textDecoration: "none",
+              color: "inherit",
+              minWidth: 240,
+              flex: "0 0 auto",
+            }}
+          >
             <Card
               sx={{
-                maxWidth: 250,
-                mx: "auto",
                 borderRadius: 2,
+                height: "100%",
                 transition: "transform 0.3s",
                 "&:hover": {
                   transform: "scale(1.02)",
@@ -105,28 +130,14 @@ const TopVendorSpotlight: React.FC = () => {
                 },
               }}
             >
-              <CardContent
-                component={Link}
-                to={`/vendor/${vendor.id}`}
-                sx={{ textDecoration: "none", color: "inherit" }}
-              >
+              <CardContent>
                 <Stack
                   direction="row"
                   alignItems="center"
                   spacing={1}
-                  sx={{
-                    mb: 2,
-                    pl: 6,
-                  }}
+                  sx={{ mb: 2, pl: 6 }}
                 >
-                  <Box
-                    sx={{
-                      position: "relative",
-                      width: 70,
-                      height: 60,
-                      display: "inline-block",
-                    }}
-                  >
+                  <Box sx={{ position: "relative", width: 70, height: 60 }}>
                     <Avatar
                       src={vendor.uploadedImage}
                       alt={vendor.businessName}
@@ -144,7 +155,6 @@ const TopVendorSpotlight: React.FC = () => {
                           sm: "4rem",
                           md: "4.6rem",
                         },
-
                         fontWeight: 850,
                         color: "black",
                         lineHeight: 1,
@@ -160,12 +170,11 @@ const TopVendorSpotlight: React.FC = () => {
                     fontWeight="bold"
                     sx={{
                       fontSize: {
-                        xs: theme.typography.pxToRem(14),
-                        sm: theme.typography.pxToRem(15),
-                        md: theme.typography.pxToRem(16),
+                        xs: "0.9rem",
+                        sm: "1rem",
+                        md: "1.05rem",
                       },
                       wordBreak: "break-word",
-                      display: "block",
                     }}
                   >
                     {vendor.businessName}
@@ -195,9 +204,9 @@ const TopVendorSpotlight: React.FC = () => {
                 </Stack>
               </CardContent>
             </Card>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Container>
   );
 };
