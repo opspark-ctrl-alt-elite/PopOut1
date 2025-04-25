@@ -1,6 +1,11 @@
 import { createTheme, responsiveFontSizes } from "@mui/material/styles";
 
 let theme = createTheme({
+  palette: {
+    background: {
+      default: "#f0f0f0",
+    },
+  },
   typography: {
     fontFamily: `'Inter', sans-serif`,
     h3: {

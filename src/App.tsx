@@ -20,6 +20,7 @@ import axios from "axios";
 import { onMessageListener } from "./firebase/onMessageListener";
 import NotificationListener from "./components/NotificationListener";
 import Navbar from "./components/NavBar";
+import { Box } from "@mui/material";
 
 type User = {
   id: string;
@@ -141,6 +142,7 @@ const App: React.FC = () => {
   return (
     <>
       <NotificationListener />
+      <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
       <Navbar
         user={user}
         notifications={notifications}
@@ -179,6 +181,7 @@ const App: React.FC = () => {
         <Route path="/vendor-spotlight" element={<TopVendorSpotlight />} />
         <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} />
       </Routes>
+      </Box>
     </>
   );
 };
