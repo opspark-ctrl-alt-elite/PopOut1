@@ -381,132 +381,143 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                 boxShadow: 3,
                 display: "flex",
                 flexDirection: "column",
-                height: "100%",
+                height: 470,
               }}
             >
-              <CardContent sx={{ flexGrow: 1 }}>
-                {event.image_url && (
-                  <Box mb={2}>
-                    <img
-                      src={event.image_url}
-                      alt={event.title}
-                      style={{
-                        width: "100%",
-                        height: "160px",
-                        objectFit: "cover",
-                        borderRadius: "6px",
-                      }}
-                    />
-                  </Box>
-                )}
-                <Typography variant="h6" gutterBottom>
-                  {event.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Hosted by{" "}
-                  {event.vendor?.id ? (
-                    <Link
-                      to={`/vendor/${event.vendor.id}`}
-                      style={{
-                        color: "#1976d2",
-                        textDecoration: "underline",
-                      }}
-                    >
-                      {event.vendor.businessName}
-                    </Link>
-                  ) : (
-                    event.vendor?.businessName
-                  )}
-                </Typography>
-                <Typography variant="body2">{event.venue_name}</Typography>
-                <Typography variant="body2">
-                  {formatDate(event.startDate, event.endDate)}
-                </Typography>
-                <Typography 
-                  variant="body2" 
-                  sx={{ 
-                    mt: 1,
-                    display: '-webkit-box',
-                    WebkitBoxOrient: 'vertical',
-                    WebkitLineClamp: 3,
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    whiteSpace: 'pre-line',
-                    wordBreak: 'break-word'
-                  }}
-                >
-                  {event.description}
-                </Typography>
-
-                {(event.Categories?.length ||
-                  event.isFree ||
-                  event.isKidFriendly ||
-                  event.isSober) && (
-                  <Stack
-                    direction="row"
-                    spacing={1}
-                    sx={{ mt: 1, flexWrap: "wrap" }}
-                  >
-                    {event.Categories?.map((cat) => (
-                      <Box
-                        key={cat.name}
-                        sx={{
-                          width: 28,
-                          height: 28,
-                          borderRadius: "50%",
-                          backgroundColor: categoryColors[cat.name] || "#999",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#fff",
+              <CardContent
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  justifyContent: "space-between",
+                  height: "100%",
+                }}
+              >
+                {/* Top: Image and Info */}
+                <Box>
+                  {event.image_url && (
+                    <Box mb={2}>
+                      <img
+                        src={event.image_url}
+                        alt={event.title}
+                        style={{
+                          width: "100%",
+                          height: "160px",
+                          objectFit: "cover",
+                          borderRadius: "6px",
                         }}
-                        title={cat.name}
+                      />
+                    </Box>
+                  )}
+                  <Typography variant="h6" gutterBottom>
+                    {event.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Hosted by{" "}
+                    {event.vendor?.id ? (
+                      <Link
+                        to={`/vendor/${event.vendor.id}`}
+                        style={{
+                          color: "#1976d2",
+                          textDecoration: "underline",
+                        }}
                       >
-                        {getCategoryIcon(cat.name)}
-                      </Box>
-                    ))}
+                        {event.vendor.businessName}
+                      </Link>
+                    ) : (
+                      event.vendor?.businessName
+                    )}
+                  </Typography>
+                  <Typography variant="body2">{event.venue_name}</Typography>
+                  <Typography variant="body2">
+                    {formatDate(event.startDate, event.endDate)}
+                  </Typography>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      mt: 1,
+                      display: "-webkit-box",
+                      WebkitBoxOrient: "vertical",
+                      WebkitLineClamp: 3,
+                      overflow: "hidden",
+                      textOverflow: "ellipsis",
+                      whiteSpace: "pre-line",
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {event.description}
+                  </Typography>
 
-                    {event.isFree && (
-                      <Chip
-                        label="Free"
-                        size="small"
-                        sx={{ fontSize: "0.75rem" }}
-                      />
-                    )}
-                    {event.isKidFriendly && (
-                      <Chip
-                        label="Kid-Friendly"
-                        size="small"
-                        sx={{ fontSize: "0.75rem" }}
-                      />
-                    )}
-                    {event.isSober && (
-                      <Chip
-                        label="Sober"
-                        size="small"
-                        sx={{ fontSize: "0.75rem" }}
-                      />
-                    )}
-                  </Stack>
-                )}
+                  {(event.Categories?.length ||
+                    event.isFree ||
+                    event.isKidFriendly ||
+                    event.isSober) && (
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      sx={{ mt: 1, flexWrap: "wrap" }}
+                    >
+                      {event.Categories?.map((cat) => (
+                        <Box
+                          key={cat.name}
+                          sx={{
+                            width: 28,
+                            height: 28,
+                            borderRadius: "50%",
+                            backgroundColor: categoryColors[cat.name] || "#999",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                          }}
+                          title={cat.name}
+                        >
+                          {getCategoryIcon(cat.name)}
+                        </Box>
+                      ))}
+                      {event.isFree && (
+                        <Chip
+                          label="Free"
+                          size="small"
+                          sx={{ fontSize: "0.75rem" }}
+                        />
+                      )}
+                      {event.isKidFriendly && (
+                        <Chip
+                          label="Kid-Friendly"
+                          size="small"
+                          sx={{ fontSize: "0.75rem" }}
+                        />
+                      )}
+                      {event.isSober && (
+                        <Chip
+                          label="Sober"
+                          size="small"
+                          sx={{ fontSize: "0.75rem" }}
+                        />
+                      )}
+                    </Stack>
+                  )}
+                </Box>
 
-                <Button
-                  variant="contained"
-                  size="small"
-                  onClick={() => handleOpenModal(event)}
-                  sx={{
-                    mt: 2,
-                    borderRadius: "999px",
-                    textTransform: "none",
-                    fontFamily: `'DM Sans', sans-serif`,
-                    boxShadow: 1,
-                    backgroundColor: "#212121",
-                    color: "#fff",
-                    "&:hover": { backgroundColor: "#333" },
-                  }}
-                >
-                  Details
-                </Button>
+                {/* Bottom: Details Button */}
+                <Box mt={2}>
+                  <Button
+                    variant="contained"
+                    size="small"
+                    onClick={() => handleOpenModal(event)}
+                    sx={{
+                      borderRadius: "999px",
+                      textTransform: "none",
+                      fontFamily: `'DM Sans', sans-serif`,
+                      boxShadow: 1,
+                      backgroundColor: "#212121",
+                      color: "#fff",
+                      "&:hover": { backgroundColor: "#333" },
+                    }}
+                  >
+                    Details
+                  </Button>
+                </Box>
               </CardContent>
             </Card>
           </Fade>
