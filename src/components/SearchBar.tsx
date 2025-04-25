@@ -121,26 +121,6 @@ const SearchBar: React.FC = () => {
           sx={{
             position: "absolute",
             zIndex: 10,
-            width: "75%",
-            mt: 1,
-            p: 2,
-            display: "flex",
-            justifyContent: "center",
-            alignItems: "center",
-            borderRadius: "12px",
-            backgroundColor: "white",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          }}
-        >
-          <CircularProgress size={24} />
-        </Box>
-      )}
-
-{showResults && loading && (
-        <Box
-          sx={{
-            position: "absolute",
-            zIndex: 10,
             width: "100%",
             mt: 1,
             p: 2,
@@ -173,11 +153,19 @@ const SearchBar: React.FC = () => {
             overflowY: "auto",
             borderRadius: "12px",
             backdropFilter: "blur(10px)",
-            backgroundColor: "#fff",
-            boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
+            WebkitBackdropFilter: "blur(10px)",
+            // backgroundColor: "rgba(255, 255, 255, 0.65)",
+            backgroundColor: "rgba(255, 255, 255, 0.75)",
+            boxShadow: "0 8px 20px rgba(0, 0, 0, 0.12)",
           }}
         >
-          <Paper elevation={0}>
+          <Paper
+            elevation={0}
+            sx={{
+              backgroundColor: "transparent",
+              boxShadow: "none",
+            }}
+          >
             <List dense>
               {results.vendors.length > 0 && (
                 <>
