@@ -199,7 +199,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
             "& .MuiOutlinedInput-root": {
               fontFamily: "'Inter', sans-serif",
               borderRadius: 9999,
-              backgroundColor: "#f5f5f5",
+              backgroundColor: "#fff",
               paddingRight: "8px",
               "& fieldset": {
                 border: "1px solid #ccc",
@@ -299,6 +299,10 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           color={filters.isFree ? "primary" : "default"}
           variant={filters.isFree ? "filled" : "outlined"}
           onClick={() => toggleChip("isFree")}
+          sx={{
+            backgroundColor: "#fff",
+            border: "1px solid #ccc",
+          }}
         />
         <Chip
           label="Kid-Friendly"
@@ -306,6 +310,10 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           color={filters.isKidFriendly ? "primary" : "default"}
           variant={filters.isKidFriendly ? "filled" : "outlined"}
           onClick={() => toggleChip("isKidFriendly")}
+          sx={{
+            backgroundColor: "#fff",
+            border: "1px solid #ccc",
+          }}
         />
         <Chip
           label="Sober"
@@ -313,6 +321,10 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           color={filters.isSober ? "primary" : "default"}
           variant={filters.isSober ? "filled" : "outlined"}
           onClick={() => toggleChip("isSober")}
+          sx={{
+            backgroundColor: "#fff",
+            border: "1px solid #ccc",
+          }}
         />
       </Stack>
 
