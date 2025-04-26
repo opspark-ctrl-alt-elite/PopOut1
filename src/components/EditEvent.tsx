@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
+import React, { useEffect, useState, useRef } from 'react';
+import axios from 'axios';
 import {
   Container,
   Typography,
@@ -8,42 +8,83 @@ import {
   Checkbox,
   FormControlLabel,
   Stack,
-  FormGroup,
-  FormLabel,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogContentText,
   DialogActions,
   Box,
-} from "@mui/material";
-import { useParams, useNavigate } from "react-router-dom";
-import { Autocomplete, useLoadScript } from "@react-google-maps/api";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
-import { DateTimePicker } from "@mui/x-date-pickers/DateTimePicker";
-import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
+  CircularProgress,
+  Chip,
+  Paper,
+  InputAdornment,
+  IconButton,
+  Grid,
+  Alert,
+  AlertTitle,
+  styled
+} from '@mui/material';
+import { useParams, useNavigate } from 'react-router-dom';
+import { Autocomplete, useLoadScript } from '@react-google-maps/api';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
+import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import {
+  Upload as UploadIcon,
+  Cancel as CancelIcon,
+  CheckCircle as CheckCircleIcon,
+  Error as ErrorIcon,
+  Info as InfoIcon,
+  ChildCare as ChildCareIcon,
+  FreeBreakfast as FreeBreakfastIcon,
+  Paid as PaidIcon
+} from '@mui/icons-material';
 
 const libraries: ("places")[] = ["places"];
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  '& .MuiOutlinedInput-root': {
+    borderRadius: '12px',
+    '& fieldset': {
+      borderColor: theme.palette.grey[300],
+    },
+    '&:hover fieldset': {
+      borderColor: theme.palette.primary.main,
+    },
+  },
+}));
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  borderRadius: '12px',
+  textTransform: 'none',
+  padding: '8px 16px',
+  fontWeight: 600,
+  boxShadow: 'none',
+  '&:hover': {
+    boxShadow: 'none',
+  },
+}));
 
 const EditEvent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const { isLoaded, loadError } = useLoadScript({
+    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
+    libraries,
+  });
 
   const [form, setForm] = useState<any>(null);
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [uploading, setUploading] = useState(false);
   const [modal, setModal] = useState({
     open: false,
     title: "",
     message: "",
     success: false,
   });
-
-  const { isLoaded } = useLoadScript({
-    googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
-    libraries,
-  });
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -57,7 +98,7 @@ const EditEvent = () => {
           setModal({
             open: true,
             title: "Error",
-            message: "Popup not found",
+            message: "Event not found",
             success: false,
           });
           return;
@@ -70,13 +111,15 @@ const EditEvent = () => {
         });
         setAvailableCategories(categoriesRes.data.map((cat: any) => cat.name));
       } catch (err) {
-        console.error("Failed to fetch popup or categories:", err);
+        console.error("Failed to fetch event or categories:", err);
         setModal({
           open: true,
           title: "Error",
-          message: "Failed to load popup data",
+          message: "Failed to load event data",
           success: false,
         });
+      } finally {
+        setLoading(false);
       }
     };
     fetchEvent();
@@ -153,6 +196,12 @@ const EditEvent = () => {
       }));
     } catch (err) {
       console.error("Error uploading image:", err);
+      setModal({
+        open: true,
+        title: "Upload Failed",
+        message: "There was an error uploading your image. Please try again.",
+        success: false
+      });
     }
   };
 
@@ -169,11 +218,25 @@ const EditEvent = () => {
       }));
     } catch (err) {
       console.error("Error deleting image:", err);
+      setModal({
+        open: true,
+        title: "Delete Failed",
+        message: "Failed to delete image. Please try again.",
+        success: false
+      });
     }
   };
 
   const handleSubmit = async () => {
-    if (!validate()) return;
+    if (!validate()) {
+      setModal({ 
+        open: true, 
+        title: "Form Errors", 
+        message: "Please fix the errors in the form before submitting.", 
+        success: false 
+      });
+      return;
+    }
     try {
       const payload = {
         ...form,
@@ -181,11 +244,15 @@ const EditEvent = () => {
         longitude: parseFloat(form.longitude),
       };
       await axios.put(`/api/events/${id}`, payload, { withCredentials: true });
-      setModal({ open: true, title: "Success", message: "Popup updated!", success: true });
+      setModal({ open: true, title: "Success", message: "Event updated!", success: true });
     } catch (err) {
-      console.error("Error updating popup:", err);
-      setModal({ open: true, title: "Error", message: "Error updating popup.", success: false });
+      console.error("Error updating event:", err);
+      setModal({ open: true, title: "Error", message: "Error updating event.", success: false });
     }
+  };
+
+  const handleCancel = () => {
+    navigate(-1);
   };
 
   const handleModalClose = () => {
@@ -193,187 +260,484 @@ const EditEvent = () => {
     if (modal.success) navigate("/active-events");
   };
 
-  if (!isLoaded || !form) return <Typography>Loading...</Typography>;
+  if (loadError) {
+    return (
+      <Container maxWidth="md" sx={{ mt: 4 }}>
+        <Alert severity="error" sx={{ mb: 3 }}>
+          <AlertTitle>Google Maps Error</AlertTitle>
+          Failed to load Google Maps functionality. Please refresh the page or try again later.
+        </Alert>
+      </Container>
+    );
+  }
+
+  if (!isLoaded || loading || !form) {
+    return (
+      <Container maxWidth="md" sx={{ 
+        display: 'flex', 
+        justifyContent: 'center', 
+        alignItems: 'center', 
+        height: '80vh' 
+      }}>
+        <Stack alignItems="center" spacing={2}>
+          <CircularProgress size={60} />
+          <Typography variant="h6">Loading Event Editor...</Typography>
+        </Stack>
+      </Container>
+    );
+  }
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Typography variant="h4" gutterBottom>Edit Popup</Typography>
-        <Stack spacing={3}>
-          <TextField
-            name="title"
-            label="Title *"
-            value={form.title}
-            onChange={handleChange}
-            error={!!errors.title}
-            helperText={errors.title}
-            fullWidth
-          />
+      <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
+        <Paper elevation={0} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4 }}>
+          <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+            Edit Event
+          </Typography>
+          
+          <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
+            Fields marked with * are required. All changes are subject to review.
+          </Alert>
 
-          <TextField
-            name="description"
-            label="Description *"
-            value={form.description}
-            onChange={handleChange}
-            fullWidth
-            multiline
-            rows={4}
-          />
-
-          <DateTimePicker
-            label="Start Date *"
-            value={form.startDate ? new Date(form.startDate) : null}
-            onChange={(newValue) =>
-              setForm((prev: any) => ({
-                ...prev,
-                startDate: newValue ? newValue.toISOString() : "",
-              }))
-            }
-            renderInput={(params) => (
-              <TextField {...params} fullWidth error={!!errors.startDate} helperText={errors.startDate} />
-            )}
-          />
-
-          <DateTimePicker
-            label="End Date *"
-            value={form.endDate ? new Date(form.endDate) : null}
-            onChange={(newValue) =>
-              setForm((prev: any) => ({
-                ...prev,
-                endDate: newValue ? newValue.toISOString() : "",
-              }))
-            }
-            renderInput={(params) => (
-              <TextField {...params} fullWidth error={!!errors.endDate} helperText={errors.endDate} />
-            )}
-          />
-
-          <TextField
-            name="venue_name"
-            label="Venue *"
-            value={form.venue_name}
-            onChange={handleChange}
-            error={!!errors.venue_name}
-            helperText={errors.venue_name}
-            fullWidth
-          />
-
-          <Autocomplete onLoad={(a) => (autocompleteRef.current = a)} onPlaceChanged={handlePlaceChanged}>
-            <TextField
-              label="Location *"
-              name="location"
-              value={form.location}
-              onChange={handleChange}
-              error={!!errors.location}
-              helperText={errors.location || "Type to search..."}
-              fullWidth
-            />
-          </Autocomplete>
-
-          <Box>
-            <Button
-              variant="contained"
-              size="small"
-              component="label"
-              sx={{
-                mt: 2,
-                borderRadius: 2,
-                textTransform: "none",
-                boxShadow: 1,
-                backgroundColor: "#000",
-                color: "#fff",
-                "&:hover": { backgroundColor: "#333" },
-              }}
-            >
-              {form.image_url ? "Replace Image" : "Upload Image"}
-              <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-            </Button>
-            {form.image_url && (
-              <>
-                <Box mt={2}>
-                  <img
-                    src={form.image_url}
-                    alt="Popup"
-                    style={{ width: "100%", maxHeight: "200px", objectFit: "cover" }}
-                  />
-                </Box>
-                <Button
+          <Stack spacing={4}>
+            {/* Image Upload Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                Event Image
+              </Typography>
+              <Typography variant="body2" color="text.secondary" gutterBottom>
+                Upload a high-quality image that represents your event (JPEG, PNG, GIF, max 5MB)
+              </Typography>
+              
+              <Box>
+                <StyledButton
                   variant="contained"
-                  size="small"
-                  color="error"
-                  onClick={handleDeleteImage}
-                  sx={{ mt: 2, borderRadius: 2, textTransform: "none", boxShadow: 1 }}
-                >
-                  Delete Image
-                </Button>
-              </>
-            )}
-          </Box>
-
-          <FormGroup row>
-            <FormControlLabel control={<Checkbox name="isFree" checked={form.isFree} onChange={handleChange} />} label="Free" />
-            <FormControlLabel control={<Checkbox name="isKidFriendly" checked={form.isKidFriendly} onChange={handleChange} />} label="Kid-Friendly" />
-            <FormControlLabel control={<Checkbox name="isSober" checked={form.isSober} onChange={handleChange} />} label="Sober" />
-          </FormGroup>
-
-          {availableCategories.length > 0 && (
-            <>
-              <FormLabel component="legend">Categories</FormLabel>
-              <FormGroup row>
-                {availableCategories.map((category) => (
-                  <FormControlLabel
-                    key={category}
-                    control={
-                      <Checkbox
-                        checked={form.categories.includes(category)}
-                        onChange={() => handleCategoryToggle(category)}
-                      />
+                  component="label"
+                  startIcon={<UploadIcon />}
+                  disabled={uploading}
+                  sx={{
+                    backgroundColor: 'primary.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'primary.dark',
+                    },
+                    '&:disabled': {
+                      backgroundColor: 'grey.300',
                     }
-                    label={category}
+                  }}
+                >
+                  {form.image_url ? "Replace Image" : "Upload Image"}
+                  <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+                </StyledButton>
+                
+                {form.image_url && (
+                  <Box sx={{ position: 'relative', mt: 2 }}>
+                    <img
+                      src={form.image_url}
+                      alt="Event preview"
+                      style={{
+                        width: '100%',
+                        maxHeight: '400px',
+                        objectFit: 'cover',
+                        borderRadius: '12px',
+                      }}
+                    />
+                    <IconButton
+                      onClick={() => {
+                        setModal({
+                          open: true,
+                          title: "Confirm Delete",
+                          message: "Are you sure you want to delete this image?",
+                          success: false,
+                          onConfirm: handleDeleteImage,
+                        });
+                      }}
+                      sx={{
+                        position: 'absolute',
+                        top: 8,
+                        right: 8,
+                        backgroundColor: 'rgba(0,0,0,0.5)',
+                        color: 'white',
+                        '&:hover': {
+                          backgroundColor: 'rgba(0,0,0,0.7)',
+                        }
+                      }}
+                    >
+                      <CancelIcon />
+                    </IconButton>
+                  </Box>
+                )}
+              </Box>
+            </Box>
+
+            {/* Basic Info Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                Basic Information
+              </Typography>
+              
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <StyledTextField
+                    name="title"
+                    label="Event Title *"
+                    value={form.title}
+                    onChange={handleChange}
+                    error={!!errors.title}
+                    helperText={errors.title}
+                    fullWidth
+                    variant="outlined"
                   />
-                ))}
-              </FormGroup>
-            </>
-          )}
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <StyledTextField
+                    name="description"
+                    label="Description *"
+                    value={form.description}
+                    onChange={handleChange}
+                    error={!!errors.description}
+                    helperText={errors.description}
+                    fullWidth
+                    multiline
+                    rows={4}
+                    variant="outlined"
+                  />
+                </Grid>
+              </Grid>
+            </Box>
 
-          <Button
-            variant="contained"
-            size="small"
-            onClick={handleSubmit}
-            sx={{
-              mt: 2,
-              borderRadius: 2,
-              textTransform: "none",
-              boxShadow: 1,
-              backgroundColor: "#000",
-              color: "#fff",
-              "&:hover": { backgroundColor: "#333" },
-            }}
-          >
-            Update Popup
-          </Button>
-        </Stack>
+            {/* Date & Time Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                Date & Time
+              </Typography>
+              
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <DateTimePicker
+                    label="Start Date & Time *"
+                    value={form.startDate ? new Date(form.startDate) : null}
+                    onChange={(newValue) =>
+                      setForm((prev: any) => ({
+                        ...prev,
+                        startDate: newValue ? newValue.toISOString() : "",
+                      }))
+                    }
+                    renderInput={(params) => (
+                      <StyledTextField
+                        {...params}
+                        fullWidth
+                        error={!!errors.startDate}
+                        helperText={errors.startDate}
+                      />
+                    )}
+                  />
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <DateTimePicker
+                    label="End Date & Time *"
+                    value={form.endDate ? new Date(form.endDate) : null}
+                    onChange={(newValue) =>
+                      setForm((prev: any) => ({
+                        ...prev,
+                        endDate: newValue ? newValue.toISOString() : "",
+                      }))
+                    }
+                    minDateTime={form.startDate ? new Date(form.startDate) : undefined}
+                    renderInput={(params) => (
+                      <StyledTextField
+                        {...params}
+                        fullWidth
+                        error={!!errors.endDate}
+                        helperText={errors.endDate}
+                      />
+                    )}
+                  />
+                </Grid>
+              </Grid>
+            </Box>
 
-        <Dialog open={modal.open} onClose={handleModalClose}>
-          <DialogTitle>{modal.title}</DialogTitle>
+            {/* Location Section */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                Location
+              </Typography>
+              
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <StyledTextField
+                    name="venue_name"
+                    label="Venue Name *"
+                    value={form.venue_name}
+                    onChange={handleChange}
+                    error={!!errors.venue_name}
+                    helperText={errors.venue_name}
+                    fullWidth
+                    variant="outlined"
+                  />
+                </Grid>
+                
+                <Grid item xs={12}>
+                  <Autocomplete 
+                    onLoad={(a) => (autocompleteRef.current = a)} 
+                    onPlaceChanged={handlePlaceChanged}
+                  >
+                    <StyledTextField
+                      label="Location *"
+                      name="location"
+                      value={form.location}
+                      onChange={handleChange}
+                      error={!!errors.location}
+                      helperText={errors.location || "Type to search..."}
+                      fullWidth
+                      variant="outlined"
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton edge="end">
+                              <img 
+                                src="https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png" 
+                                alt="Powered by Google" 
+                                style={{ height: '16px' }} 
+                              />
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                  </Autocomplete>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Event Features */}
+            <Box>
+              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                Event Features
+              </Typography>
+              
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={4}>
+                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isFree ? 'primary.main' : 'grey.200' }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="isFree"
+                          checked={form.isFree}
+                          onChange={handleChange}
+                          icon={<PaidIcon />}
+                          checkedIcon={<FreeBreakfastIcon color="success" />}
+                        />
+                      }
+                      label={
+                        <Box>
+                          <Typography variant="body1" fontWeight={600}>Free Event</Typography>
+                          <Typography variant="body2" color="text.secondary">No admission fee</Typography>
+                        </Box>
+                      }
+                      sx={{ width: '100%' }}
+                    />
+                  </Paper>
+                </Grid>
+                
+                <Grid item xs={12} sm={4}>
+                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isKidFriendly ? 'primary.main' : 'grey.200' }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="isKidFriendly"
+                          checked={form.isKidFriendly}
+                          onChange={handleChange}
+                          icon={<ChildCareIcon />}
+                          checkedIcon={<ChildCareIcon color="success" />}
+                        />
+                      }
+                      label={
+                        <Box>
+                          <Typography variant="body1" fontWeight={600}>Kid-Friendly</Typography>
+                          <Typography variant="body2" color="text.secondary">Suitable for children</Typography>
+                        </Box>
+                      }
+                      sx={{ width: '100%' }}
+                    />
+                  </Paper>
+                </Grid>
+                
+                <Grid item xs={12} sm={4}>
+                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isSober ? 'primary.main' : 'grey.200' }}>
+                    <FormControlLabel
+                      control={
+                        <Checkbox
+                          name="isSober"
+                          checked={form.isSober}
+                          onChange={handleChange}
+                        />
+                      }
+                      label={
+                        <Box>
+                          <Typography variant="body1" fontWeight={600}>Sober Event</Typography>
+                          <Typography variant="body2" color="text.secondary">No alcohol served</Typography>
+                        </Box>
+                      }
+                      sx={{ width: '100%' }}
+                    />
+                  </Paper>
+                </Grid>
+              </Grid>
+            </Box>
+
+            {/* Categories Section */}
+            {availableCategories.length > 0 && (
+              <Box>
+                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                  Categories
+                </Typography>
+                <Typography variant="body2" color="text.secondary" gutterBottom>
+                  Select all that apply
+                </Typography>
+                
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                  {availableCategories.map((category) => (
+                    <Chip
+                      key={category}
+                      label={category}
+                      clickable
+                      variant={form.categories.includes(category) ? 'filled' : 'outlined'}
+                      color={form.categories.includes(category) ? 'primary' : 'default'}
+                      onClick={() => handleCategoryToggle(category)}
+                      sx={{
+                        borderRadius: 1,
+                        px: 1,
+                        py: 1.5,
+                        fontSize: '0.875rem',
+                        '& .MuiChip-label': {
+                          px: 1.5,
+                        }
+                      }}
+                    />
+                  ))}
+                </Box>
+              </Box>
+            )}
+
+            {/* Action Buttons */}
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pt: 2 }}>
+              <StyledButton
+                variant="outlined"
+                onClick={handleCancel}
+                startIcon={<CancelIcon />}
+                sx={{
+                  borderColor: 'grey.300',
+                  color: 'text.primary',
+                  '&:hover': {
+                    borderColor: 'grey.400',
+                  }
+                }}
+              >
+                Cancel
+              </StyledButton>
+              
+              <StyledButton
+                variant="contained"
+                onClick={handleSubmit}
+                disabled={uploading}
+                startIcon={<CheckCircleIcon />}
+                sx={{
+                  backgroundColor: 'primary.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: 'primary.dark',
+                  },
+                  '&:disabled': {
+                    backgroundColor: 'grey.300',
+                  }
+                }}
+              >
+                Update Event
+              </StyledButton>
+            </Box>
+          </Stack>
+        </Paper>
+
+        {/* Success/Error Modal */}
+        <Dialog 
+          open={modal.open} 
+          onClose={handleModalClose}
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              minWidth: '400px'
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: 1.5,
+            color: modal.success ? 'success.main' : 'error.main'
+          }}>
+            {modal.success ? (
+              <CheckCircleIcon color="success" fontSize="large" />
+            ) : (
+              <ErrorIcon color="error" fontSize="large" />
+            )}
+            {modal.title}
+          </DialogTitle>
+          
           <DialogContent>
-            <DialogContentText>{modal.message}</DialogContentText>
+            <DialogContentText>
+              {modal.message}
+            </DialogContentText>
           </DialogContent>
-          <DialogActions>
-            <Button
-              size="small"
-              onClick={handleModalClose}
-              sx={{
-                borderRadius: 2,
-                textTransform: "none",
-                boxShadow: 1,
-                backgroundColor: "#000",
-                color: "#fff",
-                "&:hover": { backgroundColor: "#333" },
-              }}
-            >
-              Close
-            </Button>
+          
+          <DialogActions sx={{ p: 2 }}>
+            {modal.onConfirm ? (
+              <>
+                <StyledButton
+                  variant="outlined"
+                  onClick={handleModalClose}
+                  sx={{
+                    borderColor: 'grey.300',
+                    color: 'text.primary',
+                  }}
+                >
+                  Cancel
+                </StyledButton>
+                <StyledButton
+                  variant="contained"
+                  onClick={() => {
+                    modal.onConfirm?.();
+                    handleModalClose();
+                  }}
+                  sx={{
+                    backgroundColor: 'error.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: 'error.dark',
+                    },
+                  }}
+                >
+                  Delete
+                </StyledButton>
+              </>
+            ) : (
+              <StyledButton
+                fullWidth
+                variant="contained"
+                onClick={handleModalClose}
+                sx={{
+                  backgroundColor: modal.success ? 'success.main' : 'error.main',
+                  color: 'white',
+                  '&:hover': {
+                    backgroundColor: modal.success ? 'success.dark' : 'error.dark',
+                  },
+                }}
+              >
+                {modal.success ? 'View Events' : 'Got It'}
+              </StyledButton>
+            )}
           </DialogActions>
         </Dialog>
       </Container>

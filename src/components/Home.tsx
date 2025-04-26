@@ -98,13 +98,11 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
   return (
     <Box>
       {/* Events */}
-      <Container sx={{ mt: 4 }}>
-        <EventsFeed user={user} />
-      </Container>
-
-      {/* Vendor Spotlight */}
-      <Container sx={{ mt: 4, mb: 4, px: { xs: 2, sm: 4 } }}>
-        <TopVendorSpotlight />
+      <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
+        <Box>
+          <EventsFeed user={user} />
+          <TopVendorSpotlight />
+        </Box>
       </Container>
 
       {/* Footer */}
