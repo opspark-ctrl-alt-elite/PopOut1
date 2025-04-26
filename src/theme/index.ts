@@ -1,6 +1,14 @@
-import { createTheme } from "@mui/material/styles";
+import { createTheme, responsiveFontSizes } from "@mui/material/styles";
 
-const theme = createTheme({
+let theme = createTheme({
+  palette: {
+    background: {
+      // default: "#f7f7f7",
+      // default: "#fefefe",
+      default: "#fbfbfb",
+
+    },
+  },
   typography: {
     fontFamily: `'Inter', sans-serif`,
     h3: {
@@ -15,7 +23,8 @@ const theme = createTheme({
     h6: {
       fontFamily: `'Bebas Neue', sans-serif`,
     },
-    // Add multiline ellipsis variants
+
+    // ellipsis
     bodyEllipsis: {
       fontFamily: `'Inter', sans-serif`,
       display: '-webkit-box',
@@ -83,7 +92,7 @@ const theme = createTheme({
               overflow: 'hidden',
               textOverflow: 'ellipsis',
               whiteSpace: 'normal',
-              maxHeight: 'calc(4 * 1.5em)', 
+              maxHeight: 'calc(4 * 1.5em)',
             },
             '&.Mui-focused textarea': {
               WebkitLineClamp: 'unset',
@@ -122,7 +131,7 @@ const theme = createTheme({
   },
 });
 
-// Add TypeScript module augmentation for the new variants
+// typeScript module augmentations
 declare module '@mui/material/Typography' {
   interface TypographyPropsVariantOverrides {
     bodyEllipsis: true;
@@ -148,5 +157,7 @@ declare module '@mui/material/styles' {
     };
   }
 }
+
+theme = responsiveFontSizes(theme);
 
 export default theme;

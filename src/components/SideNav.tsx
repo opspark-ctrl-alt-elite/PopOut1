@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+
 import {
   Drawer,
   List,
@@ -18,6 +19,7 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import Logo2 from "../assets/logo/transparentwhitelogo.png";
 
 interface Props {
   user: {
@@ -88,18 +90,15 @@ const SideNav: React.FC<Props> = ({
             px: 2,
           }}
         >
-          <Typography
-            variant="h3"
-            fontWeight="bold"
+          <Box
+            component="img"
+            src={Logo2}
+            alt="PopOut Logo2"
             sx={{
-              color: "#fff",
-              fontFamily: "'Bebas Neue', sans-serif",
-              letterSpacing: "1px",
-              textShadow: "1px 1px 4px rgba(0,0,0,0.3)",
+              height: 40,
+              objectFit: "contain",
             }}
-          >
-            PopOut
-          </Typography>
+          />
         </Box>
 
         <List>

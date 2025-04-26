@@ -1,5 +1,5 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
+import React, { useEffect, useState } from "react";
+import axios from "axios";
 import {
   Box,
   Card,
@@ -9,8 +9,11 @@ import {
   Avatar,
   Stack,
   Rating,
-} from '@mui/material';
-import { Link } from 'react-router-dom';
+  Grid,
+  Container,
+} from "@mui/material";
+import { Link } from "react-router-dom";
+import { useTheme } from "@mui/material/styles";
 
 interface VendorSpotlightData {
   id: string;
@@ -24,12 +27,13 @@ interface VendorSpotlightData {
 const TopVendorSpotlight: React.FC = () => {
   const [topVendors, setTopVendors] = useState<VendorSpotlightData[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string>('');
+  const [error, setError] = useState<string>("");
+  const theme = useTheme();
 
   useEffect(() => {
     const fetchTopVendors = async () => {
       try {
-        const res = await axios.get('/vendors/spotlight/top3');
+        const res = await axios.get("/vendors/spotlight/top3");
 
         const vendorData = await Promise.all(
           res.data.map(async (vendor: VendorSpotlightData) => {
@@ -39,7 +43,8 @@ const TopVendorSpotlight: React.FC = () => {
                 axios.get(`/api/images/vendorId/${vendor.id}`),
               ]);
 
-              const uploadedImage = imageRes.data?.[0]?.referenceURL || vendor.profilePicture || '';
+              const uploadedImage =
+                imageRes.data?.[0]?.referenceURL || vendor.profilePicture || "";
 
               return {
                 ...vendor,
@@ -52,7 +57,7 @@ const TopVendorSpotlight: React.FC = () => {
                 ...vendor,
                 averageRating: 0,
                 reviewCount: 0,
-                uploadedImage: vendor.profilePicture || '',
+                uploadedImage: vendor.profilePicture || "",
               };
             }
           })
@@ -61,7 +66,7 @@ const TopVendorSpotlight: React.FC = () => {
         setTopVendors(vendorData);
       } catch (err: any) {
         console.error(err);
-        setError('Failed to fetch top vendors.');
+        setError("Failed to fetch top vendors.");
       } finally {
         setLoading(false);
       }
@@ -76,86 +81,133 @@ const TopVendorSpotlight: React.FC = () => {
     return <Typography>No vendor spotlight available.</Typography>;
 
   return (
-    <Box sx={{ my: 4, px: 2 }}>
+    <Container
+      maxWidth="lg"
+      disableGutters
+      sx={{ px: { xs: 2, sm: 4 }, mt: 6 }}
+    >
       <Typography variant="h4" gutterBottom>
         Vendor Spotlight
       </Typography>
 
       <Box
         sx={{
-          display: 'flex',
+          display: "flex",
           gap: 2,
-          overflowX: 'auto',
+          overflowX: "auto",
+          WebkitOverflowScrolling: "touch",
+          scrollBehavior: "smooth",
           pb: 1,
-          '&::-webkit-scrollbar': { height: 8 },
-          '&::-webkit-scrollbar-thumb': {
-            backgroundColor: '#ccc',
-            borderRadius: 4,
+          scrollSnapType: "x mandatory",
+          "& > *": {
+            scrollSnapAlign: "start",
           },
+          "&::-webkit-scrollbar": { display: "none" },
+          "-ms-overflow-style": "none",
+          scrollbarWidth: "none",
         }}
       >
         {topVendors.map((vendor, index) => (
-          <Card
+          <Box
             key={vendor.id}
+            component={Link}
+            to={`/vendor/${vendor.id}`}
             sx={{
-              minWidth: 200,
-              flexShrink: 0,
-              borderRadius: 2,
-              transition: 'transform 0.3s',
-              '&:hover': {
-                transform: 'scale(1.02)',
-                boxShadow: 4,
-              },
+              textDecoration: "none",
+              color: "inherit",
+              minWidth: 240,
+              flex: "0 0 auto",
             }}
           >
-            <CardContent
-              component={Link}
-              to={`/vendor/${vendor.id}`}
+            <Card
               sx={{
-                textDecoration: 'none',
-                color: 'inherit',
+                borderRadius: 2,
+                height: "100%",
+                transition: "transform 0.3s",
+                "&:hover": {
+                  transform: "scale(1.02)",
+                  boxShadow: 4,
+                },
               }}
             >
-              <Stack direction="row" alignItems="center" spacing={1} sx={{ mb: 2 }}>
-                <Typography
-                  sx={{
-                    fontSize: '3rem',
-                    fontWeight: 'bold',
-                    color: 'black',
-                  }}
+              <CardContent>
+                <Stack
+                  direction="row"
+                  alignItems="center"
+                  spacing={1}
+                  sx={{ mb: 2, pl: 6 }}
                 >
-                  {index + 1}
-                </Typography>
-                <Avatar
-                  src={vendor.uploadedImage}
-                  alt={vendor.businessName}
-                  sx={{ width: 48, height: 48 }}
-                />
-                <Typography variant="subtitle1" fontWeight="bold">
-                  {vendor.businessName}
-                </Typography>
-              </Stack>
+                  <Box sx={{ position: "relative", width: 70, height: 60 }}>
+                    <Avatar
+                      src={vendor.uploadedImage}
+                      alt={vendor.businessName}
+                      sx={{ width: 60, height: 60 }}
+                    />
+                    <Typography
+                      sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "-2.0rem",
+                        transform: "translateY(-50%)",
+                        fontFamily: `'Bebas Neue', sans-serif`,
+                        fontSize: {
+                          xs: "3.6rem",
+                          sm: "4rem",
+                          md: "4.6rem",
+                        },
+                        fontWeight: 850,
+                        color: "black",
+                        lineHeight: 1,
+                        textShadow: "1px 1px 2px rgba(255, 255, 255, 0.89)",
+                      }}
+                    >
+                      {index + 1}
+                    </Typography>
+                  </Box>
 
-              <Stack direction="row" spacing={1} alignItems="center">
-                <Rating
-                  value={vendor.averageRating || 0}
-                  precision={0.5}
-                  readOnly
-                  size="small"
-                />
-                <Typography variant="body2" color="text.secondary">
-                  (
-                  {vendor.reviewCount === 1
-                    ? '1 review'
-                    : `${vendor.reviewCount} reviews`}
-                  )
-                </Typography>
-              </Stack>
-            </CardContent>
-          </Card>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight="bold"
+                    sx={{
+                      fontSize: {
+                        xs: "0.9rem",
+                        sm: "1rem",
+                        md: "1.05rem",
+                      },
+                      wordBreak: "break-word",
+                    }}
+                  >
+                    {vendor.businessName}
+                  </Typography>
+                </Stack>
+
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  alignItems="center"
+                  justifyContent="center"
+                  sx={{ mt: 1 }}
+                >
+                  <Rating
+                    value={vendor.averageRating || 0}
+                    precision={0.5}
+                    readOnly
+                    size="small"
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    (
+                    {vendor.reviewCount === 1
+                      ? "1 review"
+                      : `${vendor.reviewCount} reviews`}
+                    )
+                  </Typography>
+                </Stack>
+              </CardContent>
+            </Card>
+          </Box>
         ))}
       </Box>
-    </Box>
+    </Container>
   );
 };
 

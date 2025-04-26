@@ -32,6 +32,7 @@ import { onMessageListener } from "../firebase/onMessageListener";
 import Lottie from "lottie-react";
 // import locationPinAnimation from "../assets/lottie/monoicon.json";
 import blueLocationPin from "../assets/lottie/blueicon.json";
+import Logo from "../assets/logo/popout.png";
 
 interface Props {
   user: {
@@ -137,19 +138,17 @@ const Navbar: React.FC<Props> = ({
               <MenuIcon />
             </IconButton>
 
-            <Typography
-              component={Link}
-              to="/"
-              variant="h4"
-              fontWeight="bold"
-              sx={{
-                textDecoration: "none",
-                color: "inherit",
-                cursor: "pointer",
-              }}
-            >
-              PopOut
-            </Typography>
+            <Link to="/" style={{ display: "flex", alignItems: "center" }}>
+              <img
+                src={Logo}
+                alt="PopOut Logo"
+                style={{
+                  height: "30px",
+                  objectFit: "contain",
+                  display: "block",
+                }}
+              />
+            </Link>
 
             {user && (
               <Button
