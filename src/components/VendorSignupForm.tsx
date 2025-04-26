@@ -9,6 +9,11 @@ import {
   Button,
   Typography,
   Paper,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle
 } from "@mui/material";
 
 import {
@@ -35,6 +40,13 @@ type Props = {
   setCaptcha: Function;
 };
 
+type ModalType = {
+  open: boolean;
+  title: string;
+  message: string | Element | unknown;
+  success: boolean;
+}
+
 const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha }) => {
   const [formData, setFormData] = useState({
     businessName: "",
@@ -46,30 +58,12 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     profilePicture: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [uploading, setUploading] = useState(false);
-  const [modal, setModal] = useState({
+  const [modal, setModal] = useState<ModalType>({
     open: false,
     title: '',
     message: '',
     success: false,
   });
-
-  // states used to toggle the modals
-  const [openAlertS, setOpenAlertS] = React.useState(false);
-  const [openAlertF, setOpenAlertF] = React.useState(false);
-
-  // create a style for the box that the modal holds
-  const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
-  };
 
   const navigate = useNavigate();
 
@@ -99,17 +93,45 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     }
   }, [ captcha ]);
 
+  // when form validation is run and the errors state is altered, change the modal state only if there are any errors present
+  useEffect(() => {
+    // if there are errors in the form, then display said errors in a modal
+    if (Object.keys(errors).length > 0) {
+      setModal({ open: true, title: 'Error', message: (<Box><Typography>Please fix the errors in the form:</Typography>{Object.values(errors).map((errorString: string) => {
+        return <Typography>{errorString}</Typography>
+      })}</Box>), success: false });
+    }
+  }, [ errors ])
+
   // function to determine whether or not the form is ready to be submitted
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
+    // TODO: these three may not be needed thanks to "required" attribute on textfields
     if (!formData.businessName) newErrors.businessName = 'Business name is required';
     if (!formData.description) newErrors.description = 'Description is required';
     if (!formData.email) newErrors.email = 'Email is required';
-    if (formData.facebook.slice(0, 24) !== 'https://www.facebook.com') newErrors.facebook = 'Facebook link must start with "https://www.facebook.com"';
-    if (formData.instagram.slice(0, 25) !== 'https://www.instagram.com') newErrors.venue_name = 'Instagram link must start with "https://www.instagram.com"';
-    //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////if (!form.location) newErrors.location = 'Location is required';
+    ///// const instagramRegex = /^https?:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9._-]+\/?$/;
+    ///// return instagramRegex.test(url);
+    // if facebook profile link was given, check if valid
+    if (formData.facebook) {
+      if (formData.facebook.slice(0, 25) !== 'https://www.facebook.com/' || formData.facebook.length === 25) newErrors.facebook = 'Facebook link must follow this format "https://www.facebook.com/YourAccountNameHere"';
+    }
+    // if instagram profile link was given, check if valid
+    if (formData.instagram) {
+      if (formData.instagram.slice(0, 26) !== 'https://www.instagram.com/' || formData.instagram.length === 26) newErrors.instagram = 'Instagram link must follow this format "https://www.instagram.com/YourAccountNameHere"';
+    }
+    // if store website link was given, check if the website at least has https
+    if (formData.store) {
+      if (formData.store.slice(0, 8) !== 'https://' || formData.store.length === 8) newErrors.store = 'Online store link must have https support (no http)';
+    }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  // determine whether or not to redirect after a vendor form submission attempt
+  const handleModalClose = () => {
+    setModal((prev) => ({ ...prev, open: false }));
+    if (modal.success) navigate('/vendorprofile');
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -125,7 +147,6 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
 
     // validate the form inputs first
     if (!validate()) {
-      setModal({ open: true, title: 'Error', message: 'Please fix the errors in the form.', success: false });
       return;
     }
 
@@ -144,17 +165,16 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
       }
 
       const result = await res.json();
-      console.log(result);
-      
+
       // update the user in state to reflect vendor status
       await getUser();
 
       // open success modal;
-      setOpenAlertS(true);
+      setModal({ open: true, title: 'Congratulations', message: 'You are now a vendor!', success: true });
     } catch (err) {
       console.error("Error submitting vendor form", err);
       // open failure modal
-      setOpenAlertF(true);
+      setModal({ open: true, title: 'Error', message: err, success: false });
     }
   };
 
@@ -199,18 +219,18 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
         <Box component="form" onSubmit={handleSubmit}>
           <TextField
             name="businessName"
-            label="Business Name"
+            label="Business Name (required)"
             fullWidth
             required
             margin="normal"
             value={formData.businessName}
             onChange={handleChange}
-            error={!!errors.businessName}
+            error={errors.businessName !== undefined}
             helperText={errors.businessName}
           />
           <TextField
             name="description"
-            label="Business Description"
+            label="Business Description (required)"
             fullWidth
             required
             multiline
@@ -218,57 +238,51 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
             margin="normal"
             value={formData.description}
             onChange={handleChange}
-            error={!!errors.description}
+            error={errors.description !== undefined}
             helperText={errors.description}
           />
           <TextField
             name="email"
-            label="Business Email"
+            label="Business Email (required)"
             fullWidth
             required
             margin="normal"
             value={formData.email}
             onChange={handleChange}
-            error={!!errors.email}
+            error={errors.email !== undefined}
             helperText={errors.email}
           />
           <TextField
             name="facebook"
-            label="Facebook (optional)"
+            label="Facebook Account URL (optional)"
             fullWidth
             margin="normal"
             value={formData.facebook}
             onChange={handleChange}
-            error={!!errors.email}
-            helperText={errors.email}
+            error={errors.facebook !== undefined}
+            helperText={errors.facebook}
           />
           <TextField
             name="instagram"
-            label="Instagram (optional)"
+            label="Instagram Account URL (optional)"
             fullWidth
             margin="normal"
             value={formData.instagram}
             onChange={handleChange}
-            error={!!errors.email}
-            helperText={errors.email}
+            error={errors.instagram !== undefined}
+            helperText={errors.instagram}
           />
           <TextField
             name="store"
-            label="Online Store (optional)"
+            label="Online Store URL (optional)"
             fullWidth
             margin="normal"
             value={formData.store}
             onChange={handleChange}
-            error={!!errors.email}
-            helperText={errors.email}
+            error={errors.store !== undefined}
+            helperText={errors.store}
           />
-
-          {/* Two different methods for adding a vendor profile */}
-          {/* <Box sx={{ outline: 5 }}>
-            <Typography>
-              Add image url or upload image
-            </Typography> */}
-            <TextField
+            {/* <TextField
               name="profilePicture"
               label="Profile Picture URL (optional)"
               fullWidth
@@ -278,11 +292,7 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
             />
             <Typography >
               *Custom image may be uploaded after vendor creation.
-            </Typography>
-            {/* <ImageUpload inputData={formData} setInputData={setFormData} imageKeyName="profilePicture" multiple={false} /> */}
-            {/* <ImageUpload setInputData={setFormData} imageKeyName="profilePicture" multiple={false} />
-          </Box> */}
-
+            </Typography> */}
           <Button
             type="submit"
             variant="contained"
@@ -302,36 +312,20 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
               Cancel
             </Button>
           </Link>
-            <Modal open={openAlertS}>
-              <Box sx={style}>
-                <Typography variant="h6" component="h2">
-                  Vendor request submitted!
-                </Typography>
-                <Button
-                  onClick={() => {
-                    navigate('/vendorprofile');
-                  }}
-                  variant="outlined"
-                >
-                  OK
-                </Button>
-              </Box>
-            </Modal>
-            <Modal open={openAlertF}>
-              <Box sx={style}>
-                <Typography variant="h6" component="h2">
-                  Error submitting vendor form (you may already be a vendor)
-                </Typography>
-                <Button
-                  onClick={() => {
-                    setOpenAlertF(false);
-                  }}
-                  variant="outlined"
-                >
-                  OK
-                </Button>
-              </Box>
-            </Modal>
+          <Dialog open={modal.open} onClose={handleModalClose}>
+            <DialogTitle>{modal.title}</DialogTitle>
+            <DialogContent>
+              <DialogContentText>{modal.message}</DialogContentText>
+            </DialogContent>
+            <DialogActions>
+              <Button
+                size="small"
+                onClick={handleModalClose}
+              >
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
         </Box>
       </Paper>
     </Box>
