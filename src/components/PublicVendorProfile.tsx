@@ -1,4 +1,3 @@
-// PublicVendorProfile.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -32,6 +31,14 @@ import {
   PersonAddAlt,
   PersonRemove,
 } from "@mui/icons-material";
+// import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+// import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BrushIcon from "@mui/icons-material/Brush";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SportsHandballIcon from "@mui/icons-material/SportsHandball";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import PlaceIcon from "@mui/icons-material/Place";
 import formatDate from "../utils/formatDate";
 import ReviewComponent from "./Review";
 import EventDetails from "./EventDetails";
@@ -137,8 +144,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         .map((e) => ({ ...e, vendor: v }))
         .sort(
           (a, b) =>
-            new Date(a.startDate).getTime() -
-            new Date(b.startDate).getTime()
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
         );
       setEvents(events);
 
@@ -168,6 +174,31 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       : `/api/users/${user.id}/follow/${vendorId}`;
     await axios.post(route);
     setIsFollowing((f) => !f);
+  };
+
+  const categoryColors: { [key: string]: string } = {
+    "Food & Drink": "#FB8C00",
+    Art: "#8E24AA",
+    Music: "#E53935",
+    "Sports & Fitness": "#43A047",
+    Hobbies: "#FDD835",
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "Food & Drink":
+        return <RestaurantIcon fontSize="small" />;
+      case "Art":
+        return <BrushIcon fontSize="small" />;
+      case "Music":
+        return <MusicNoteIcon fontSize="small" />;
+      case "Sports & Fitness":
+        return <SportsHandballIcon fontSize="small" />;
+      case "Hobbies":
+        return <EmojiEmotionsIcon fontSize="small" />;
+      default:
+        return <PlaceIcon fontSize="small" />;
+    }
   };
 
   useEffect(() => {
@@ -218,8 +249,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               <Stack direction="row" alignItems="center" spacing={1}>
                 <Rating value={avgRating} precision={0.1} readOnly />
                 <Typography variant="body2" color="text.secondary">
-                  ({reviewCount}{" "}
-                  {reviewCount === 1 ? "review" : "reviews"})
+                  ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
                 </Typography>
               </Stack>
             </Box>
@@ -243,9 +273,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
             {user && (
               <Button
                 variant="contained"
-                startIcon={
-                  isFollowing ? <PersonRemove /> : <PersonAddAlt />
-                }
+                startIcon={isFollowing ? <PersonRemove /> : <PersonAddAlt />}
                 onClick={handleFollowToggle}
                 sx={{
                   backgroundColor: isFollowing ? "#e4e6eb" : "#1b74e4",
@@ -262,11 +290,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         </Stack>
       )}
 
-      <Tabs
-        value={tabIndex}
-        onChange={(_, v) => setTabIndex(v)}
-        sx={{ mb: 2 }}
-      >
+      <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ mb: 2 }}>
         <Tab label="Upcoming Popups" />
         <Tab label="Past Popups" />
       </Tabs>
@@ -320,82 +344,134 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               <Card
                 key={event.id}
                 sx={{
-                  minWidth: 300,
-                  maxWidth: 300,
+                  minWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
+                  maxWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
                   flex: "0 0 auto",
                   boxShadow: 3,
+                  display: "flex",
+                  flexDirection: "column",
+                  height: 470,
                 }}
               >
-                {event.image_url && (
-                  <img
-                    src={event.image_url}
-                    alt={event.title}
-                    style={{
-                      width: "100%",
-                      height: 160,
-                      objectFit: "cover",
-                    }}
-                  />
-                )}
-                <CardContent>
-                  <Typography variant="h6">{event.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {event.venue_name}
-                  </Typography>
-                  <Typography variant="body2">
-                    {formatDate(event.startDate, event.endDate)}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 1,
-                      display: "-webkit-box",
-                      WebkitBoxOrient: "vertical",
-                      WebkitLineClamp: 3,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "pre-line",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {event.description}
-                  </Typography>
-                  <Box
-                    sx={{
-                      mt: 1,
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 0.5,
-                      maxHeight: 60,
-                      overflow: "hidden",
-                    }}
-                  >
-                    {event.Categories?.map((cat) => (
-                      <Chip
-                        key={cat.name}
-                        label={cat.name}
-                        variant="outlined"
-                        size="small"
-                      />
-                    ))}
-                    {event.isFree && <Chip label="Free" size="small" />}
-                    {event.isKidFriendly && (
-                      <Chip label="Kid-Friendly" size="small" />
+                <CardContent
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    height: "100%",
+                  }}
+                >
+                  <Box>
+                    {event.image_url && (
+                      <Box mb={2}>
+                        <img
+                          src={event.image_url}
+                          alt={event.title}
+                          style={{
+                            width: "100%",
+                            height: "160px",
+                            objectFit: "cover",
+                            borderRadius: "6px",
+                          }}
+                        />
+                      </Box>
                     )}
-                    {event.isSober && <Chip label="Sober" size="small" />}
+                    <Typography variant="h6" gutterBottom>
+                      {event.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      {event.venue_name}
+                    </Typography>
+                    <Typography variant="body2">
+                      {formatDate(event.startDate, event.endDate)}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mt: 1,
+                        display: "-webkit-box",
+                        WebkitBoxOrient: "vertical",
+                        WebkitLineClamp: 3,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "pre-line",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {event.description}
+                    </Typography>
+
+                    {(event.Categories?.length ||
+                      event.isFree ||
+                      event.isKidFriendly ||
+                      event.isSober) && (
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{ mt: 1, flexWrap: "wrap" }}
+                      >
+                        {event.Categories?.map((cat) => (
+                          <Box
+                            key={cat.name}
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: "50%",
+                              backgroundColor:
+                                categoryColors[cat.name] || "#999",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "#fff",
+                            }}
+                            title={cat.name}
+                          >
+                            {getCategoryIcon(cat.name)}
+                          </Box>
+                        ))}
+                        {event.isFree && (
+                          <Chip
+                            label="Free"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        )}
+                        {event.isKidFriendly && (
+                          <Chip
+                            label="Kid-Friendly"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        )}
+                        {event.isSober && (
+                          <Chip
+                            label="Sober"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        )}
+                      </Stack>
+                    )}
                   </Box>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpenModal(event)}
-                    sx={{
-                      mt: 2,
-                      backgroundColor: "#000",
-                      "&:hover": { backgroundColor: "#333" },
-                    }}
-                  >
-                    Details
-                  </Button>
+
+                  <Box mt={2}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleOpenModal(event)}
+                      sx={{
+                        borderRadius: "999px",
+                        textTransform: "none",
+                        fontFamily: `'DM Sans', sans-serif`,
+                        boxShadow: 1,
+                        backgroundColor: "#212121",
+                        color: "#fff",
+                        "&:hover": { backgroundColor: "#333" },
+                      }}
+                    >
+                      Details
+                    </Button>
+                  </Box>
                 </CardContent>
               </Card>
             ))}
