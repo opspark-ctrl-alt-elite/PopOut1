@@ -118,34 +118,6 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     fetchEvents();
   }, [fetchEvents]);
 
-  // useEffect(() => {
-  //   const hasFilters =
-  //     filters.category !== "" ||
-  //     filters.isFree ||
-  //     filters.isKidFriendly ||
-  //     filters.isSober;
-
-  //   if (isMobile || modalOpen || isHovered || hasFilters) return;
-
-  //   const interval = setInterval(() => {
-  //     setCurrentIndex((prev) =>
-  //       events.length ? (prev + itemsPerPage) % events.length : 0
-  //     );
-  //   }, 10000);
-
-  //   return () => clearInterval(interval);
-  // }, [events.length, itemsPerPage, isHovered, modalOpen, filters, isMobile]);
-
-  // // const handleArrowClick = (direction: "left" | "right") => {
-  // //   setCurrentIndex((prev) => {
-  // //     const newIndex =
-  // //       direction === "left"
-  // //         ? (prev - itemsPerPage + events.length) % events.length
-  // //         : (prev + itemsPerPage) % events.length;
-  // //     return newIndex;
-  // //   });
-  // // };
-
   useEffect(() => {
     const hasFilters =
       filters.category !== "" ||
@@ -166,10 +138,14 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     }
 
     autoScrollTimerRef.current = setInterval(() => {
-      setCurrentIndex((prev) =>
-        events.length ? (prev + itemsPerPage) % events.length : 0
-      );
-    }, 10000);
+      setCurrentIndex((prev) => {
+        if (prev + itemsPerPage >= events.length) {
+          return 0;
+        } else {
+          return prev + itemsPerPage;
+        }
+      });
+    }, 15000);
 
     return () => {
       if (autoScrollTimerRef.current) {
@@ -180,12 +156,13 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
   const handleArrowClick = (direction: "left" | "right") => {
     setCurrentIndex((prev) => {
-      const step = 1;
-      const newIndex =
-        direction === "left"
-          ? (prev - step + events.length) % events.length
-          : (prev + step) % events.length;
-      return newIndex;
+      if (direction === "left") {
+        return prev === 0
+          ? Math.max(events.length - itemsPerPage, 0)
+          : prev - 1;
+      } else {
+        return (prev + 1) % events.length;
+      }
     });
   };
 
@@ -203,22 +180,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     setSelectedEvent(null);
   };
 
-  // const visibleEvents = events.slice(currentIndex, currentIndex + itemsPerPage);
-
-  // const visibleEvents = events.length
-  // ? Array.from({ length: Math.min(itemsPerPage, events.length) }, (_, i) =>
-  //     events[(currentIndex + i) % events.length]
-  //   )
-  // : [];
-
-  const visibleEvents = isMobile
-    ? events
-    : events.length
-    ? Array.from(
-        { length: Math.min(itemsPerPage, events.length) },
-        (_, i) => events[(currentIndex + i) % events.length]
-      )
-    : [];
+  const visibleEvents = events;
 
   const categoryColors: { [key: string]: string } = {
     "Food & Drink": "#FB8C00",
@@ -244,6 +206,10 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         return <PlaceIcon fontSize="small" />;
     }
   };
+
+  const cardWidth = isMobile ? 260 : 300;
+  const cardGap = 24;
+  const containerWidth = cardWidth * itemsPerPage + cardGap * (itemsPerPage - 1) + 8;
 
   return (
     <Box sx={{ mt: 4, px: { xs: 2, sm: 3, md: 6 } }}>
@@ -435,165 +401,174 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
         sx={{
-          display: "flex",
-          gap: 3,
-          py: 2,
-          overflowX: "auto",
-          scrollBehavior: "smooth",
-          "&::-webkit-scrollbar": { display: "none" },
+          overflow: "hidden",
+          width: `${containerWidth}px`,
+          margin: "0 auto",
+          position: "relative",
         }}
       >
-        {visibleEvents.map((event, index) => (
-          <Fade key={`${event.id}-${index}`} in={true} timeout={600}>
-            <Card
-              sx={{
-                minWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
-                maxWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
-                flex: "0 0 auto",
-                boxShadow: 3,
-                display: "flex",
-                flexDirection: "column",
-                height: 470,
-              }}
-            >
-              <CardContent
+        <Box
+          sx={{
+            display: "flex",
+            gap: 3,
+            transform: `translateX(-${currentIndex * (300 + 24)}px)`,
+            transition: "transform 0.6s ease",
+            py: 2,
+          }}
+        >
+          {visibleEvents.map((event, index) => (
+            <Fade key={`${event.id}-${index}`} in={true} timeout={600}>
+              <Card
                 sx={{
+                  minWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
+                  maxWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
+                  flex: "0 0 auto",
+                  boxShadow: 3,
                   display: "flex",
                   flexDirection: "column",
-                  justifyContent: "space-between",
-                  height: "100%",
+                  height: 470,
                 }}
               >
-                {/* image & info */}
-                <Box>
-                  {event.image_url && (
-                    <Box mb={2}>
-                      <img
-                        src={event.image_url}
-                        alt={event.title}
-                        style={{
-                          width: "100%",
-                          height: "160px",
-                          objectFit: "cover",
-                          borderRadius: "6px",
-                        }}
-                      />
-                    </Box>
-                  )}
-                  <Typography variant="h6" gutterBottom>
-                    {event.title}
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    Hosted by{" "}
-                    {event.vendor?.id ? (
-                      <Link
-                        to={`/vendor/${event.vendor.id}`}
-                        style={{
-                          color: "#1976d2",
-                          textDecoration: "underline",
-                        }}
-                      >
-                        {event.vendor.businessName}
-                      </Link>
-                    ) : (
-                      event.vendor?.businessName
-                    )}
-                  </Typography>
-                  <Typography variant="body2">{event.venue_name}</Typography>
-                  <Typography variant="body2">
-                    {formatDate(event.startDate, event.endDate)}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 1,
-                      display: "-webkit-box",
-                      WebkitBoxOrient: "vertical",
-                      WebkitLineClamp: 3,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "pre-line",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {event.description}
-                  </Typography>
-
-                  {(event.Categories?.length ||
-                    event.isFree ||
-                    event.isKidFriendly ||
-                    event.isSober) && (
-                    <Stack
-                      direction="row"
-                      spacing={1}
-                      sx={{ mt: 1, flexWrap: "wrap" }}
-                    >
-                      {event.Categories?.map((cat) => (
-                        <Box
-                          key={cat.name}
-                          sx={{
-                            width: 28,
-                            height: 28,
-                            borderRadius: "50%",
-                            backgroundColor: categoryColors[cat.name] || "#999",
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#fff",
+                <CardContent
+                  sx={{
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    height: "100%",
+                  }}
+                >
+                  {/* image & info */}
+                  <Box>
+                    {event.image_url && (
+                      <Box mb={2}>
+                        <img
+                          src={event.image_url}
+                          alt={event.title}
+                          style={{
+                            width: "100%",
+                            height: "160px",
+                            objectFit: "cover",
+                            borderRadius: "6px",
                           }}
-                          title={cat.name}
+                        />
+                      </Box>
+                    )}
+                    <Typography variant="h6" gutterBottom>
+                      {event.title}
+                    </Typography>
+                    <Typography variant="body2" color="text.secondary">
+                      Hosted by{" "}
+                      {event.vendor?.id ? (
+                        <Link
+                          to={`/vendor/${event.vendor.id}`}
+                          style={{
+                            color: "#1976d2",
+                            textDecoration: "underline",
+                          }}
                         >
-                          {getCategoryIcon(cat.name)}
-                        </Box>
-                      ))}
-                      {event.isFree && (
-                        <Chip
-                          label="Free"
-                          size="small"
-                          sx={{ fontSize: "0.75rem" }}
-                        />
+                          {event.vendor.businessName}
+                        </Link>
+                      ) : (
+                        event.vendor?.businessName
                       )}
-                      {event.isKidFriendly && (
-                        <Chip
-                          label="Kid-Friendly"
-                          size="small"
-                          sx={{ fontSize: "0.75rem" }}
-                        />
-                      )}
-                      {event.isSober && (
-                        <Chip
-                          label="Sober"
-                          size="small"
-                          sx={{ fontSize: "0.75rem" }}
-                        />
-                      )}
-                    </Stack>
-                  )}
-                </Box>
+                    </Typography>
+                    <Typography variant="body2">{event.venue_name}</Typography>
+                    <Typography variant="body2">
+                      {formatDate(event.startDate, event.endDate)}
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      sx={{
+                        mt: 1,
+                        display: "-webkit-box",
+                        WebkitBoxOrient: "vertical",
+                        WebkitLineClamp: 3,
+                        overflow: "hidden",
+                        textOverflow: "ellipsis",
+                        whiteSpace: "pre-line",
+                        wordBreak: "break-word",
+                      }}
+                    >
+                      {event.description}
+                    </Typography>
 
-                {/* details*/}
-                <Box mt={2}>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpenModal(event)}
-                    sx={{
-                      borderRadius: "999px",
-                      textTransform: "none",
-                      fontFamily: `'DM Sans', sans-serif`,
-                      boxShadow: 1,
-                      backgroundColor: "#212121",
-                      color: "#fff",
-                      "&:hover": { backgroundColor: "#333" },
-                    }}
-                  >
-                    Details
-                  </Button>
-                </Box>
-              </CardContent>
-            </Card>
-          </Fade>
-        ))}
+                    {(event.Categories?.length ||
+                      event.isFree ||
+                      event.isKidFriendly ||
+                      event.isSober) && (
+                      <Stack
+                        direction="row"
+                        spacing={1}
+                        sx={{ mt: 1, flexWrap: "wrap" }}
+                      >
+                        {event.Categories?.map((cat) => (
+                          <Box
+                            key={cat.name}
+                            sx={{
+                              width: 28,
+                              height: 28,
+                              borderRadius: "50%",
+                              backgroundColor:
+                                categoryColors[cat.name] || "#999",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              color: "#fff",
+                            }}
+                            title={cat.name}
+                          >
+                            {getCategoryIcon(cat.name)}
+                          </Box>
+                        ))}
+                        {event.isFree && (
+                          <Chip
+                            label="Free"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        )}
+                        {event.isKidFriendly && (
+                          <Chip
+                            label="Kid-Friendly"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        )}
+                        {event.isSober && (
+                          <Chip
+                            label="Sober"
+                            size="small"
+                            sx={{ fontSize: "0.75rem" }}
+                          />
+                        )}
+                      </Stack>
+                    )}
+                  </Box>
+
+                  {/* details*/}
+                  <Box mt={2}>
+                    <Button
+                      variant="contained"
+                      size="small"
+                      onClick={() => handleOpenModal(event)}
+                      sx={{
+                        borderRadius: "999px",
+                        textTransform: "none",
+                        fontFamily: `'DM Sans', sans-serif`,
+                        boxShadow: 1,
+                        backgroundColor: "#212121",
+                        color: "#fff",
+                        "&:hover": { backgroundColor: "#333" },
+                      }}
+                    >
+                      Details
+                    </Button>
+                  </Box>
+                </CardContent>
+              </Card>
+            </Fade>
+          ))}
+        </Box>
       </Box>
 
       <EventDetails
