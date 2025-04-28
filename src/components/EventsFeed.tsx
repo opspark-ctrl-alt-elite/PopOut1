@@ -428,10 +428,10 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           sx={{
             position: "absolute",
             right: {
-              xs: "16px",
-              sm: "32px",
-              md: "60px",
-              lg: "80px",
+              xs: "6px",
+              sm: "14px",
+              md: "28px",
+              lg: "44px",
             },
             top: 0,
             display: "flex",
