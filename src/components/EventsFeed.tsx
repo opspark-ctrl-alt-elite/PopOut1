@@ -81,6 +81,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const itemsPerPage = isMobile ? 2 : 3;
   const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [hasUserInteracted, setHasUserInteracted] = useState(false);
 
   const fetchCategories = async () => {
     const res = await axios.get("/api/categories");
@@ -118,6 +119,42 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
     fetchEvents();
   }, [fetchEvents]);
 
+  // useEffect(() => {
+  //   const hasFilters =
+  //     filters.category !== "" ||
+  //     filters.isFree ||
+  //     filters.isKidFriendly ||
+  //     filters.isSober;
+
+  //   if (isMobile || modalOpen || isHovered || hasFilters) {
+  //     if (autoScrollTimerRef.current) {
+  //       clearInterval(autoScrollTimerRef.current);
+  //       autoScrollTimerRef.current = null;
+  //     }
+  //     return;
+  //   }
+
+  //   if (autoScrollTimerRef.current) {
+  //     clearInterval(autoScrollTimerRef.current);
+  //   }
+
+  //   autoScrollTimerRef.current = setInterval(() => {
+  //     setCurrentIndex((prev) => {
+  //       if (prev + itemsPerPage >= events.length) {
+  //         return 0;
+  //       } else {
+  //         return prev + itemsPerPage;
+  //       }
+  //     });
+  //   }, 15000);
+
+  //   return () => {
+  //     if (autoScrollTimerRef.current) {
+  //       clearInterval(autoScrollTimerRef.current);
+  //     }
+  //   };
+  // }, [events.length, itemsPerPage, isHovered, modalOpen, filters, isMobile]);
+
   useEffect(() => {
     const hasFilters =
       filters.category !== "" ||
@@ -125,7 +162,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       filters.isKidFriendly ||
       filters.isSober;
 
-    if (isMobile || modalOpen || isHovered || hasFilters) {
+    if (isMobile || modalOpen || isHovered || hasFilters || hasUserInteracted) {
       if (autoScrollTimerRef.current) {
         clearInterval(autoScrollTimerRef.current);
         autoScrollTimerRef.current = null;
@@ -152,9 +189,31 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         clearInterval(autoScrollTimerRef.current);
       }
     };
-  }, [events.length, itemsPerPage, isHovered, modalOpen, filters, isMobile]);
+  }, [
+    events.length,
+    itemsPerPage,
+    isHovered,
+    modalOpen,
+    filters,
+    isMobile,
+    hasUserInteracted,
+  ]);
+
+  // const handleArrowClick = (direction: "left" | "right") => {
+  //   setCurrentIndex((prev) => {
+  //     if (direction === "left") {
+  //       return prev === 0
+  //         ? Math.max(events.length - itemsPerPage, 0)
+  //         : prev - 1;
+  //     } else {
+  //       return (prev + 1) % events.length;
+  //     }
+  //   });
+  // };
 
   const handleArrowClick = (direction: "left" | "right") => {
+    setHasUserInteracted(true);
+
     setCurrentIndex((prev) => {
       if (direction === "left") {
         return prev === 0
@@ -209,7 +268,8 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
   const cardWidth = isMobile ? 260 : 300;
   const cardGap = 24;
-  const containerWidth = cardWidth * itemsPerPage + cardGap * (itemsPerPage - 1) + 8;
+  const containerWidth =
+    cardWidth * itemsPerPage + cardGap * (itemsPerPage - 1) + 8;
 
   return (
     <Box sx={{ mt: 4, px: { xs: 2, sm: 3, md: 6 } }}>
