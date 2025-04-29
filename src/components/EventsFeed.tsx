@@ -386,8 +386,14 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           sx={{
             backgroundColor: filters.isFree ? "#42A5F5" : "#fff",
             color: filters.isFree ? "#fff" : "text.primary",
-            border: filters.isFree ? "none" : "1px solid #ccc",
+            borderColor: filters.isFree ? "transparent" : "#ccc",
+            borderWidth: "1px",
+            borderStyle: "solid",
             fontWeight: 500,
+            transition: "background-color 0.3s, border-color 0.3s",
+            "&:hover": {
+              backgroundColor: "#bbdefb",
+            },
           }}
         />
 
@@ -399,8 +405,14 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           sx={{
             backgroundColor: filters.isKidFriendly ? "#42A5F5" : "#fff",
             color: filters.isKidFriendly ? "#fff" : "text.primary",
-            border: filters.isKidFriendly ? "none" : "1px solid #ccc",
+            borderColor: filters.isKidFriendly ? "transparent" : "#ccc",
+            borderWidth: "1px",
+            borderStyle: "solid",
             fontWeight: 500,
+            transition: "background-color 0.3s, border-color 0.3s",
+            "&:hover": {
+              backgroundColor: "#bbdefb",
+            },
           }}
         />
 
@@ -412,8 +424,14 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
           sx={{
             backgroundColor: filters.isSober ? "#42A5F5" : "#fff",
             color: filters.isSober ? "#fff" : "text.primary",
-            border: filters.isSober ? "none" : "1px solid #ccc",
+            borderColor: filters.isSober ? "transparent" : "#ccc",
+            borderWidth: "1px",
+            borderStyle: "solid",
             fontWeight: 500,
+            transition: "background-color 0.3s, border-color 0.3s",
+            "&:hover": {
+              backgroundColor: "#bbdefb",
+            },
           }}
         />
       </Stack>
