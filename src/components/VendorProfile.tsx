@@ -252,7 +252,8 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               <Stack direction="row" spacing={2}>
                 <Box sx={{ position: "relative" }}>
                   <Avatar
-                    src={uploadedImage?.referenceURL || vendor.profilePicture}
+                  // TODO: idk
+                    src={vendor.profilePicture || uploadedImage?.referenceURL}
                     alt={vendor.businessName}
                     sx={{ width: 100, height: 100 }}
                   />

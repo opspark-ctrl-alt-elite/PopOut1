@@ -55,7 +55,7 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     facebook: "",
     instagram: "",
     store: "",
-    profilePicture: "",
+    // profilePicture: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [modal, setModal] = useState<ModalType>({
@@ -199,135 +199,157 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
         },
       }}
     >
-      <Paper
-        elevation={6}
-        sx={{
-          zIndex: 2,
-          p: 4,
-          borderRadius: 3,
-          maxWidth: 500,
-          width: "90%",
-          backgroundColor: "rgba(255, 255, 255, 0.95)",
-        }}
-      >
-        <Typography variant="h5" fontWeight="bold" gutterBottom>
-          Become A Vendor
-        </Typography>
-        <Typography variant="body2" mb={2}>
-          Fill out the form to join our platform and grow your business.
-        </Typography>
-        <Box component="form" onSubmit={handleSubmit}>
-          <TextField
-            name="businessName"
-            label="Business Name (required)"
-            fullWidth
-            required
-            margin="normal"
-            value={formData.businessName}
-            onChange={handleChange}
-            error={errors.businessName !== undefined}
-            helperText={errors.businessName}
-          />
-          <TextField
-            name="description"
-            label="Business Description (required)"
-            fullWidth
-            required
-            multiline
-            rows={3}
-            margin="normal"
-            value={formData.description}
-            onChange={handleChange}
-            error={errors.description !== undefined}
-            helperText={errors.description}
-          />
-          <TextField
-            name="email"
-            label="Business Email (required)"
-            fullWidth
-            required
-            margin="normal"
-            value={formData.email}
-            onChange={handleChange}
-            error={errors.email !== undefined}
-            helperText={errors.email}
-          />
-          <TextField
-            name="facebook"
-            label="Facebook Account URL (optional)"
-            fullWidth
-            margin="normal"
-            value={formData.facebook}
-            onChange={handleChange}
-            error={errors.facebook !== undefined}
-            helperText={errors.facebook}
-          />
-          <TextField
-            name="instagram"
-            label="Instagram Account URL (optional)"
-            fullWidth
-            margin="normal"
-            value={formData.instagram}
-            onChange={handleChange}
-            error={errors.instagram !== undefined}
-            helperText={errors.instagram}
-          />
-          <TextField
-            name="store"
-            label="Online Store URL (optional)"
-            fullWidth
-            margin="normal"
-            value={formData.store}
-            onChange={handleChange}
-            error={errors.store !== undefined}
-            helperText={errors.store}
-          />
-            {/* <TextField
-              name="profilePicture"
-              label="Profile Picture URL (optional)"
+      {user ? (
+
+        <Paper
+          elevation={6}
+          sx={{
+            zIndex: 2,
+            p: 4,
+            borderRadius: 3,
+            maxWidth: 500,
+            width: "90%",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+          }}
+        >
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            Become A Vendor
+          </Typography>
+          <Typography variant="body2" mb={2}>
+            Fill out the form to join our platform and grow your business.
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit}>
+            <TextField
+              name="businessName"
+              label="Business Name (required)"
+              fullWidth
+              required
+              margin="normal"
+              value={formData.businessName}
+              onChange={handleChange}
+              error={errors.businessName !== undefined}
+              helperText={errors.businessName}
+            />
+            <TextField
+              name="description"
+              label="Business Description (required)"
+              fullWidth
+              required
+              multiline
+              rows={3}
+              margin="normal"
+              value={formData.description}
+              onChange={handleChange}
+              error={errors.description !== undefined || formData.description.length > 255}
+              helperText={`word limit: ${formData.description.length}/255${formData.description.length > 255 ? " LIMIT EXCEEDED" : ""}\n${errors.description}`}
+            />
+            <TextField
+              name="email"
+              label="Business Email (required)"
+              fullWidth
+              required
+              margin="normal"
+              value={formData.email}
+              onChange={handleChange}
+              error={errors.email !== undefined}
+              helperText={errors.email}
+            />
+            <TextField
+              name="facebook"
+              label="Facebook Account URL (optional)"
               fullWidth
               margin="normal"
-              value={formData.profilePicture}
+              value={formData.facebook}
               onChange={handleChange}
+              error={errors.facebook !== undefined}
+              helperText={errors.facebook}
             />
-            <Typography >
-              *Custom image may be uploaded after vendor creation.
-            </Typography> */}
-          <Button
-            type="submit"
-            variant="contained"
-            fullWidth
-            sx={{ mt: 3, backgroundColor: "#3f0071" }}
-            startIcon={<ArrowUpward />}
-          >
-            Submit
-          </Button>
-          <Link to="/">
+            <TextField
+              name="instagram"
+              label="Instagram Account URL (optional)"
+              fullWidth
+              margin="normal"
+              value={formData.instagram}
+              onChange={handleChange}
+              error={errors.instagram !== undefined}
+              helperText={errors.instagram}
+            />
+            <TextField
+              name="store"
+              label="Online Store URL (optional)"
+              fullWidth
+              margin="normal"
+              value={formData.store}
+              onChange={handleChange}
+              error={errors.store !== undefined}
+              helperText={errors.store}
+            />
+              {/* <TextField
+                name="profilePicture"
+                label="Profile Picture URL (optional)"
+                fullWidth
+                margin="normal"
+                value={formData.profilePicture}
+                onChange={handleChange}
+              />
+              <Typography >
+                *Custom image may be uploaded after vendor creation.
+              </Typography> */}
             <Button
+              type="submit"
               variant="contained"
               fullWidth
-              sx={{ mt: 3, backgroundColor: "#BA2020" }}
-              startIcon={<Block />}
+              sx={{ mt: 3, backgroundColor: "#3f0071" }}
+              startIcon={<ArrowUpward />}
             >
-              Cancel
+              Submit
             </Button>
-          </Link>
-          <Dialog open={modal.open} onClose={handleModalClose}>
-            <DialogTitle>{modal.title}</DialogTitle>
-            <DialogContent>
-              <DialogContentText>{modal.message}</DialogContentText>
-            </DialogContent>
-            <DialogActions>
+            <Link to="/">
               <Button
-                size="small"
-                onClick={handleModalClose}
+                variant="contained"
+                fullWidth
+                sx={{ mt: 3, backgroundColor: "#BA2020" }}
+                startIcon={<Block />}
               >
-                Close
+                Cancel
               </Button>
-            </DialogActions>
-          </Dialog>
-        </Box>
-      </Paper>
+            </Link>
+            <Dialog open={modal.open} onClose={handleModalClose}>
+              <DialogTitle>{modal.title}</DialogTitle>
+              <DialogContent>
+                <DialogContentText>{modal.message}</DialogContentText>
+              </DialogContent>
+              <DialogActions>
+                <Button
+                  size="small"
+                  onClick={handleModalClose}
+                >
+                  Close
+                </Button>
+              </DialogActions>
+            </Dialog>
+          </Box>
+        </Paper>
+      ) : (
+        <Paper
+          elevation={6}
+          sx={{
+            zIndex: 2,
+            p: 4,
+            borderRadius: 3,
+            maxWidth: 500,
+            width: "90%",
+            backgroundColor: "rgba(255, 255, 255, 0.95)",
+          }}
+        >
+          <Typography variant="h5" fontWeight="bold" gutterBottom>
+            Become A Vendor
+          </Typography>
+          <Typography variant="body2" mb={2}>
+            It would appear that you are not signed in. Please click "Sign In" in the upper right corner to sign into your account and get sent back to the home page before trying to become a vendor.
+          </Typography>
+        </Paper>
+      )}
     </Box>
   );
 };
