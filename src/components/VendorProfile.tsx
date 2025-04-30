@@ -1,13 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
-// import ImageUpload from "./ImageUpload";
 
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import LanguageIcon from "@mui/icons-material/Language";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EventNoteIcon from "@mui/icons-material/EventNote";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 import {
   Box,
@@ -81,16 +82,15 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     website: "",
     instagram: "",
     facebook: "",
-    profilePicture: ""
+    profilePicture: "",
   });
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
     null
   );
-  // states used to toggle the modals
+
   const [openDelete, setOpenDelete] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
 
-  // create a style for the box that the modal holds
   const style = {
     position: "absolute" as const,
     top: "50%",
@@ -103,10 +103,9 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     p: 4,
   };
 
-  // make sure that you have the current vendor record in the state
   useEffect(() => {
     getVendor();
-  }, [ user ]);
+  }, [user]);
 
   useEffect(() => {
     if (vendor) {
@@ -118,7 +117,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         website,
         instagram,
         facebook,
-        profilePicture
+        profilePicture,
       } = vendor;
       setFields({
         businessName,
@@ -128,35 +127,29 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         instagram: instagram ? instagram : "",
         facebook: facebook ? facebook : "",
         profilePicture: profilePicture ? profilePicture : "",
-      })
+      });
     }
   }, [vendor]);
 
-  // gets the vendor associated with the user
   const getVendor = async () => {
     try {
       const res = await axios.get(`/api/vendor/${user?.id}`, {
         withCredentials: true,
       });
-      // set state's vendor value
       setVendor(res.data);
     } catch (err) {
-      // set vendor to null when no vendor can be found
       setVendor(null);
       console.error("Error retrieving vendor record:", err);
     }
   };
 
-  // gets the uploaded image associated with the vendor
   const getUploadedImage = async () => {
     try {
       const res = await axios.get(`/api/images/vendorId/${vendor?.id}`, {
         withCredentials: true,
       });
-      // set state's uploaded image value to the first (and only) image record in the imageRes.data array
       setUploadedImage(res.data[0]);
     } catch (err) {
-      // set uploaded image to null when no uploaded image can be found or when another error occurs
       setUploadedImage(null);
       console.error("Error retrieving uploaded image record for vendor: ", err);
     }
@@ -185,7 +178,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     }
   };
 
-  // deletes the uploaded Image
   const deleteUploadedImage = async () => {
     if (!uploadedImage) return;
     try {
@@ -199,7 +191,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     }
   };
 
-  // updates the vendor account
   const updateVendor = async () => {
     try {
       const trimmedFields: Record<string, any> = {};
@@ -217,20 +208,16 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     }
   };
 
-  // deletes the vendor account
   const deleteVendor = async () => {
     try {
-      // preemptively delete the vendor's uploaded image if there is one
       await deleteUploadedImage();
       await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
-      // update the user in state to reflect vendor status (will update vendor state as side effect)
       getUser();
     } catch (err) {
       console.error("Error deleting vendor record: ", err);
     }
   };
 
-  // handle inputs to the fields by saving them to the state
   const handleUpdateFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
     setFields((prev) => ({ ...prev, [name]: value }));
@@ -238,17 +225,17 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
 
   return (
     <div>
-      <Container sx={{ mt: 4 }}>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
         {vendor ? (
           <Box>
             <Stack
               direction="row"
               justifyContent="space-between"
               alignItems="flex-start"
-              flexWrap="wrap"
               spacing={2}
               sx={{ mb: 4 }}
             >
+              {/* header */}
               <Stack direction="row" spacing={2}>
                 <Box sx={{ position: "relative" }}>
                   <Avatar
@@ -257,7 +244,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     alt={vendor.businessName}
                     sx={{ width: 100, height: 100 }}
                   />
-                  {/* upload img */}
+                  {/* upload, delete */}
                   <HiddenInput
                     id="profile-upload"
                     type="file"
@@ -320,18 +307,19 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               </Stack>
 
               {/* socials, edit */}
-              <Stack
-                direction="row"
-                spacing={1}
-                alignItems="center"
-                flexWrap="wrap"
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 1,
+                  flexWrap: "wrap",
+                }}
               >
                 {vendor.facebook && (
                   <Tooltip title="Facebook">
                     <IconButton
                       href={vendor.facebook}
                       target="_blank"
-                      rel="noopener noreferrer"
                       sx={{ color: "#1877F2" }}
                     >
                       <FacebookIcon />
@@ -343,7 +331,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     <IconButton
                       href={vendor.instagram}
                       target="_blank"
-                      rel="noopener noreferrer"
                       sx={{ color: "#E4405F" }}
                     >
                       <InstagramIcon />
@@ -355,7 +342,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     <IconButton
                       href={vendor.website}
                       target="_blank"
-                      rel="noopener noreferrer"
                       sx={{ color: "#34A853" }}
                     >
                       <LanguageIcon />
@@ -366,50 +352,93 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                   variant="outlined"
                   size="small"
                   onClick={() => setOpenEdit(true)}
-                  sx={{ ml: 1 }}
                 >
                   Edit Profile
                 </Button>
-              </Stack>
+              </Box>
             </Stack>
 
             {/* links */}
-            <Stack spacing={2}>
+            <Stack direction="row" spacing={4} justifyContent="center" my={3}>
+              {/* my popups */}
               <Button
-                variant="contained"
-                color="secondary"
-                fullWidth
                 component={Link}
                 to="/active-events"
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textTransform: "none",
+                  px: 4,
+                  py: 2,
+                  backgroundColor: "#42a5f5",
+                  color: "#fff",
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1e88e5",
+                  },
+                }}
               >
-                Active Popups
+                <Box sx={{ fontSize: 40, lineHeight: 1 }}>
+                  <EventNoteIcon sx={{ fontSize: 40 }} />
+                </Box>
+                <Typography variant="subtitle1">My Popups</Typography>
               </Button>
+
+              {/* new popup*/}
               <Button
-                variant="contained"
-                fullWidth
                 component={Link}
                 to="/create-event"
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textTransform: "none",
+                  px: 4,
+                  py: 2,
+                  backgroundColor: "#42a5f5",
+                  color: "#fff",
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1e88e5",
+                  },
+                }}
               >
-                Create New Popup
-              </Button>
-              <Divider />
-              <Button
-                variant="outlined"
-                fullWidth
-                component={Link}
-                to="/userprofile"
-              >
-                View User Profile
-              </Button>
-              <Button
-                variant="outlined"
-                color="error"
-                fullWidth
-                onClick={() => setOpenDelete(true)}
-              >
-                Delete Vendor
+                <Box sx={{ fontSize: 40, lineHeight: 1 }}>
+                  <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
+                </Box>
+                <Typography variant="subtitle1">New Popup</Typography>
               </Button>
             </Stack>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                mt: 4,
+              }}
+            >
+              <Button
+                variant="contained"
+                size="small"
+                onClick={() => setOpenDelete(true)}
+                sx={{
+                  backgroundColor: "#b71c1c",
+                  color: "#fff",
+                  fontSize: "0.8125rem",
+                  textTransform: "none",
+                  px: 2,
+                  py: 0.5,
+                  boxShadow: 1,
+                  "&:hover": {
+                    backgroundColor: "#fbe9e7",
+                    borderColor: "#b71c1c",
+                    color: "#b71c1c",
+                  },
+                }}
+              >
+                Delete Profile
+              </Button>
+            </Box>
 
             {/* edit profile */}
             <Modal open={openEdit}>
@@ -428,7 +457,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     value={fields[key as keyof Fields]}
                     onChange={handleUpdateFieldChange}
                     placeholder={
-                      ["website","instagram","facebook"].includes(key)
+                      ["website", "instagram", "facebook"].includes(key)
                         ? "Link must start with http://"
                         : undefined
                     }
