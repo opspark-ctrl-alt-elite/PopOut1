@@ -1,4 +1,3 @@
-// PublicVendorProfile.tsx
 import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
@@ -32,9 +31,18 @@ import {
   PersonAddAlt,
   PersonRemove,
 } from "@mui/icons-material";
+// import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
+// import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BrushIcon from "@mui/icons-material/Brush";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SportsHandballIcon from "@mui/icons-material/SportsHandball";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import PlaceIcon from "@mui/icons-material/Place";
 import formatDate from "../utils/formatDate";
 import ReviewComponent from "./Review";
 import EventDetails from "./EventDetails";
+import EventCarousel from "./EventCarousel";
 
 type Props = {
   user: {
@@ -103,18 +111,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const now = new Date();
 
-  const scroll = (dir: "left" | "right") => {
-    const amount = 320;
-    scrollRef.current?.scrollBy({
-      left: dir === "left" ? -amount : amount,
-      behavior: "smooth",
-    });
-  };
-
-  const handleOpenModal = (e: Event) => {
-    setSelectedEvent(e);
-    setModalOpen(true);
-  };
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedEvent(null);
@@ -137,8 +133,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         .map((e) => ({ ...e, vendor: v }))
         .sort(
           (a, b) =>
-            new Date(a.startDate).getTime() -
-            new Date(b.startDate).getTime()
+            new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
         );
       setEvents(events);
 
@@ -193,80 +188,91 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         </Alert>
       )}
 
-      {vendor && (
-        <Stack
-          direction="row"
-          spacing={3}
-          alignItems="center"
-          justifyContent="space-between"
-          sx={{ mb: 3 }}
-        >
-          <Stack direction="row" spacing={2} alignItems="center">
-            <Avatar
-              src={uploadedImage || vendor.profilePicture}
-              sx={{ width: 70, height: 70 }}
-            />
-            <Box>
-              <Typography variant="h6" fontWeight="bold">
-                {vendor.businessName}
-              </Typography>
-              {vendor.email && (
-                <Typography variant="body2" color="text.secondary">
-                  {vendor.email}
-                </Typography>
-              )}
-              <Stack direction="row" alignItems="center" spacing={1}>
-                <Rating value={avgRating} precision={0.1} readOnly />
-                <Typography variant="body2" color="text.secondary">
-                  ({reviewCount}{" "}
-                  {reviewCount === 1 ? "review" : "reviews"})
-                </Typography>
-              </Stack>
-            </Box>
+{vendor && (
+  <>
+    <Stack
+      direction="row"
+      spacing={3}
+      alignItems="center"
+      justifyContent="space-between"
+      sx={{ mb: 1 }}
+    >
+      <Stack direction="row" spacing={2} alignItems="center">
+        <Avatar
+          src={uploadedImage || vendor.profilePicture}
+          sx={{ width: 85, height: 85 }}
+        />
+        <Box>
+          <Typography variant="h6" fontWeight="bold">
+            {vendor.businessName}
+          </Typography>
+          {vendor.email && (
+            <Typography variant="body2" color="text.secondary">
+              {vendor.email}
+            </Typography>
+          )}
+          <Stack direction="row" alignItems="center" spacing={1}>
+            <Rating value={avgRating} precision={0.1} readOnly />
+            <Typography variant="body2" color="text.secondary">
+              ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
+            </Typography>
           </Stack>
-          <Stack direction="row" spacing={2}>
-            {vendor.facebook && (
-              <IconButton href={vendor.facebook} target="_blank">
-                <Facebook color="primary" />
-              </IconButton>
-            )}
-            {vendor.instagram && (
-              <IconButton href={vendor.instagram} target="_blank">
-                <Instagram sx={{ color: "#d62976" }} />
-              </IconButton>
-            )}
-            {vendor.website && (
-              <IconButton href={vendor.website} target="_blank">
-                <Language sx={{ color: "#4caf50" }} />
-              </IconButton>
-            )}
-            {user && (
-              <Button
-                variant="contained"
-                startIcon={
-                  isFollowing ? <PersonRemove /> : <PersonAddAlt />
-                }
-                onClick={handleFollowToggle}
-                sx={{
-                  backgroundColor: isFollowing ? "#e4e6eb" : "#1b74e4",
-                  color: isFollowing ? "#050505" : "#fff",
-                  "&:hover": {
-                    backgroundColor: isFollowing ? "#d8dadf" : "#1a6ed8",
-                  },
-                }}
-              >
-                {isFollowing ? "Following" : "Follow"}
-              </Button>
-            )}
-          </Stack>
-        </Stack>
-      )}
+        </Box>
+      </Stack>
 
-      <Tabs
-        value={tabIndex}
-        onChange={(_, v) => setTabIndex(v)}
-        sx={{ mb: 2 }}
+      <Stack direction="row" spacing={2}>
+        {vendor.facebook && (
+          <IconButton href={vendor.facebook} target="_blank">
+            <Facebook color="primary" />
+          </IconButton>
+        )}
+        {vendor.instagram && (
+          <IconButton href={vendor.instagram} target="_blank">
+            <Instagram sx={{ color: "#d62976" }} />
+          </IconButton>
+        )}
+        {vendor.website && (
+          <IconButton href={vendor.website} target="_blank">
+            <Language sx={{ color: "#4caf50" }} />
+          </IconButton>
+        )}
+        {user && (
+          <Button
+            variant="contained"
+            startIcon={isFollowing ? <PersonRemove /> : <PersonAddAlt />}
+            onClick={handleFollowToggle}
+            sx={{
+              backgroundColor: isFollowing ? "#e4e6eb" : "#1b74e4",
+              color: isFollowing ? "#050505" : "#fff",
+              "&:hover": {
+                backgroundColor: isFollowing ? "#d8dadf" : "#1a6ed8",
+              },
+            }}
+          >
+            {isFollowing ? "Following" : "Follow"}
+          </Button>
+        )}
+      </Stack>
+    </Stack>
+
+    {vendor.description && (
+      <Typography
+        variant="body1"
+        sx={{
+          mt: 1,
+          color: "#000",
+          maxWidth: 720,
+          fontSize: "0.95rem",
+        }}
       >
+        {vendor.description}
+      </Typography>
+    )}
+  </>
+)}
+
+
+      <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ mb: 2 }}>
         <Tab label="Upcoming Popups" />
         <Tab label="Past Popups" />
       </Tabs>
@@ -278,129 +284,19 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
           No {tabIndex === 0 ? "Upcoming" : "Past"} Popups
         </Typography>
       ) : (
-        <Box sx={{ position: "relative", mt: 2 }}>
-          <IconButton
-            onClick={() => scroll("left")}
-            sx={{
-              position: "absolute",
-              top: "35%",
-              left: 0,
-              zIndex: 2,
-              bgcolor: "#fff",
-              boxShadow: 2,
+        <React.Fragment>
+          <Typography variant="h4" sx={{ textAlign: "left", mb: 1 }}>
+            {tabIndex === 0 ? "Upcoming Popups" : "Past Popups"}
+          </Typography>
+
+          <EventCarousel
+            events={filteredEvents}
+            onDetailsClick={(event) => {
+              setSelectedEvent(event);
+              setModalOpen(true);
             }}
-          >
-            <ArrowBackIos />
-          </IconButton>
-          <IconButton
-            onClick={() => scroll("right")}
-            sx={{
-              position: "absolute",
-              top: "35%",
-              right: 0,
-              zIndex: 2,
-              bgcolor: "#fff",
-              boxShadow: 2,
-            }}
-          >
-            <ArrowForwardIos />
-          </IconButton>
-          <Box
-            ref={scrollRef}
-            sx={{
-              display: "flex",
-              gap: 3,
-              py: 2,
-              px: 5,
-              overflowX: "scroll",
-              scrollbarWidth: "none",
-            }}
-          >
-            {filteredEvents.map((event) => (
-              <Card
-                key={event.id}
-                sx={{
-                  minWidth: 300,
-                  maxWidth: 300,
-                  flex: "0 0 auto",
-                  boxShadow: 3,
-                }}
-              >
-                {event.image_url && (
-                  <img
-                    src={event.image_url}
-                    alt={event.title}
-                    style={{
-                      width: "100%",
-                      height: 160,
-                      objectFit: "cover",
-                    }}
-                  />
-                )}
-                <CardContent>
-                  <Typography variant="h6">{event.title}</Typography>
-                  <Typography variant="body2" color="text.secondary">
-                    {event.venue_name}
-                  </Typography>
-                  <Typography variant="body2">
-                    {formatDate(event.startDate, event.endDate)}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{
-                      mt: 1,
-                      display: "-webkit-box",
-                      WebkitBoxOrient: "vertical",
-                      WebkitLineClamp: 3,
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      whiteSpace: "pre-line",
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {event.description}
-                  </Typography>
-                  <Box
-                    sx={{
-                      mt: 1,
-                      display: "flex",
-                      flexWrap: "wrap",
-                      gap: 0.5,
-                      maxHeight: 60,
-                      overflow: "hidden",
-                    }}
-                  >
-                    {event.Categories?.map((cat) => (
-                      <Chip
-                        key={cat.name}
-                        label={cat.name}
-                        variant="outlined"
-                        size="small"
-                      />
-                    ))}
-                    {event.isFree && <Chip label="Free" size="small" />}
-                    {event.isKidFriendly && (
-                      <Chip label="Kid-Friendly" size="small" />
-                    )}
-                    {event.isSober && <Chip label="Sober" size="small" />}
-                  </Box>
-                  <Button
-                    variant="contained"
-                    size="small"
-                    onClick={() => handleOpenModal(event)}
-                    sx={{
-                      mt: 2,
-                      backgroundColor: "#000",
-                      "&:hover": { backgroundColor: "#333" },
-                    }}
-                  >
-                    Details
-                  </Button>
-                </CardContent>
-              </Card>
-            ))}
-          </Box>
-        </Box>
+          />
+        </React.Fragment>
       )}
 
       <Box sx={{ mt: 4 }}>
