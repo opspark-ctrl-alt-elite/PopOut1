@@ -113,8 +113,10 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
         sx={{
           backgroundColor: "white",
           width: 400,
+          maxHeight: "80vh",
+          overflowY: "auto",
           mx: "auto",
-          my: "15vh",
+          my: "10vh",
           borderRadius: 2,
           p: 4,
           boxShadow: 24,
@@ -149,7 +151,7 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
         </Button>
 
         <Typography variant="subtitle1" mt={2} mb={1}>
-          Select Your Preferences
+          Select Your Interests
         </Typography>
 
         <Stack spacing={1}>
@@ -207,4 +209,5 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
   );
 };
 
+// lime bean
 export default EditProfile;
