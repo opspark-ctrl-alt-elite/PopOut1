@@ -22,6 +22,12 @@ import {
 } from "@mui/material";
 import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
 import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BrushIcon from "@mui/icons-material/Brush";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SportsHandballIcon from "@mui/icons-material/SportsHandball";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import PlaceIcon from "@mui/icons-material/Place";
 
 type Event = {
   id: string;
@@ -98,7 +104,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
       setEvents(upcomingEvents);
       setCurrentIndex(0);
     } catch (err) {
-      console.error("Error fetching events:", err);
+      console.error("Error fetching popups:", err);
       setEvents([]);
     }
   }, [filters]);
@@ -155,23 +161,133 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
   const visibleEvents = events.slice(currentIndex, currentIndex + itemsPerPage);
 
+  const categoryColors: { [key: string]: string } = {
+    "Food & Drink": "#FB8C00",
+    Art: "#8E24AA",
+    Music: "#E53935",
+    "Sports & Fitness": "#43A047",
+    Hobbies: "#FDD835",
+  };
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "Food & Drink":
+        return <RestaurantIcon fontSize="small" />;
+      case "Art":
+        return <BrushIcon fontSize="small" />;
+      case "Music":
+        return <MusicNoteIcon fontSize="small" />;
+      case "Sports & Fitness":
+        return <SportsHandballIcon fontSize="small" />;
+      case "Hobbies":
+        return <EmojiEmotionsIcon fontSize="small" />;
+      default:
+        return <PlaceIcon fontSize="small" />;
+    }
+  };
+
   return (
     <Box sx={{ mt: 4, px: { xs: 2, sm: 3, md: 6 } }}>
       {/* filters */}
       <Stack spacing={2} direction="row" flexWrap="wrap" mb={2}>
-        <FormControl sx={{ minWidth: 160 }} size="small">
-          <InputLabel>Category</InputLabel>
+        <FormControl
+          size="small"
+          sx={{
+            width: 180,
+            borderRadius: 9999,
+            fontFamily: "'Inter', sans-serif",
+            "& .MuiOutlinedInput-root": {
+              fontFamily: "'Inter', sans-serif",
+              borderRadius: 9999,
+              backgroundColor: "#f5f5f5",
+              paddingRight: "8px",
+              "& fieldset": {
+                border: "1px solid #ccc",
+              },
+              "&:hover fieldset": {
+                borderColor: "#aaa",
+              },
+              "&.Mui-focused fieldset": {
+                borderColor: "#aaa",
+              },
+            },
+          }}
+        >
           <Select
             value={filters.category}
-            label="Category"
             onChange={(e) =>
               setFilters((fil) => ({ ...fil, category: e.target.value }))
             }
+            displayEmpty
+            renderValue={(selected) =>
+              selected ? (
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box
+                    sx={{
+                      color: "#fff",
+                      backgroundColor: categoryColors[selected] || "#999",
+                      borderRadius: "50%",
+                      p: 0.5,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 20,
+                      height: 20,
+                    }}
+                  >
+                    {getCategoryIcon(selected)}
+                  </Box>
+                  {selected}
+                </Box>
+              ) : (
+                <Box sx={{ color: "#777", pl: 1 }}>Category</Box>
+              )
+            }
+            MenuProps={{
+              PaperProps: {
+                sx: {
+                  backgroundColor: "rgba(255, 255, 255, 0.75)",
+                  backdropFilter: "blur(12px)",
+                  boxShadow: "0px 8px 16px rgba(0,0,0,0.1)",
+                  borderRadius: "12px",
+                  overflow: "hidden",
+                },
+              },
+            }}
+            sx={{
+              borderRadius: 9999,
+              pl: 1,
+              height: "36px",
+              display: "flex",
+              alignItems: "center",
+            }}
           >
-            <MenuItem value="">All</MenuItem>
+            <MenuItem value="">
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                <PlaceIcon fontSize="small" sx={{ color: "#666" }} />
+                All
+              </Box>
+            </MenuItem>
             {categories.map((cat) => (
               <MenuItem key={cat} value={cat}>
-                {cat}
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                  <Box
+                    sx={{
+                      color: "#fff",
+                      backgroundColor: categoryColors[cat] || "#999",
+                      borderRadius: "50%",
+                      p: 0.5,
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      width: 20,
+                      height: 20,
+                    }}
+                  >
+                    {getCategoryIcon(cat)}
+                  </Box>
+                  {cat}
+                </Box>
               </MenuItem>
             ))}
           </Select>
@@ -240,9 +356,12 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                 maxWidth: 300,
                 flex: "0 0 auto",
                 boxShadow: 3,
+                display: "flex",
+                flexDirection: "column",
+                height: "100%",
               }}
             >
-              <CardContent>
+              <CardContent sx={{ flexGrow: 1 }}>
                 {event.image_url && (
                   <Box mb={2}>
                     <img
@@ -280,7 +399,19 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                 <Typography variant="body2">
                   {formatDate(event.startDate, event.endDate)}
                 </Typography>
-                <Typography variant="body2" sx={{ mt: 1 }}>
+                <Typography 
+                  variant="body2" 
+                  sx={{ 
+                    mt: 1,
+                    display: '-webkit-box',
+                    WebkitBoxOrient: 'vertical',
+                    WebkitLineClamp: 3,
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    whiteSpace: 'pre-line',
+                    wordBreak: 'break-word'
+                  }}
+                >
                   {event.description}
                 </Typography>
 
@@ -294,14 +425,24 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                     sx={{ mt: 1, flexWrap: "wrap" }}
                   >
                     {event.Categories?.map((cat) => (
-                      <Chip
+                      <Box
                         key={cat.name}
-                        label={cat.name}
-                        variant="outlined"
-                        size="small"
-                        sx={{ fontSize: "0.75rem" }}
-                      />
+                        sx={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: "50%",
+                          backgroundColor: categoryColors[cat.name] || "#999",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#fff",
+                        }}
+                        title={cat.name}
+                      >
+                        {getCategoryIcon(cat.name)}
+                      </Box>
                     ))}
+
                     {event.isFree && (
                       <Chip
                         label="Free"
@@ -332,10 +473,11 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                   onClick={() => handleOpenModal(event)}
                   sx={{
                     mt: 2,
-                    borderRadius: 2,
+                    borderRadius: "999px",
                     textTransform: "none",
+                    fontFamily: `'DM Sans', sans-serif`,
                     boxShadow: 1,
-                    backgroundColor: "#000",
+                    backgroundColor: "#212121",
                     color: "#fff",
                     "&:hover": { backgroundColor: "#333" },
                   }}
@@ -350,7 +492,7 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
 
       <EventDetails
         open={modalOpen}
-        onClose={() => setModalOpen(false)}
+        onClose={handleCloseModal}
         event={selectedEvent}
         currentUserId={user?.id}
       />

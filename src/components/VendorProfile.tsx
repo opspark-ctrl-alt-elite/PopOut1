@@ -381,7 +381,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                 component={Link}
                 to="/active-events"
               >
-                Active Events
+                Active Popups
               </Button>
               <Button
                 variant="contained"
@@ -389,7 +389,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                 component={Link}
                 to="/create-event"
               >
-                Create New Event
+                Create New Popup
               </Button>
               <Divider />
               <Button
