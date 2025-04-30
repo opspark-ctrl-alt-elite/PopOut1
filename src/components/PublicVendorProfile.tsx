@@ -106,6 +106,8 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const itemsPerPage = 3;
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const now = new Date();
@@ -125,6 +127,26 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedEvent(null);
+  };
+
+  // const handleArrowClick = (direction: "left" | "right") => {
+  //   setCurrentIndex((prev) => {
+  //     if (direction === "left") {
+  //       return prev === 0
+  //         ? Math.max(filteredEvents.length - itemsPerPage, 0)
+  //         : prev - 1;
+  //     } else {
+  //       return (prev + 1) % filteredEvents.length;
+  //     }
+  //   });
+  // };
+
+  const handleArrowClick = (direction: "left" | "right") => {
+    const cardWidth = 300 + 24;
+    scrollRef.current?.scrollBy({
+      left: direction === "left" ? -cardWidth : cardWidth,
+      behavior: "smooth",
+    });
   };
 
   const fetchData = async () => {
@@ -302,33 +324,35 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
           No {tabIndex === 0 ? "Upcoming" : "Past"} Popups
         </Typography>
       ) : (
-        <Box sx={{ position: "relative", mt: 2 }}>
-          <IconButton
-            onClick={() => scroll("left")}
-            sx={{
-              position: "absolute",
-              top: "35%",
-              left: 0,
-              zIndex: 2,
-              bgcolor: "#fff",
-              boxShadow: 2,
-            }}
-          >
-            <ArrowBackIos />
-          </IconButton>
-          <IconButton
-            onClick={() => scroll("right")}
-            sx={{
-              position: "absolute",
-              top: "35%",
-              right: 0,
-              zIndex: 2,
-              bgcolor: "#fff",
-              boxShadow: 2,
-            }}
-          >
-            <ArrowForwardIos />
-          </IconButton>
+        <React.Fragment>
+          <Box sx={{ position: "relative", mb: 1 }}>
+            <Typography variant="h4" sx={{ textAlign: "left", mb: 1 }}>
+              {tabIndex === 0 ? "Upcoming Popups" : "Past Popups"}
+            </Typography>
+
+            <Box
+              sx={{
+                position: "absolute",
+                right: {
+                  xs: "6px",
+                  sm: "14px",
+                  md: "28px",
+                  lg: "44px",
+                },
+                top: 0,
+                display: "flex",
+                gap: 1,
+              }}
+            >
+              <IconButton onClick={() => handleArrowClick("left")}>
+                <ArrowBackIos />
+              </IconButton>
+              <IconButton onClick={() => handleArrowClick("right")}>
+                <ArrowForwardIos />
+              </IconButton>
+            </Box>
+          </Box>
+
           <Box
             ref={scrollRef}
             sx={{
@@ -336,8 +360,11 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               gap: 3,
               py: 2,
               px: 5,
-              overflowX: "scroll",
+              overflowX: "auto",
+              scrollBehavior: "smooth",
+              transition: "transform 0.4s ease-in-out",
               scrollbarWidth: "none",
+              "&::-webkit-scrollbar": { display: "none" },
             }}
           >
             {filteredEvents.map((event) => (
@@ -476,7 +503,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               </Card>
             ))}
           </Box>
-        </Box>
+        </React.Fragment>
       )}
 
       <Box sx={{ mt: 4 }}>
