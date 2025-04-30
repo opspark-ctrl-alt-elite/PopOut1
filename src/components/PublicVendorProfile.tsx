@@ -330,15 +330,11 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               {tabIndex === 0 ? "Upcoming Popups" : "Past Popups"}
             </Typography>
 
+            {/* arrows */}
             <Box
               sx={{
                 position: "absolute",
-                right: {
-                  xs: "6px",
-                  sm: "14px",
-                  md: "28px",
-                  lg: "44px",
-                },
+                right: { xs: "6px", sm: "14px", md: "28px", lg: "44px" },
                 top: 0,
                 display: "flex",
                 gap: 1,
@@ -356,152 +352,157 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
           <Box
             ref={scrollRef}
             sx={{
-              display: "flex",
-              gap: 3,
-              py: 2,
-              px: 5,
-              overflowX: "auto",
-              scrollBehavior: "smooth",
-              transition: "transform 0.4s ease-in-out",
-              scrollbarWidth: "none",
-              "&::-webkit-scrollbar": { display: "none" },
+              overflow: "hidden",
+              width: `${300 * 3 + 24 * 2 + 6}px`,
+              margin: "0 auto",
+              position: "relative",
             }}
           >
-            {filteredEvents.map((event) => (
-              <Card
-                key={event.id}
-                sx={{
-                  minWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
-                  maxWidth: { xs: 220, sm: 260, md: 280, lg: 300 },
-                  flex: "0 0 auto",
-                  boxShadow: 3,
-                  display: "flex",
-                  flexDirection: "column",
-                  height: 470,
-                }}
-              >
-                <CardContent
+            <Box
+              sx={{
+                display: "flex",
+                gap: 3,
+                transform: `translateX(-${currentIndex * (300 + 24)}px)`,
+                transition: "transform 0.6s ease",
+                py: 2,
+              }}
+            >
+              {filteredEvents.map((event) => (
+                <Card
+                  key={event.id}
                   sx={{
+                    minWidth: 300,
+                    maxWidth: 300,
+                    flex: "0 0 auto",
+                    boxShadow: 3,
                     display: "flex",
                     flexDirection: "column",
-                    justifyContent: "space-between",
-                    height: "100%",
+                    height: 470,
                   }}
                 >
-                  <Box>
-                    {event.image_url && (
-                      <Box mb={2}>
-                        <img
-                          src={event.image_url}
-                          alt={event.title}
-                          style={{
-                            width: "100%",
-                            height: "160px",
-                            objectFit: "cover",
-                            borderRadius: "6px",
-                          }}
-                        />
-                      </Box>
-                    )}
-                    <Typography variant="h6" gutterBottom>
-                      {event.title}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {event.venue_name}
-                    </Typography>
-                    <Typography variant="body2">
-                      {formatDate(event.startDate, event.endDate)}
-                    </Typography>
-                    <Typography
-                      variant="body2"
-                      sx={{
-                        mt: 1,
-                        display: "-webkit-box",
-                        WebkitBoxOrient: "vertical",
-                        WebkitLineClamp: 3,
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "pre-line",
-                        wordBreak: "break-word",
-                      }}
-                    >
-                      {event.description}
-                    </Typography>
-
-                    {(event.Categories?.length ||
-                      event.isFree ||
-                      event.isKidFriendly ||
-                      event.isSober) && (
-                      <Stack
-                        direction="row"
-                        spacing={1}
-                        sx={{ mt: 1, flexWrap: "wrap" }}
-                      >
-                        {event.Categories?.map((cat) => (
-                          <Box
-                            key={cat.name}
-                            sx={{
-                              width: 28,
-                              height: 28,
-                              borderRadius: "50%",
-                              backgroundColor:
-                                categoryColors[cat.name] || "#999",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: "#fff",
+                  <CardContent
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      justifyContent: "space-between",
+                      height: "100%",
+                    }}
+                  >
+                    <Box>
+                      {event.image_url && (
+                        <Box mb={2}>
+                          <img
+                            src={event.image_url}
+                            alt={event.title}
+                            style={{
+                              width: "100%",
+                              height: "160px",
+                              objectFit: "cover",
+                              borderRadius: "6px",
                             }}
-                            title={cat.name}
-                          >
-                            {getCategoryIcon(cat.name)}
-                          </Box>
-                        ))}
-                        {event.isFree && (
-                          <Chip
-                            label="Free"
-                            size="small"
-                            sx={{ fontSize: "0.75rem" }}
                           />
-                        )}
-                        {event.isKidFriendly && (
-                          <Chip
-                            label="Kid-Friendly"
-                            size="small"
-                            sx={{ fontSize: "0.75rem" }}
-                          />
-                        )}
-                        {event.isSober && (
-                          <Chip
-                            label="Sober"
-                            size="small"
-                            sx={{ fontSize: "0.75rem" }}
-                          />
-                        )}
-                      </Stack>
-                    )}
-                  </Box>
+                        </Box>
+                      )}
+                      <Typography variant="h6" gutterBottom>
+                        {event.title}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {event.venue_name}
+                      </Typography>
+                      <Typography variant="body2">
+                        {formatDate(event.startDate, event.endDate)}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          mt: 1,
+                          display: "-webkit-box",
+                          WebkitBoxOrient: "vertical",
+                          WebkitLineClamp: 3,
+                          overflow: "hidden",
+                          textOverflow: "ellipsis",
+                          whiteSpace: "pre-line",
+                          wordBreak: "break-word",
+                        }}
+                      >
+                        {event.description}
+                      </Typography>
 
-                  <Box mt={2}>
-                    <Button
-                      variant="contained"
-                      size="small"
-                      onClick={() => handleOpenModal(event)}
-                      sx={{
-                        borderRadius: "999px",
-                        textTransform: "none",
-                        fontFamily: `'DM Sans', sans-serif`,
-                        boxShadow: 1,
-                        backgroundColor: "#212121",
-                        color: "#fff",
-                        "&:hover": { backgroundColor: "#333" },
-                      }}
-                    >
-                      Details
-                    </Button>
-                  </Box>
-                </CardContent>
-              </Card>
-            ))}
+                      {(event.Categories?.length ||
+                        event.isFree ||
+                        event.isKidFriendly ||
+                        event.isSober) && (
+                        <Stack
+                          direction="row"
+                          spacing={1}
+                          sx={{ mt: 1, flexWrap: "wrap" }}
+                        >
+                          {event.Categories?.map((cat) => (
+                            <Box
+                              key={cat.name}
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                borderRadius: "50%",
+                                backgroundColor:
+                                  categoryColors[cat.name] || "#999",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                                color: "#fff",
+                              }}
+                              title={cat.name}
+                            >
+                              {getCategoryIcon(cat.name)}
+                            </Box>
+                          ))}
+                          {event.isFree && (
+                            <Chip
+                              label="Free"
+                              size="small"
+                              sx={{ fontSize: "0.75rem" }}
+                            />
+                          )}
+                          {event.isKidFriendly && (
+                            <Chip
+                              label="Kid-Friendly"
+                              size="small"
+                              sx={{ fontSize: "0.75rem" }}
+                            />
+                          )}
+                          {event.isSober && (
+                            <Chip
+                              label="Sober"
+                              size="small"
+                              sx={{ fontSize: "0.75rem" }}
+                            />
+                          )}
+                        </Stack>
+                      )}
+                    </Box>
+
+                    <Box mt={2}>
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleOpenModal(event)}
+                        sx={{
+                          borderRadius: "999px",
+                          textTransform: "none",
+                          fontFamily: `'DM Sans', sans-serif`,
+                          boxShadow: 1,
+                          backgroundColor: "#212121",
+                          color: "#fff",
+                          "&:hover": { backgroundColor: "#333" },
+                        }}
+                      >
+                        Details
+                      </Button>
+                    </Box>
+                  </CardContent>
+                </Card>
+              ))}
+            </Box>
           </Box>
         </React.Fragment>
       )}
