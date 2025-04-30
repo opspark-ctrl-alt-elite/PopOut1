@@ -8,6 +8,8 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import LanguageIcon from "@mui/icons-material/Language";
 import PhotoCameraIcon from "@mui/icons-material/PhotoCamera";
 import DeleteIcon from "@mui/icons-material/Delete";
+import EventNoteIcon from "@mui/icons-material/EventNote";
+import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 
 import {
   Box,
@@ -81,7 +83,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     website: "",
     instagram: "",
     facebook: "",
-    profilePicture: ""
+    profilePicture: "",
   });
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
     null
@@ -106,7 +108,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   // make sure that you have the current vendor record in the state
   useEffect(() => {
     getVendor();
-  }, [ user ]);
+  }, [user]);
 
   useEffect(() => {
     if (vendor) {
@@ -118,7 +120,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         website,
         instagram,
         facebook,
-        profilePicture
+        profilePicture,
       } = vendor;
       setFields({
         businessName,
@@ -128,7 +130,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         instagram: instagram ? instagram : "",
         facebook: facebook ? facebook : "",
         profilePicture: profilePicture ? profilePicture : "",
-      })
+      });
     }
   }, [vendor]);
 
@@ -373,41 +375,56 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
             </Stack>
 
             {/* links */}
-            <Stack spacing={2}>
+            <Stack direction="row" spacing={4} justifyContent="center" my={3}>
+              {/* my popups */}
               <Button
-                variant="contained"
-                color="secondary"
-                fullWidth
                 component={Link}
                 to="/active-events"
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textTransform: "none",
+                  px: 4,
+                  py: 2,
+                  backgroundColor: "#42a5f5",
+                  color: "#fff",
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1e88e5",
+                  },
+                }}
               >
-                Active Popups
+                <Box sx={{ fontSize: 40, lineHeight: 1 }}>
+                  <EventNoteIcon sx={{ fontSize: 40 }} />
+                </Box>
+                <Typography variant="subtitle1">My Popups</Typography>
               </Button>
+
+              {/* new popup*/}
               <Button
-                variant="contained"
-                fullWidth
                 component={Link}
                 to="/create-event"
+                sx={{
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  textTransform: "none",
+                  px: 4,
+                  py: 2,
+                  backgroundColor: "#42a5f5",
+                  color: "#fff",
+                  borderRadius: 2,
+                  "&:hover": {
+                    backgroundColor: "#1e88e5",
+                  },
+                }}
               >
-                Create New Popup
+                <Box sx={{ fontSize: 40, lineHeight: 1 }}>
+                  <AddCircleOutlineIcon sx={{ fontSize: 40 }} />
+                </Box>
+                <Typography variant="subtitle1">New Popup</Typography>
               </Button>
-              <Divider />
-              <Button
-                variant="outlined"
-                fullWidth
-                component={Link}
-                to="/userprofile"
-              >
-                View User Profile
-              </Button>
-              {/* <Button
-                variant="outlined"
-                color="error"
-                fullWidth
-                onClick={() => setOpenDelete(true)}
-              >
-                Delete Vendor
-              </Button> */}
             </Stack>
             <Box
               sx={{
@@ -417,11 +434,25 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               }}
             >
               <Button
-                variant="outlined"
-                color="error"
+                variant="contained"
+                size="small"
                 onClick={() => setOpenDelete(true)}
+                sx={{
+                  backgroundColor: "#b71c1c",
+                  color: "#fff",
+                  fontSize: "0.8125rem",
+                  textTransform: "none",
+                  px: 2,
+                  py: 0.5,
+                  boxShadow: 1,
+                  "&:hover": {
+                    backgroundColor: "#fbe9e7",
+                    borderColor: "#b71c1c",
+                    color: "#b71c1c",
+                  },
+                }}
               >
-                Delete Vendor
+                Delete Profile
               </Button>
             </Box>
 
@@ -442,7 +473,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     value={fields[key as keyof Fields]}
                     onChange={handleUpdateFieldChange}
                     placeholder={
-                      ["website","instagram","facebook"].includes(key)
+                      ["website", "instagram", "facebook"].includes(key)
                         ? "Link must start with http://"
                         : undefined
                     }
