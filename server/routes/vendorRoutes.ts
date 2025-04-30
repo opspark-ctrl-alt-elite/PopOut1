@@ -44,7 +44,7 @@ router.post("/:userId", async (req, res) => {
     res.status(201).json(vendor);
   } catch (err) {
     console.error("Error POSTING vendor record", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", message: err });
   }
 });
 

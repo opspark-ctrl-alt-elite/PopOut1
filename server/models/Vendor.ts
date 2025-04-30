@@ -28,7 +28,7 @@ Vendor.init(
       allowNull: false,
     },
     businessName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,
     },
@@ -46,7 +46,7 @@ Vendor.init(
       allowNull: true,
     },
     description: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(300),
       allowNull: false,
     },
     website: {

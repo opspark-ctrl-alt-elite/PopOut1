@@ -96,6 +96,7 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
   // when form validation is run and the errors state is altered, change the modal state only if there are any errors present
   useEffect(() => {
     // if there are errors in the form, then display said errors in a modal
+    // TODO: tried to use ` to turn into string to fix hydration error, didn't work
     if (Object.keys(errors).length > 0) {
       setModal({ open: true, title: 'Error', message: (<Box><Typography>Please fix the errors in the form:</Typography>{Object.values(errors).map((errorString: string) => {
         return <Typography>{errorString}</Typography>
@@ -106,12 +107,17 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
   // function to determine whether or not the form is ready to be submitted
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
-    // TODO: these three may not be needed thanks to "required" attribute on textfields
-    if (!formData.businessName) newErrors.businessName = 'Business name is required';
-    if (!formData.description) newErrors.description = 'Description is required';
-    if (!formData.email) newErrors.email = 'Email is required';
-    ///// const instagramRegex = /^https?:\/\/(www\.)?instagram\.com\/[a-zA-Z0-9._-]+\/?$/;
-    ///// return instagramRegex.test(url);
+
+/*
+const input = document.createElement('input');
+    input.type = 'email';
+    input.value = email;
+    return input.checkValidity();
+*/
+    // make sure that email is valid
+    // TODO: make code original?
+    if (!formData.email.match(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) newErrors.email = 'Email address should be valid';
+
     // if facebook profile link was given, check if valid
     if (formData.facebook) {
       if (formData.facebook.slice(0, 25) !== 'https://www.facebook.com/' || formData.facebook.length === 25) newErrors.facebook = 'Facebook link must follow this format "https://www.facebook.com/YourAccountNameHere"';
@@ -151,6 +157,7 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     }
 
     try {
+      // send request to add new vendor to the database
       const res = await fetch(`/api/vendor/${user?.id}`, {
         method: "POST",
         headers: {
@@ -160,11 +167,33 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
         body: JSON.stringify(formData),
       });
 
-      if (!res.ok) {
-        throw new Error("Failed to submit vendor signup.");
-      }
-
+      // wait for the response json to resolve
       const result = await res.json();
+
+      if (!res.ok) {
+        // determine the error message to display
+        let errMessage = result.error;
+        if (result.message && result.message.original) {
+          if (result.message.original.code === 'ER_DATA_TOO_LONG') {
+            // handle errors for overly-long data
+            errMessage = `Too long of an input was given for the ${result.message.original.sqlMessage.split("'")[1]} field`;
+          } else if (result.message.original.code === 'ER_DUP_ENTRY') {
+            // handle errors for duplicate unique vendor properties
+            const errMsgRef = result.message.original.sqlMessage.split("vendors.");
+            let fieldRef: keyof typeof formData = errMsgRef[errMsgRef.length - 1];
+            fieldRef = fieldRef.slice(0, fieldRef.length - 1) as keyof typeof formData;
+            errMessage = `Another vendor already was given ${formData[fieldRef]} for the ${fieldRef} field`;
+            setErrors((prev) => ({
+              ...prev,
+              [fieldRef]: "More than one vendor cannot have the same value for this field",
+            }));
+          } else {
+            // handle any other less common database-related errors
+            errMessage = `Uncommon database error: ${result.message.original.sqlMessage}`
+          }
+        }
+        throw new Error(`Failed to submit vendor signup, please ensure there are no unresolved errors left in the form: ${errMessage}`);
+      }
 
       // update the user in state to reflect vendor status
       await getUser();
@@ -174,7 +203,7 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     } catch (err) {
       console.error("Error submitting vendor form", err);
       // open failure modal
-      setModal({ open: true, title: 'Error', message: err, success: false });
+      setModal({ open: true, title: 'Error', message: String(err), success: false });
     }
   };
 
@@ -227,8 +256,8 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
               margin="normal"
               value={formData.businessName}
               onChange={handleChange}
-              error={errors.businessName !== undefined}
-              helperText={errors.businessName}
+              error={errors.businessName !== undefined || formData.businessName.length > 50}
+              helperText={`character limit: ${formData.businessName.length}/50${formData.businessName.length > 50 ? " LIMIT EXCEEDED" : ""} ${errors.businessName ? "| " + errors.businessName : ""}`}
             />
             <TextField
               name="description"
@@ -240,8 +269,8 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
               margin="normal"
               value={formData.description}
               onChange={handleChange}
-              error={errors.description !== undefined || formData.description.length > 255}
-              helperText={`word limit: ${formData.description.length}/255${formData.description.length > 255 ? " LIMIT EXCEEDED" : ""}\n${errors.description}`}
+              error={errors.description !== undefined || formData.description.length > 300}
+              helperText={`character limit: ${formData.description.length}/300${formData.description.length > 300 ? " LIMIT EXCEEDED" : ""}`}
             />
             <TextField
               name="email"
@@ -251,8 +280,8 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
               margin="normal"
               value={formData.email}
               onChange={handleChange}
-              error={errors.email !== undefined}
-              helperText={errors.email}
+              error={errors.email !== undefined || formData.email.length > 255}
+              helperText={`${formData.email.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.email && formData.email.length > 255) ? "| " : ""}${errors.email ? errors.email : ""}`}
             />
             <TextField
               name="facebook"
@@ -261,8 +290,8 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
               margin="normal"
               value={formData.facebook}
               onChange={handleChange}
-              error={errors.facebook !== undefined}
-              helperText={errors.facebook}
+              error={errors.facebook !== undefined || formData.facebook.length > 255}
+              helperText={`${formData.facebook.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.facebook && formData.facebook.length > 255) ? "| " : ""}${errors.facebook ? errors.facebook : ""}`}
             />
             <TextField
               name="instagram"
@@ -271,8 +300,8 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
               margin="normal"
               value={formData.instagram}
               onChange={handleChange}
-              error={errors.instagram !== undefined}
-              helperText={errors.instagram}
+              error={errors.instagram !== undefined || formData.instagram.length > 255}
+              helperText={`${formData.instagram.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.instagram && formData.instagram.length > 255) ? "| " : ""}${errors.instagram ? errors.instagram : ""}`}
             />
             <TextField
               name="store"
@@ -281,20 +310,9 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
               margin="normal"
               value={formData.store}
               onChange={handleChange}
-              error={errors.store !== undefined}
-              helperText={errors.store}
+              error={errors.store !== undefined || formData.store.length > 255}
+              helperText={`${formData.store.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.store && formData.store.length > 255) ? "| " : ""}${errors.store ? errors.store : ""}`}
             />
-              {/* <TextField
-                name="profilePicture"
-                label="Profile Picture URL (optional)"
-                fullWidth
-                margin="normal"
-                value={formData.profilePicture}
-                onChange={handleChange}
-              />
-              <Typography >
-                *Custom image may be uploaded after vendor creation.
-              </Typography> */}
             <Button
               type="submit"
               variant="contained"
