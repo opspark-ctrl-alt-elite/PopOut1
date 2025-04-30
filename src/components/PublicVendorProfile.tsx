@@ -107,47 +107,13 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const [error, setError] = useState<string | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const itemsPerPage = 3;
 
   const scrollRef = useRef<HTMLDivElement>(null);
   const now = new Date();
 
-  const scroll = (dir: "left" | "right") => {
-    const amount = 320;
-    scrollRef.current?.scrollBy({
-      left: dir === "left" ? -amount : amount,
-      behavior: "smooth",
-    });
-  };
-
-  const handleOpenModal = (e: Event) => {
-    setSelectedEvent(e);
-    setModalOpen(true);
-  };
   const handleCloseModal = () => {
     setModalOpen(false);
     setSelectedEvent(null);
-  };
-
-  // const handleArrowClick = (direction: "left" | "right") => {
-  //   setCurrentIndex((prev) => {
-  //     if (direction === "left") {
-  //       return prev === 0
-  //         ? Math.max(filteredEvents.length - itemsPerPage, 0)
-  //         : prev - 1;
-  //     } else {
-  //       return (prev + 1) % filteredEvents.length;
-  //     }
-  //   });
-  // };
-
-  const handleArrowClick = (direction: "left" | "right") => {
-    const cardWidth = 300 + 24;
-    scrollRef.current?.scrollBy({
-      left: direction === "left" ? -cardWidth : cardWidth,
-      behavior: "smooth",
-    });
   };
 
   const fetchData = async () => {
@@ -197,31 +163,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       : `/api/users/${user.id}/follow/${vendorId}`;
     await axios.post(route);
     setIsFollowing((f) => !f);
-  };
-
-  const categoryColors: { [key: string]: string } = {
-    "Food & Drink": "#FB8C00",
-    Art: "#8E24AA",
-    Music: "#E53935",
-    "Sports & Fitness": "#43A047",
-    Hobbies: "#FDD835",
-  };
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "Food & Drink":
-        return <RestaurantIcon fontSize="small" />;
-      case "Art":
-        return <BrushIcon fontSize="small" />;
-      case "Music":
-        return <MusicNoteIcon fontSize="small" />;
-      case "Sports & Fitness":
-        return <SportsHandballIcon fontSize="small" />;
-      case "Hobbies":
-        return <EmojiEmotionsIcon fontSize="small" />;
-      default:
-        return <PlaceIcon fontSize="small" />;
-    }
   };
 
   useEffect(() => {
