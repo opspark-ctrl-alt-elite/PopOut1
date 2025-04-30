@@ -400,15 +400,30 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               >
                 View User Profile
               </Button>
-              <Button
+              {/* <Button
                 variant="outlined"
                 color="error"
                 fullWidth
                 onClick={() => setOpenDelete(true)}
               >
                 Delete Vendor
-              </Button>
+              </Button> */}
             </Stack>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                mt: 4,
+              }}
+            >
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => setOpenDelete(true)}
+              >
+                Delete Vendor
+              </Button>
+            </Box>
 
             {/* edit profile */}
             <Modal open={openEdit}>
