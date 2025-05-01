@@ -21,6 +21,7 @@ import {
   Divider,
   Rating,
   Alert,
+  Container,
 } from "@mui/material";
 import {
   Facebook,
@@ -31,15 +32,6 @@ import {
   PersonAddAlt,
   PersonRemove,
 } from "@mui/icons-material";
-// import ArrowBackIosIcon from "@mui/icons-material/ArrowBackIos";
-// import ArrowForwardIosIcon from "@mui/icons-material/ArrowForwardIos";
-import RestaurantIcon from "@mui/icons-material/Restaurant";
-import BrushIcon from "@mui/icons-material/Brush";
-import MusicNoteIcon from "@mui/icons-material/MusicNote";
-import SportsHandballIcon from "@mui/icons-material/SportsHandball";
-import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
-import PlaceIcon from "@mui/icons-material/Place";
-import formatDate from "../utils/formatDate";
 import ReviewComponent from "./Review";
 import EventDetails from "./EventDetails";
 import EventCarousel from "./EventCarousel";
@@ -181,98 +173,114 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       : events.filter((e) => new Date(e.endDate) < now);
 
   return (
-    <Box sx={{ p: 4 }}>
+    <Container maxWidth="lg" sx={{ pt: 4, pb: 8 }}>
       {error && (
         <Alert severity="error" sx={{ mb: 2 }}>
           {error}
         </Alert>
       )}
 
-{vendor && (
-  <>
-    <Stack
-      direction="row"
-      spacing={3}
-      alignItems="center"
-      justifyContent="space-between"
-      sx={{ mb: 1 }}
-    >
-      <Stack direction="row" spacing={2} alignItems="center">
-        <Avatar
-          src={uploadedImage || vendor.profilePicture}
-          sx={{ width: 85, height: 85 }}
-        />
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            {vendor.businessName}
-          </Typography>
-          {vendor.email && (
-            <Typography variant="body2" color="text.secondary">
-              {vendor.email}
+      {vendor && (
+        <>
+          <Stack
+            direction="row"
+            spacing={3}
+            alignItems="center"
+            justifyContent="space-between"
+            sx={{ mb: 1 }}
+          >
+            <Stack direction="row" spacing={2} alignItems="center">
+              <Avatar
+                src={uploadedImage || vendor.profilePicture}
+                sx={{ width: 85, height: 85 }}
+              />
+              <Box>
+                <Typography variant="h6" fontWeight="bold">
+                  {vendor.businessName}
+                </Typography>
+                {vendor.email && (
+                  <Typography variant="body2" color="text.secondary">
+                    {vendor.email}
+                  </Typography>
+                )}
+                <Stack direction="row" alignItems="center" spacing={1}>
+                  <Rating value={avgRating} precision={0.1} readOnly />
+                  <Typography variant="body2" color="text.secondary">
+                    ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
+                  </Typography>
+                </Stack>
+              </Box>
+            </Stack>
+
+            <Stack direction="row" spacing={2}>
+              {vendor.facebook && (
+                <IconButton href={vendor.facebook} target="_blank">
+                  <Facebook color="primary" />
+                </IconButton>
+              )}
+              {vendor.instagram && (
+                <IconButton href={vendor.instagram} target="_blank">
+                  <Instagram sx={{ color: "#d62976" }} />
+                </IconButton>
+              )}
+              {vendor.website && (
+                <IconButton href={vendor.website} target="_blank">
+                  <Language sx={{ color: "#4caf50" }} />
+                </IconButton>
+              )}
+              {user && (
+                <Button
+                  variant="contained"
+                  startIcon={isFollowing ? <PersonRemove /> : <PersonAddAlt />}
+                  onClick={handleFollowToggle}
+                  sx={{
+                    backgroundColor: isFollowing ? "#e4e6eb" : "#1b74e4",
+                    color: isFollowing ? "#050505" : "#fff",
+                    "&:hover": {
+                      backgroundColor: isFollowing ? "#d8dadf" : "#1a6ed8",
+                    },
+                  }}
+                >
+                  {isFollowing ? "Following" : "Follow"}
+                </Button>
+              )}
+            </Stack>
+          </Stack>
+
+          {vendor.description && (
+            <Typography
+              variant="body1"
+              sx={{
+                mt: 1,
+                color: "#000",
+                maxWidth: 720,
+                fontSize: "0.95rem",
+              }}
+            >
+              {vendor.description}
             </Typography>
           )}
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <Rating value={avgRating} precision={0.1} readOnly />
-            <Typography variant="body2" color="text.secondary">
-              ({reviewCount} {reviewCount === 1 ? "review" : "reviews"})
-            </Typography>
-          </Stack>
-        </Box>
-      </Stack>
+        </>
+      )}
 
-      <Stack direction="row" spacing={2}>
-        {vendor.facebook && (
-          <IconButton href={vendor.facebook} target="_blank">
-            <Facebook color="primary" />
-          </IconButton>
-        )}
-        {vendor.instagram && (
-          <IconButton href={vendor.instagram} target="_blank">
-            <Instagram sx={{ color: "#d62976" }} />
-          </IconButton>
-        )}
-        {vendor.website && (
-          <IconButton href={vendor.website} target="_blank">
-            <Language sx={{ color: "#4caf50" }} />
-          </IconButton>
-        )}
-        {user && (
-          <Button
-            variant="contained"
-            startIcon={isFollowing ? <PersonRemove /> : <PersonAddAlt />}
-            onClick={handleFollowToggle}
-            sx={{
-              backgroundColor: isFollowing ? "#e4e6eb" : "#1b74e4",
-              color: isFollowing ? "#050505" : "#fff",
-              "&:hover": {
-                backgroundColor: isFollowing ? "#d8dadf" : "#1a6ed8",
-              },
-            }}
-          >
-            {isFollowing ? "Following" : "Follow"}
-          </Button>
-        )}
-      </Stack>
-    </Stack>
-
-    {vendor.description && (
-      <Typography
-        variant="body1"
+      <Tabs
+        value={tabIndex}
+        onChange={(_, v) => setTabIndex(v)}
         sx={{
-          mt: 1,
-          color: "#000",
-          maxWidth: 720,
-          fontSize: "0.95rem",
+          mb: 2,
+          "& .MuiTab-root": {
+            fontSize: "1.7rem",
+            fontFamily: "'Bebas Neue', sans-serif",
+            textTransform: "none",
+            minWidth: "auto",
+            mr: 4,
+          },
+          "& .MuiTabs-indicator": {
+            backgroundColor: "#42a5f5",
+            height: 3,
+          },
         }}
       >
-        {vendor.description}
-      </Typography>
-    )}
-  </>
-)}
-
-
-      <Tabs value={tabIndex} onChange={(_, v) => setTabIndex(v)} sx={{ mb: 2 }}>
         <Tab label="Upcoming Popups" />
         <Tab label="Past Popups" />
       </Tabs>
@@ -285,10 +293,6 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         </Typography>
       ) : (
         <React.Fragment>
-          <Typography variant="h4" sx={{ textAlign: "left", mb: 1 }}>
-            {tabIndex === 0 ? "Upcoming Popups" : "Past Popups"}
-          </Typography>
-
           <EventCarousel
             events={filteredEvents}
             onDetailsClick={(event) => {
@@ -369,7 +373,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         event={selectedEvent}
         currentUserId={user?.id || ""}
       />
-    </Box>
+    </Container>
   );
 };
 
