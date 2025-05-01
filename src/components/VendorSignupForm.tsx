@@ -26,6 +26,7 @@ type User = {
   name: string;
   email: string;
   profile_picture?: string;
+  is_vendor: boolean;
 };
 
 type Captcha = {
@@ -88,10 +89,12 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
   useEffect(() => {
     // if the user hasn't beaten the captcha yet and wants to be a vendor
     if (!captcha.beatCaptcha && captcha.wantsToBeVendor) {
-      // then redirect to game
-      navigate("/game");
+      // then redirect to game if the user is logged in and not already a vendor
+      if (user && !user.is_vendor) {
+        navigate("/game");
+      }
     }
-  }, [ captcha ]);
+  }, [ user, captcha ]);
 
   // when form validation is run and the errors state is altered, change the modal state only if there are any errors present
   useEffect(() => {
