@@ -168,6 +168,8 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               </Button>
             </Stack>
 
+            <Divider sx={{ my: 4 }} />
+
             {bookmarkedEvents.length > 0 && (
               <Bookmarks userId={user.id} events={bookmarkedEvents} />
             )}

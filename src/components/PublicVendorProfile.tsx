@@ -195,7 +195,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
                 sx={{ width: 85, height: 85 }}
               />
               <Box>
-                <Typography variant="h6" fontWeight="bold">
+                <Typography variant="h5" fontWeight="bold">
                   {vendor.businessName}
                 </Typography>
                 {vendor.email && (
@@ -262,6 +262,8 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
           )}
         </>
       )}
+
+  <Divider sx={{ my: 4 }} />
 
       <Tabs
         value={tabIndex}
