@@ -95,7 +95,22 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
     masterUpdate();
   }, [ time ]);
 
-
+  useEffect(() => {
+    // if the score is at the goal score
+    if (score === 3) {
+      // check if this is for a captcha
+      if (captcha.wantsToBeVendor && !captcha.beatCaptcha) {
+        // if so, then set captcha.beatCaptcha to true and later redirect back to the vendor signup form
+        setCaptcha({
+          beatCaptcha: true,
+          wantsToBeVendor: true
+        });
+      } else {
+        // else, display winning modal
+        setOpen(true);
+      }
+    }
+  }, [ score ])
 
   // check for when captcha is updated or when game component is first rendered
   useEffect(() => {
@@ -189,21 +204,6 @@ const GameApp: React.FC<Props> = ({ captcha, setCaptcha }) => {
         // if so, then increase the score by 1
         setScore(prev => {
           prev++;
-
-          // if the score is at the goal score
-          if (prev === 3) {
-            // check if this is for a captcha
-            if (captcha.wantsToBeVendor && !captcha.beatCaptcha) {
-              // if so, then set captcha.beatCaptcha to true and later redirect back to the vendor signup form
-              setCaptcha({
-                beatCaptcha: true,
-                wantsToBeVendor: true
-              });
-            } else {
-              // else, display winning modal
-              setOpen(true);
-            }
-          }
           return prev;
         });
 
