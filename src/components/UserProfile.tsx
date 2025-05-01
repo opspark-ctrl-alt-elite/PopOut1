@@ -239,16 +239,29 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               <Typography>No interests selected yet.</Typography>
             )}
 
-            {/* Delete Button at Bottom */}
-            <Box display="flex" justifyContent="center" mt={6}>
+            {/* delete profile*/}
+            <Box display="flex" justifyContent="flex-end" mt={6}>
               <Button
                 variant="contained"
                 color="error"
                 onClick={() => setConfirmDelete(true)}
                 size="medium"
-                sx={{ textTransform: "none" }}
+                sx={{
+                  backgroundColor: "#b71c1c",
+                  color: "#fff",
+                  fontSize: "0.8125rem",
+                  textTransform: "none",
+                  px: 2,
+                  py: 0.5,
+                  boxShadow: 1,
+                  "&:hover": {
+                    backgroundColor: "#fbe9e7",
+                    borderColor: "#b71c1c",
+                    color: "#b71c1c",
+                  },
+                }}
               >
-                Delete Account
+                Delete Profile
               </Button>
             </Box>
 
