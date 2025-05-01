@@ -168,10 +168,16 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
       : `/api/images/vendorId/${vendor.id}`;
 
     try {
-      await axios.post(uploadUrl, formData, {
+      const res = await axios.post(uploadUrl, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
+      // replace the quick-access vendor image url on the vendor record with the url associated with the uploaded image
+      await axios.patch(
+        `/api/vendor/${user?.id}`,
+        { profilePicture: res.data[0].url },
+        { withCredentials: true }
+      );
       await getUploadedImage();
     } catch (err) {
       console.error("err uploading image", err);
@@ -185,6 +191,12 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         withCredentials: true,
         data: { publicIds: [uploadedImage.publicId] },
       });
+      // delete the quick-access vendor image url on the vendor record and replace the column's value with null
+      await axios.patch(
+        `/api/vendor/${user?.id}`,
+        { profilePicture: null },
+        { withCredentials: true }
+      );
       getUploadedImage();
     } catch (err) {
       console.error("err deleting image", err);
