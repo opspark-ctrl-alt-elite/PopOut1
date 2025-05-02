@@ -491,25 +491,40 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
             </Modal>
 
             {/* delete */}
-            <Modal open={openDelete}>
-              <Box sx={style}>
-                <Typography variant="h6">Are you sure?</Typography>
-                <Button
-                  onClick={() => {
-                    deleteVendor();
-                    setOpenDelete(false);
-                  }}
-                  variant="outlined"
-                >
-                  Yes
-                </Button>
-                <Button
-                  onClick={() => setOpenDelete(false)}
-                  variant="outlined"
-                  color="error"
-                >
-                  No
-                </Button>
+            <Modal open={openDelete} onClose={() => setOpenDelete(false)}>
+              <Box
+                sx={{
+                  backgroundColor: "white",
+                  p: 4,
+                  borderRadius: 2,
+                  maxWidth: 400,
+                  mx: "auto",
+                  my: "20vh",
+                  textAlign: "center",
+                  boxShadow: 24,
+                }}
+              >
+                <Typography variant="h6" mb={2}>
+                  Are you sure you want to delete your vendor account?
+                </Typography>
+                <Stack direction="row" spacing={2} justifyContent="center">
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => {
+                      deleteVendor();
+                      setOpenDelete(false);
+                    }}
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setOpenDelete(false)}
+                  >
+                    Cancel
+                  </Button>
+                </Stack>
               </Box>
             </Modal>
           </Box>
