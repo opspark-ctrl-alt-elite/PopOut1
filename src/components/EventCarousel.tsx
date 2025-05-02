@@ -73,6 +73,7 @@ const EventCarousel: React.FC<EventCarouselProps> = ({ events, onDetailsClick })
   const cardWidth = isMobile ? 260 : 300;
   const cardGap = 24;
   const containerWidth = cardWidth * itemsPerPage + cardGap * (itemsPerPage - 1) + 15;
+  
   const [currentIndex, setCurrentIndex] = useState(0);
   const scrollRef = useRef(null);
 
