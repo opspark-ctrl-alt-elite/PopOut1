@@ -357,6 +357,8 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               </Box>
             </Stack>
 
+            <Divider sx={{ my: 4 }} />
+
             {/* links */}
             <Stack direction="row" spacing={4} justifyContent="center" my={3}>
               {/* my popups */}

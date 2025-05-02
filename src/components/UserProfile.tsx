@@ -61,7 +61,9 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
     try {
       const res = await axios.get(`/api/preferences/${user.id}`);
       const prefCats: Category[] = res.data
-        .map((pref: Preference) => categories.find((cat) => cat.id === pref.categoryId))
+        .map((pref: Preference) =>
+          categories.find((cat) => cat.id === pref.categoryId)
+        )
         .filter((c): c is Category => !!c);
       setPreferences(prefCats);
     } catch (err) {
@@ -78,10 +80,13 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
         const withImages = await Promise.all(
           res.data.map(async (vendor: FollowedVendor) => {
             try {
-              const imgRes = await axios.get(`/api/images/vendorId/${vendor.id}`);
+              const imgRes = await axios.get(
+                `/api/images/vendorId/${vendor.id}`
+              );
               return {
                 ...vendor,
-                profilePicture: imgRes.data?.[0]?.referenceURL || vendor.profilePicture,
+                profilePicture:
+                  imgRes.data?.[0]?.referenceURL || vendor.profilePicture,
               };
             } catch {
               return vendor;
@@ -119,31 +124,51 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
 
   return (
     <Box>
-      <Container maxWidth="md" sx={{ mt: 6 }}>
+      <Container maxWidth="md" sx={{ mt: 4 }}>
         {user ? (
           <>
-            <Stack direction="row" justifyContent="space-between" alignItems="center" mb={4}>
+            <Stack
+              direction="row"
+              justifyContent="space-between"
+              alignItems="center"
+              mb={4}
+            >
               <Stack direction="row" spacing={2}>
-                <Avatar src={user.profile_picture} alt={user.name} sx={{ width: 56, height: 56 }} />
+                <Avatar
+                  src={user.profile_picture}
+                  alt={user.name}
+                  sx={{ width: 100, height: 100 }}
+                />
                 <Box>
-                  <Typography variant="h6" fontWeight="bold">{user.name}</Typography>
-                  <Typography variant="body2" color="text.secondary">{user.email}</Typography>
+                  <Typography variant="h6" fontWeight="bold">
+                    {user.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {user.email}
+                  </Typography>
                 </Box>
               </Stack>
 
+              {/* edit profile */}
               <Button
-                variant="contained"
+                variant="outlined"
+                size="small"
                 onClick={() => setOpenEdit(true)}
                 sx={{
                   backgroundColor: "black",
                   color: "white",
-                  "&:hover": { backgroundColor: "#333" },
+                  "&:hover": {
+                    backgroundColor: "#333",
+                  },
                   textTransform: "none",
+                  alignSelf: "flex-start",
                 }}
               >
                 Edit Profile
               </Button>
             </Stack>
+
+            <Divider sx={{ my: 4 }} />
 
             {bookmarkedEvents.length > 0 && (
               <Bookmarks userId={user.id} events={bookmarkedEvents} />
@@ -151,17 +176,38 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
 
             {followedVendors.length > 0 && (
               <Box mt={4} mb={4}>
-                <Typography variant="h5" gutterBottom>Following:</Typography>
-                <Box display="grid" gridTemplateColumns="repeat(auto-fill, minmax(180px, 1fr))" gap={2}>
+                <Typography variant="h5" gutterBottom>
+                  Following:
+                </Typography>
+                <Box
+                  display="grid"
+                  gridTemplateColumns="repeat(auto-fill, minmax(180px, 1fr))"
+                  gap={2}
+                >
                   {followedVendors.map((vendor) => (
-                    <RouterLink key={vendor.id} to={`/vendor/${vendor.id}`} style={{ textDecoration: "none" }}>
-                      <Card sx={{ display: "flex", alignItems: "center", gap: 2, padding: 2, borderRadius: 3, boxShadow: 2 }}>
+                    <RouterLink
+                      key={vendor.id}
+                      to={`/vendor/${vendor.id}`}
+                      style={{ textDecoration: "none" }}
+                    >
+                      <Card
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 2,
+                          padding: 2,
+                          borderRadius: 3,
+                          boxShadow: 2,
+                        }}
+                      >
                         <Avatar
                           src={vendor.profilePicture || "/default-avatar.png"}
                           alt={vendor.businessName}
                           sx={{ width: 48, height: 48 }}
                         />
-                        <Typography fontWeight="bold">{vendor.businessName}</Typography>
+                        <Typography fontWeight="bold">
+                          {vendor.businessName}
+                        </Typography>
                       </Card>
                     </RouterLink>
                   ))}
@@ -169,11 +215,22 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               </Box>
             )}
 
-            <Typography variant="h5" gutterBottom>Interests:</Typography>
+            <Typography variant="h5" gutterBottom>
+              Interests:
+            </Typography>
             {preferences.length > 0 ? (
               <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
                 {preferences.map((cat) => (
-                  <Box key={cat.id} sx={{ px: 2, py: 1, borderRadius: "8px", backgroundColor: "#e0e0e0", fontWeight: "bold" }}>
+                  <Box
+                    key={cat.id}
+                    sx={{
+                      px: 2,
+                      py: 1,
+                      borderRadius: "8px",
+                      backgroundColor: "#e0e0e0",
+                      fontWeight: "bold",
+                    }}
+                  >
                     {cat.name}
                   </Box>
                 ))}
@@ -182,16 +239,29 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               <Typography>No interests selected yet.</Typography>
             )}
 
-            {/* Delete Button at Bottom */}
-            <Box display="flex" justifyContent="center" mt={6}>
+            {/* delete profile*/}
+            <Box display="flex" justifyContent="flex-end" mt={6}>
               <Button
                 variant="contained"
                 color="error"
                 onClick={() => setConfirmDelete(true)}
                 size="medium"
-                sx={{ textTransform: "none" }}
+                sx={{
+                  backgroundColor: "#b71c1c",
+                  color: "#fff",
+                  fontSize: "0.8125rem",
+                  textTransform: "none",
+                  px: 2,
+                  py: 0.5,
+                  boxShadow: 1,
+                  "&:hover": {
+                    backgroundColor: "#fbe9e7",
+                    borderColor: "#b71c1c",
+                    color: "#b71c1c",
+                  },
+                }}
               >
-                Delete Account
+                Delete Profile
               </Button>
             </Box>
 
