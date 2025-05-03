@@ -72,6 +72,13 @@ type Props = {
   getUser: Function;
 };
 
+type ModalType = {
+  open: boolean;
+  title: string;
+  message: string | Element | unknown;
+  success: boolean;
+}
+
 const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [fields, setFields] = useState<Fields>({
@@ -88,6 +95,16 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
 
   const [openDelete, setOpenDelete] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
+
+  // states related to error handling with the "edit vendor" form
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [modal, setModal] = useState<ModalType>({
+    open: false,
+    title: '',
+    message: '',
+    success: false,
+  });
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
   const style = {
     position: "absolute" as const,
@@ -210,7 +227,8 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
       await axios.patch(`/api/vendor/${user?.id}`, trimmedFields, {
         withCredentials: true,
       });
-      getVendor();
+      await getVendor();
+      setOpenEdit(false);
     } catch (err) {
       console.error("Error updating vendor:", err);
     }
@@ -220,7 +238,8 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     try {
       await deleteUploadedImage();
       await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
-      getUser();
+      await getUser();
+      setOpenDelete(false);
     } catch (err) {
       console.error("Error deleting vendor record: ", err);
     }
@@ -476,7 +495,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                 <Button
                   onClick={() => {
                     updateVendor();
-                    setOpenEdit(false);
                   }}
                   variant="outlined"
                 >
@@ -511,7 +529,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     color="error"
                     onClick={() => {
                       deleteVendor();
-                      setOpenDelete(false);
                     }}
                   >
                     Delete

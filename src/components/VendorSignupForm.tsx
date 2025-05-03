@@ -151,6 +151,16 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
   //   }
   // }, [ errors ])
 
+  // helper function that checks the validity of emails and urls
+  const emailAndURLChecker = (type: string, value: string) => {
+    // create an element with the given type and value
+    const input = document.createElement('input');
+    input.type = type;
+    input.value = value;
+    // check if the value is valid for the given type
+    return input.checkValidity();
+  }
+
   // function to determine whether or not the form is ready to be submitted
   const validate = () => {
     const newErrors: { [key: string]: string } = {};
@@ -170,24 +180,27 @@ const input = document.createElement('input');
     return input.checkValidity();
 */
     // make sure that email is valid
-    // TODO: make code original?
-    else if (!formData.email.match(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) newErrors.email = 'Email address should be valid';
+    // TODO: make code original? (can you even claim a line of regex?)
+     else if (!formData.email.match(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) newErrors.email = 'Email address should be valid';
+     else if (!emailAndURLChecker('email', formData.email)) newErrors.email = 'Email address should be valid';
 
     // if facebook profile link was given, check if valid and has proper length
     if (formData.facebook) {
-      if (formData.facebook.slice(0, 25) !== 'https://www.facebook.com/' || formData.facebook.length === 25) newErrors.facebook = 'Facebook link must follow this format "https://www.facebook.com/YourAccountNameHere"';
-      else if (formData.facebook.length > 255) newErrors.facebook = 'Facebook link length must be at or below the default limit (255 characters)';
-
+      if (formData.facebook.length > 255) newErrors.facebook = 'Facebook link length must be at or below the default limit (255 characters)';
+      else if (formData.facebook.slice(0, 25) !== 'https://www.facebook.com/' || formData.facebook.length === 25) newErrors.facebook = 'Facebook link must follow this format "https://www.facebook.com/YourAccountNameHere"';
+      else if (!emailAndURLChecker('url', formData.facebook)) newErrors.facebook = 'Facebook link should be valid';
     }
     // if instagram profile link was given, check if valid and has proper length
     if (formData.instagram) {
-      if (formData.instagram.slice(0, 26) !== 'https://www.instagram.com/' || formData.instagram.length === 26) newErrors.instagram = 'Instagram link must follow this format "https://www.instagram.com/YourAccountNameHere"';
-      else if (formData.instagram.length > 255) newErrors.instagram = 'Instagram link length must be at or below the default limit (255 characters)';
+      if (formData.instagram.length > 255) newErrors.instagram = 'Instagram link length must be at or below the default limit (255 characters)';
+      else if (formData.instagram.slice(0, 26) !== 'https://www.instagram.com/' || formData.instagram.length === 26) newErrors.instagram = 'Instagram link must follow this format "https://www.instagram.com/YourAccountNameHere"';
+      else if (!emailAndURLChecker('url', formData.instagram)) newErrors.instagram = 'Instagram link should be valid';
     }
     // if store website link was given, check if the website at least has https and has proper length
     if (formData.store) {
-      if (formData.store.slice(0, 8) !== 'https://' || formData.store.length === 8) newErrors.store = 'Online store link must have https support (no http)';
-      else if (formData.store.length > 255) newErrors.store = 'Store link length must be at or below the default limit (255 characters)';
+      if (formData.store.length > 255) newErrors.store = 'Store link length must be at or below the default limit (255 characters)';
+      else if (formData.store.slice(0, 8) !== 'https://' || formData.store.length === 8) newErrors.store = 'Online store link must have https support (no http)';
+      else if (!emailAndURLChecker('url', formData.store)) newErrors.store = 'Online store link should be valid';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
