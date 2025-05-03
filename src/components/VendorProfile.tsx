@@ -50,7 +50,6 @@ type Fields = {
   website?: string;
   instagram?: string;
   facebook?: string;
-  profilePicture?: any;
 };
 
 type User = {
@@ -82,7 +81,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     website: "",
     instagram: "",
     facebook: "",
-    profilePicture: "",
   });
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
     null
@@ -117,7 +115,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         website,
         instagram,
         facebook,
-        profilePicture,
       } = vendor;
       setFields({
         businessName,
@@ -126,7 +123,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         website: website ? website : "",
         instagram: instagram ? instagram : "",
         facebook: facebook ? facebook : "",
-        profilePicture: profilePicture ? profilePicture : "",
       });
     }
   }, [vendor]);
