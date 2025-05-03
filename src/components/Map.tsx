@@ -49,20 +49,39 @@ const defaultCenter = {
 
 const libraries: "places"[] = ["places"];
 
-const getCategoryIcon = (category: string) => {
+// const getCategoryIcon = (category: string) => {
+//   switch (category) {
+//     case "Food & Drink":
+//       return <RestaurantIcon fontSize="small" />;
+//     case "Art":
+//       return <BrushIcon fontSize="small" />;
+//     case "Music":
+//       return <MusicNoteIcon fontSize="small" />;
+//     case "Sports & Fitness":
+//       return <SportsHandballIcon fontSize="small" />;
+//     case "Hobbies":
+//       return <EmojiEmotionsIcon fontSize="small" />;
+//     default:
+//       return <PlaceIcon fontSize="small" />;
+//   }
+// };
+
+const getCategoryIcon = (category: string, color?: string) => {
+  const props = { fontSize: "small", sx: color ? { color } : {} };
+
   switch (category) {
     case "Food & Drink":
-      return <RestaurantIcon fontSize="small" />;
+      return <RestaurantIcon {...props} />;
     case "Art":
-      return <BrushIcon fontSize="small" />;
+      return <BrushIcon {...props} />;
     case "Music":
-      return <MusicNoteIcon fontSize="small" />;
+      return <MusicNoteIcon {...props} />;
     case "Sports & Fitness":
-      return <SportsHandballIcon fontSize="small" />;
+      return <SportsHandballIcon {...props} />;
     case "Hobbies":
-      return <EmojiEmotionsIcon fontSize="small" />;
+      return <EmojiEmotionsIcon {...props} />;
     default:
-      return <PlaceIcon fontSize="small" />;
+      return <PlaceIcon {...props} />;
   }
 };
 
@@ -347,7 +366,12 @@ const Map: React.FC<Props> = ({ user }) => {
                 {getCategoryIcon(
                   activeEvent.category_name ||
                     activeEvent.Categories?.[0]?.name ||
-                    "Unknown"
+                    "Unknown",
+                  categoryColors[
+                    activeEvent.category_name ||
+                      activeEvent.Categories?.[0]?.name ||
+                      "Unknown"
+                  ]
                 )}{" "}
                 {activeEvent.category_name ||
                   activeEvent.Categories?.[0]?.name ||
