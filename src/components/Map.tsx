@@ -347,16 +347,49 @@ const Map: React.FC<Props> = ({ user }) => {
             }}
             onCloseClick={() => setActiveEvent(null)}
           >
-            <div style={{ maxWidth: "200px" }}>
-              <h4 style={{ margin: "0 0 4px" }}>{activeEvent.title}</h4>
-              <p style={{ margin: 0 }}>{activeEvent.venue_name}</p>
-              <p style={{ margin: 0 }}>{activeEvent.description}</p>
-              <p style={{ margin: 0 }}>
+            <div style={{ maxWidth: "220px" }}>
+              <div style={{ marginBottom: "4px" }}>
+                <strong style={{ fontSize: "1rem", lineHeight: 1.2 }}>
+                  {activeEvent.title}
+                </strong>
+                {activeEvent.vendor?.id && (
+                  <span
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "#444",
+                      marginLeft: 4,
+                    }}
+                  >
+                    by{" "}
+                    <Link
+                      to={`/vendor/${activeEvent.vendor.id}`}
+                      style={{ textDecoration: "none", color: "#1976d2" }}
+                    >
+                      {activeEvent.vendor.businessName}
+                    </Link>
+                  </span>
+                )}
+              </div>
+
+              <p
+                style={{
+                  margin: "2px 0 6px",
+                  fontSize: "0.85rem",
+                  color: "#555",
+                }}
+              >
                 {new Date(activeEvent.startDate).toLocaleString(undefined, {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
               </p>
+
+              <p style={{ margin: "2px 0 4px", fontWeight: 500 }}>
+                {activeEvent.venue_name}
+              </p>
+
+              <p style={{ margin: 0 }}>{activeEvent.description}</p>
+
               <p
                 style={{
                   margin: "4px 0 0",
