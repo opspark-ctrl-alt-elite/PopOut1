@@ -308,7 +308,11 @@ const Map: React.FC<Props> = ({ user }) => {
         {events
           .filter((event) => {
             const category = event.category_name || event.Categories?.[0]?.name;
-            return !activeCategory || category === activeCategory;
+            const now = new Date();
+            const endDate = new Date(event.endDate || event.startDate);
+            return (
+              endDate > now && (!activeCategory || category === activeCategory)
+            );
           })
           .map((event, i) => {
             const category =
