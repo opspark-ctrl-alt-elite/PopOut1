@@ -20,7 +20,6 @@ import {
   IconButton,
   Stack,
   Typography,
-  TextField,
   Avatar,
   Divider,
   Dialog,
@@ -65,12 +64,12 @@ type Vendor = {
 };
 
 type Fields = {
-  businessName?: string;
-  email?: string;
-  description?: string;
-  website?: string;
-  instagram?: string;
-  facebook?: string;
+  businessName: string;
+  email: string;
+  description: string;
+  website: string;
+  instagram: string;
+  facebook: string;
 };
 
 type User = {
@@ -126,18 +125,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     success: false,
   });
   const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
-
-  const style = {
-    position: "absolute" as const,
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
-  };
 
   useEffect(() => {
     getVendor();
@@ -259,15 +246,8 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     if (!fields.email) newErrors.email = 'Email is required';
     else if (fields.email.length > 255) newErrors.email = 'Email length must be at or below the default limit (255 characters)';
 
-/*
-const input = document.createElement('input');
-    input.type = 'email';
-    input.value = email;
-    return input.checkValidity();
-*/
     // make sure that email is valid
-    // TODO: make code original? (can you even claim a line of regex?)
-     else if (!fields.email.match(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) newErrors.email = 'Email address should be valid';
+     else if (!fields.email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) newErrors.email = 'Email address should be valid';
      else if (!emailAndURLChecker('email', fields.email)) newErrors.email = 'Email address should be valid';
 
     // if facebook profile link was given, check if valid and has proper length
@@ -336,13 +316,7 @@ const input = document.createElement('input');
     }
 
     try {
-      const trimmedFields: Record<string, any> = {};
-      for (const key in fields) {
-        if (fields[key as keyof Fields] || fields[key as keyof Fields] === "") {
-          trimmedFields[key] = fields[key as keyof Fields];
-        }
-      }
-      await axios.patch(`/api/vendor/${user?.id}`, trimmedFields, {
+      await axios.patch(`/api/vendor/${user?.id}`, fields, {
         withCredentials: true,
       });
       await getVendor();
@@ -409,7 +383,7 @@ const input = document.createElement('input');
               <Stack direction="row" spacing={2}>
                 <Box sx={{ position: "relative" }}>
                   <Avatar
-                  // TODO: idk
+                  // TODO: possibly delete avatar?
                     src={vendor.profilePicture || uploadedImage?.referenceURL}
                     alt={vendor.businessName}
                     sx={{ width: 100, height: 100 }}
@@ -613,42 +587,7 @@ const input = document.createElement('input');
             </Box>
 
             {/* edit profile */}
-            {/* <Modal open={openEdit}>
-              <Box sx={style}>
-                <Typography variant="h6">Edit Vendor Profile</Typography>
-                {Object.keys(fields).map((key) => (
-                  <TextField
-                    key={key}
-                    name={key}
-                    label={
-                      key[0].toUpperCase() +
-                      key.slice(1).replace(/([A-Z])/g, " $1")
-                    }
-                    fullWidth
-                    margin="normal"
-                    value={fields[key as keyof Fields]}
-                    onChange={handleUpdateFieldChange}
-                    placeholder={
-                      ["website", "instagram", "facebook"].includes(key)
-                        ? "Link must start with http://"
-                        : undefined
-                    }
-                  />
-                ))}
-                <Button
-                  onClick={() => {
-                    updateVendor();
-                  }}
-                  variant="outlined"
-                >
-                  Confirm
-                </Button>
-                <Button onClick={() => setOpenEdit(false)} variant="outlined">
-                  Cancel
-                </Button>
-              </Box>
-            </Modal> */}
-            <EditVendor open={openEdit} onClose={handleModalClose} vendor={vendor} setVendor={setVendor} fields={fields} touched={touched} errors={errors} handleUpdateFieldChange={handleUpdateFieldChange} handleBlur={handleBlur} updateVendor={updateVendor}/>
+            <EditVendor open={openEdit} onClose={handleModalClose} vendor={vendor} fields={fields} touched={touched} errors={errors} handleUpdateFieldChange={handleUpdateFieldChange} handleBlur={handleBlur} updateVendor={updateVendor}/>
 
             {/* Success/Error Modal */}
             <Dialog 

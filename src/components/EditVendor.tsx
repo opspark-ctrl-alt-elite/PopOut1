@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import {
   Modal,
   Box,
@@ -9,7 +9,6 @@ import {
   Stack,
   Alert,
 } from "@mui/material";
-import axios from "axios";
 import { Info } from "@mui/icons-material";
 
 type Props = {
@@ -28,14 +27,13 @@ type Props = {
     createdAt: any;
     updatedAt: any;
   } | null;
-  setVendor: (vendor: any) => void;
   fields: {
-    businessName?: string;
-    email?: string;
-    description?: string;
-    website?: string;
-    instagram?: string;
-    facebook?: string;
+    businessName: string;
+    email: string;
+    description: string;
+    website: string;
+    instagram: string;
+    facebook: string;
   };
   touched: {
     businessName?: boolean;
@@ -58,7 +56,7 @@ type Props = {
   updateVendor: Function;
 };
 
-const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields, touched, errors, handleUpdateFieldChange, handleBlur, updateVendor }) => {
+const EditVendor: React.FC<Props> = ({ open, onClose, vendor, fields, touched, errors, handleUpdateFieldChange, handleBlur, updateVendor }) => {
 
   return (
     <Modal open={open} onClose={() => {onClose(true)}}>
@@ -102,6 +100,9 @@ const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields,
             ((touched.businessName && errors.businessName) || `${fields.businessName.length}/50 characters`)
           }
           fullWidth
+          inputProps={{
+            maxLength: 50
+          }}
         />
 
         <TextField
@@ -136,17 +137,6 @@ const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields,
           helperText={touched.email && errors.email}
           fullWidth
         />
-
-        {/* <Button
-          variant="outlined"
-          component="label"
-          fullWidth
-          disabled={uploading}
-          sx={{ mb: 2, backgroundColor: "black", color: "white" }}
-        >
-          {uploading ? "Uploading..." : "Upload Profile Picture"}
-          <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-        </Button> */}
 
         <Typography variant="subtitle1" mt={2} mb={1}>
           Connections
@@ -200,7 +190,7 @@ const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields,
               },
             }}
           >
-            Confirm
+            Save Changes
           </Button>
 
           <Button
@@ -223,5 +213,4 @@ const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields,
   );
 };
 
-// lime bean
 export default EditVendor;

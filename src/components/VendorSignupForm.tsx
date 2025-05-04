@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import ImageUpload from "./ImageUpload";
+import { useNavigate } from "react-router-dom";
 
 import {
   Box,
-  Modal,
   TextField,
   Button,
   Typography,
@@ -15,30 +13,18 @@ import {
   DialogContentText,
   DialogTitle,
   Alert,
-  Autocomplete,
-  Checkbox,
-  Chip,
   Container,
-  FormControlLabel,
   Grid,
-  IconButton,
   InputAdornment,
   Stack,
-  AlertTitle,
   styled
 } from "@mui/material";
 
 import {
-  ArrowUpward,
-  Block,
-  Upload as UploadIcon,
   Cancel as CancelIcon,
   CheckCircle as CheckCircleIcon,
   Error as ErrorIcon,
-  Info as InfoIcon,
-  ChildCare as ChildCareIcon,
-  FreeBreakfast as FreeBreakfastIcon,
-  Paid as PaidIcon
+  Info as InfoIcon
 } from "@mui/icons-material";
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -139,17 +125,6 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     }
   }, [ user, captcha ]);
 
-  // // when form validation is run and the errors state is altered, change the modal state only if there are any errors present
-  // useEffect(() => {
-  //   // if there are errors in the form, then display said errors in a modal
-  //   // TODO: tried to use ` to turn into string to fix hydration error, didn't work
-  //   if (Object.keys(errors).length > 0) {
-  //     setModal({ open: true, title: 'Error', message: (<Box><Typography>Please fix the errors in the form:</Typography>{Object.values(errors).map((errorString: string) => {
-  //       return <Typography>{errorString}</Typography>
-  //     })}</Box>), success: false });
-  //   }
-  // }, [ errors ])
-
   // helper function that checks the validity of emails and urls
   const emailAndURLChecker = (type: string, value: string) => {
     // create an element with the given type and value
@@ -172,15 +147,8 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     if (!formData.email) newErrors.email = 'Email is required';
     else if (formData.email.length > 255) newErrors.email = 'Email length must be at or below the default limit (255 characters)';
 
-/*
-const input = document.createElement('input');
-    input.type = 'email';
-    input.value = email;
-    return input.checkValidity();
-*/
     // make sure that email is valid
-    // TODO: make code original? (can you even claim a line of regex?)
-     else if (!formData.email.match(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)) newErrors.email = 'Email address should be valid';
+     else if (!formData.email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) newErrors.email = 'Email address should be valid';
      else if (!emailAndURLChecker('email', formData.email)) newErrors.email = 'Email address should be valid';
 
     // if facebook profile link was given, check if valid and has proper length
@@ -205,7 +173,7 @@ const input = document.createElement('input');
     return Object.keys(newErrors).length === 0;
   };
 
-  // check for validity with every change made to the form TODO:
+  // check for validity with every change made to the form
   const handleBlur = (field: string) => {
     setTouched(prev => ({ ...prev, [field]: true }));
     validate();
@@ -301,190 +269,6 @@ const input = document.createElement('input');
   };
 
   return (
-    // <Box
-    //   sx={{
-    //     position: "relative",
-    //     minHeight: "100vh",
-    //     display: "flex",
-    //     justifyContent: "center",
-    //     alignItems: "center",
-    //     backgroundImage: 'url("/image.png")',
-    //     backgroundSize: "cover",
-    //     backgroundPosition: "center",
-    //     backgroundRepeat: "no-repeat",
-    //     "&::before": {
-    //       content: '""',
-    //       position: "absolute",
-    //       inset: 0,
-    //       backgroundColor: "rgba(0,0,0,0.5)",
-    //       zIndex: 1,
-    //     },
-    //   }}
-    // >
-    //   {user ? (
-
-    //     <Paper
-    //       elevation={6}
-    //       sx={{
-    //         zIndex: 2,
-    //         p: 4,
-    //         borderRadius: 3,
-    //         maxWidth: 500,
-    //         width: "90%",
-    //         backgroundColor: "rgba(255, 255, 255, 0.95)",
-    //       }}
-    //     >
-    //       <Typography variant="h5" fontWeight="bold" gutterBottom>
-    //         Become A Vendor
-    //       </Typography>
-    //       <Typography variant="body2" mb={2}>
-    //         Fill out the form to join our platform and grow your business.
-    //       </Typography>
-    //       <Box component="form" onSubmit={handleSubmit}>
-    //         <TextField
-    //           name="businessName"
-    //           label="Business Name (required)"
-    //           fullWidth
-    //           required
-    //           margin="normal"
-    //           value={formData.businessName}
-    //           onChange={handleChange}
-    //           error={errors.businessName !== undefined || formData.businessName.length > 50}
-    //           helperText={`character limit: ${formData.businessName.length}/50${formData.businessName.length > 50 ? " LIMIT EXCEEDED" : ""} ${errors.businessName ? "| " + errors.businessName : ""}`}
-    //         />
-    //         <TextField
-    //           name="description"
-    //           label="Business Description (required)"
-    //           fullWidth
-    //           required
-    //           multiline
-    //           rows={3}
-    //           margin="normal"
-    //           value={formData.description}
-    //           onChange={handleChange}
-    //           error={errors.description !== undefined || formData.description.length > 300}
-    //           helperText={`character limit: ${formData.description.length}/300${formData.description.length > 300 ? " LIMIT EXCEEDED" : ""}`}
-    //         />
-    //         <TextField
-    //           name="email"
-    //           label="Business Email (required)"
-    //           fullWidth
-    //           required
-    //           margin="normal"
-    //           value={formData.email}
-    //           onChange={handleChange}
-    //           error={errors.email !== undefined || formData.email.length > 255}
-    //           helperText={`${formData.email.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.email && formData.email.length > 255) ? "| " : ""}${errors.email ? errors.email : ""}`}
-    //         />
-    //         <TextField
-    //           name="facebook"
-    //           label="Facebook Account URL (optional)"
-    //           fullWidth
-    //           margin="normal"
-    //           value={formData.facebook}
-    //           onChange={handleChange}
-    //           error={errors.facebook !== undefined || formData.facebook.length > 255}
-    //           helperText={`${formData.facebook.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.facebook && formData.facebook.length > 255) ? "| " : ""}${errors.facebook ? errors.facebook : ""}`}
-    //         />
-    //         <TextField
-    //           name="instagram"
-    //           label="Instagram Account URL (optional)"
-    //           fullWidth
-    //           margin="normal"
-    //           value={formData.instagram}
-    //           onChange={handleChange}
-    //           error={errors.instagram !== undefined || formData.instagram.length > 255}
-    //           helperText={`${formData.instagram.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.instagram && formData.instagram.length > 255) ? "| " : ""}${errors.instagram ? errors.instagram : ""}`}
-    //         />
-    //         <TextField
-    //           name="website"
-    //           label="Online Store URL (optional)"
-    //           fullWidth
-    //           margin="normal"
-    //           value={formData.website}
-    //           onChange={handleChange}
-    //           error={errors.website !== undefined || formData.website.length > 255}
-    //           helperText={`${formData.website.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.website && formData.website.length > 255) ? "| " : ""}${errors.website ? errors.website : ""}`}
-    //         />
-    //         <Button
-    //           type="submit"
-    //           variant="contained"
-    //           fullWidth
-    //           sx={{ mt: 3, backgroundColor: "#3f0071" }}
-    //           startIcon={<ArrowUpward />}
-    //         >
-    //           Submit
-    //         </Button>
-    //         <Link to="/">
-    //           <Button
-    //             variant="contained"
-    //             fullWidth
-    //             sx={{ mt: 3, backgroundColor: "#BA2020" }}
-    //             startIcon={<Block />}
-    //           >
-    //             Cancel
-    //           </Button>
-    //         </Link>
-    //         <Dialog open={modal.open} onClose={handleModalClose}>
-    //           <DialogTitle>{modal.title}</DialogTitle>
-    //           <DialogContent>
-    //             <DialogContentText>{modal.message}</DialogContentText>
-    //           </DialogContent>
-    //           <DialogActions>
-    //             <Button
-    //               size="small"
-    //               onClick={handleModalClose}
-    //             >
-    //               Close
-    //             </Button>
-    //           </DialogActions>
-    //         </Dialog>
-    //       </Box>
-    //     </Paper>
-    //   ) : (
-    //     <Paper
-    //       elevation={6}
-    //       sx={{
-    //         zIndex: 2,
-    //         p: 4,
-    //         borderRadius: 3,
-    //         maxWidth: 500,
-    //         width: "90%",
-    //         backgroundColor: "rgba(255, 255, 255, 0.95)",
-    //       }}
-    //     >
-    //       <Typography variant="h5" fontWeight="bold" gutterBottom>
-    //         Become A Vendor
-    //       </Typography>
-    //       <Typography variant="body2" mb={2}>
-    //         It would appear that you are not signed in. Please click "Sign In" in the upper right corner to sign into your account and get sent back to the home page before trying to become a vendor.
-    //       </Typography>
-    //     </Paper>
-    //   )}
-    // </Box>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
         {user ? (
           user.is_vendor ? (
@@ -492,11 +276,11 @@ const input = document.createElement('input');
               <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
                 Become A Vendor
               </Typography>
-      
+
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Fill out the form to join our platform and grow your business.
               </Typography>
-      
+
               <Alert severity="warning" icon={<InfoIcon />} sx={{ mb: 3 }}>
                 You are already a vendor and cannot attempt to become one again. You can delete your current vendor account if you wish to make a new vendor account, otherwise you can just exit this page.
               </Alert>
@@ -506,103 +290,23 @@ const input = document.createElement('input');
               <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
                 Become A Vendor
               </Typography>
-      
+
               <Typography variant="body2" color="text.secondary" gutterBottom>
                 Fill out the form to join our platform and grow your business.
               </Typography>
-      
+
               <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
                 Fields marked with * are required. All vendors are subject to review.
               </Alert>
-      
+
               <Stack spacing={4}>
-                {/* Image Upload Section */}
-                {/* <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Popup Image
-                  </Typography>
-                  <Typography variant="body2" color="text.secondary" gutterBottom>
-                    Upload a high-quality image that represents your popup (JPEG, PNG, GIF, max 5MB)
-                  </Typography>
-                  
-                  <Box>
-                    <StyledButton
-                      variant="contained"
-                      component="label"
-                      startIcon={<UploadIcon />}
-                      disabled={uploading}
-                      sx={{
-                        backgroundColor: 'primary.main',
-                        color: 'white',
-                        '&:hover': {
-                          backgroundColor: 'primary.dark',
-                        },
-                        '&:disabled': {
-                          backgroundColor: 'grey.300',
-                        }
-                      }}
-                    >
-                      {form.image_url ? "Replace Image" : "Upload Image"}
-                      <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-                    </StyledButton>
-                    
-                    {uploading && (
-                      <Box sx={{ mt: 2 }}>
-                        <Typography variant="body2" gutterBottom>
-                          Uploading: {uploadProgress}%
-                        </Typography>
-                        <Box sx={{ width: '100%', height: 8, backgroundColor: 'grey.200', borderRadius: 4 }}>
-                          <Box 
-                            sx={{ 
-                              width: `${uploadProgress}%`, 
-                              height: '100%', 
-                              backgroundColor: 'primary.main',
-                              borderRadius: 4,
-                              transition: 'width 0.3s ease'
-                            }} 
-                          />
-                        </Box>
-                      </Box>
-                    )}
-                    
-                    {form.image_url && (
-                      <Box sx={{ position: 'relative', mt: 2 }}>
-                        <img
-                          src={form.image_url}
-                          alt="Popup preview"
-                          style={{
-                            width: '100%',
-                            maxHeight: '400px',
-                            objectFit: 'cover',
-                            borderRadius: '12px',
-                          }}
-                        />
-                        <IconButton
-                          onClick={removeImage}
-                          sx={{
-                            position: 'absolute',
-                            top: 8,
-                            right: 8,
-                            backgroundColor: 'rgba(0,0,0,0.5)',
-                            color: 'white',
-                            '&:hover': {
-                              backgroundColor: 'rgba(0,0,0,0.7)',
-                            }
-                          }}
-                        >
-                          <CancelIcon />
-                        </IconButton>
-                      </Box>
-                    )}
-                  </Box>
-                </Box> */}
-      
+
                 {/* Basic Info Section */}
                 <Box>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     Basic Information
                   </Typography>
-                  
+
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
                       <StyledTextField
@@ -662,57 +366,13 @@ const input = document.createElement('input');
                     </Grid>
                   </Grid>
                 </Box>
-      
-                {/* Date & Time Section */}
-                {/* <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Date & Time
-                  </Typography>
-                  
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} md={6}>
-                      <DateTimePicker
-                        label="Start Date & Time *"
-                        value={form.startDate ? new Date(form.startDate) : null}
-                        onChange={(val) => setForm(prev => ({ ...prev, startDate: val ? val.toISOString() : '' }))}
-                        onClose={() => handleBlur('startDate')}
-                        renderInput={(params) => (
-                          <StyledTextField
-                            {...params}
-                            fullWidth
-                            error={touched.startDate && !!errors.startDate}
-                            helperText={touched.startDate && errors.startDate}
-                          />
-                        )}
-                      />
-                    </Grid>
-                    
-                    <Grid item xs={12} md={6}>
-                      <DateTimePicker
-                        label="End Date & Time *"
-                        value={form.endDate ? new Date(form.endDate) : null}
-                        onChange={(val) => setForm(prev => ({ ...prev, endDate: val ? val.toISOString() : '' }))}
-                        onClose={() => handleBlur('endDate')}
-                        minDateTime={form.startDate ? new Date(form.startDate) : undefined}
-                        renderInput={(params) => (
-                          <StyledTextField
-                            {...params}
-                            fullWidth
-                            error={touched.endDate && !!errors.endDate}
-                            helperText={touched.endDate && errors.endDate}
-                          />
-                        )}
-                      />
-                    </Grid>
-                  </Grid>
-                </Box> */}
-      
+
                 {/* Location Section */}
                 <Box>
                   <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
                     Connections
                   </Typography>
-                  
+
                   <Grid container spacing={3}>
                     <Grid item xs={12}>
                       <StyledTextField
@@ -752,151 +412,9 @@ const input = document.createElement('input');
                         fullWidth
                       />
                     </Grid>
-                    
-                    {/* <Grid item xs={12}>
-                      <Autocomplete 
-                        onLoad={(a) => (autocompleteRef.current = a)} 
-                        onPlaceChanged={handlePlaceChanged}
-                        fields={['geometry', 'formatted_address']}
-                      >
-                        <StyledTextField
-                          label="Location *"
-                          name="location"
-                          value={form.location}
-                          onChange={handleChange}
-                          onBlur={() => handleBlur('location')}
-                          error={touched.location && !!errors.location}
-                          helperText={touched.location ? (errors.location || 'Start typing to search for a location') : ''}
-                          fullWidth
-                          InputProps={{
-                            endAdornment: (
-                              <InputAdornment position="end">
-                                <IconButton edge="end">
-                                  <img 
-                                    src="https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png" 
-                                    alt="Powered by Google" 
-                                    style={{ height: '16px' }} 
-                                  />
-                                </IconButton>
-                              </InputAdornment>
-                            ),
-                          }}
-                        />
-                      </Autocomplete>
-                    </Grid> */}
                   </Grid>
                 </Box>
-      
-                {/* Popup Features */}
-                {/* <Box>
-                  <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                    Popup Features
-                  </Typography>
-                  
-                  <Grid container spacing={2}>
-                    <Grid item xs={12} sm={4}>
-                      <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isFree ? 'primary.main' : 'grey.200' }}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              name="isFree"
-                              checked={form.isFree}
-                              onChange={handleChange}
-                              icon={<PaidIcon />}
-                              checkedIcon={<FreeBreakfastIcon color="success" />}
-                            />
-                          }
-                          label={
-                            <Box>
-                              <Typography variant="body1" fontWeight={600}>Free Popup</Typography>
-                              <Typography variant="body2" color="text.secondary">No admission fee</Typography>
-                            </Box>
-                          }
-                          sx={{ width: '100%' }}
-                        />
-                      </Paper>
-                    </Grid>
-                    
-                    <Grid item xs={12} sm={4}>
-                      <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isKidFriendly ? 'primary.main' : 'grey.200' }}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              name="isKidFriendly"
-                              checked={form.isKidFriendly}
-                              onChange={handleChange}
-                              icon={<ChildCareIcon />}
-                              checkedIcon={<ChildCareIcon color="success" />}
-                            />
-                          }
-                          label={
-                            <Box>
-                              <Typography variant="body1" fontWeight={600}>Kid-Friendly</Typography>
-                              <Typography variant="body2" color="text.secondary">Suitable for children</Typography>
-                            </Box>
-                          }
-                          sx={{ width: '100%' }}
-                        />
-                      </Paper>
-                    </Grid>
-                    
-                    <Grid item xs={12} sm={4}>
-                      <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isSober ? 'primary.main' : 'grey.200' }}>
-                        <FormControlLabel
-                          control={
-                            <Checkbox
-                              name="isSober"
-                              checked={form.isSober}
-                              onChange={handleChange}
-                            />
-                          }
-                          label={
-                            <Box>
-                              <Typography variant="body1" fontWeight={600}>Sober Popup</Typography>
-                              <Typography variant="body2" color="text.secondary">No alcohol served</Typography>
-                            </Box>
-                          }
-                          sx={{ width: '100%' }}
-                        />
-                      </Paper>
-                    </Grid>
-                  </Grid>
-                </Box> */}
-      
-                {/* Categories Section */}
-                {/* {availableCategories.length > 0 && (
-                  <Box>
-                    <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-                      Categories
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" gutterBottom>
-                      Select all that apply (max 3)
-                    </Typography>
-                    
-                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                      {availableCategories.map((category) => (
-                        <Chip
-                          key={category}
-                          label={category}
-                          clickable
-                          variant={form.categories.includes(category) ? 'filled' : 'outlined'}
-                          color={form.categories.includes(category) ? 'primary' : 'default'}
-                          onClick={() => handleCategoryToggle(category)}
-                          sx={{
-                            borderRadius: 1,
-                            px: 1,
-                            py: 1.5,
-                            fontSize: '0.875rem',
-                            '& .MuiChip-label': {
-                              px: 1.5,
-                            }
-                          }}
-                        />
-                      ))}
-                    </Box>
-                  </Box>
-                )} */}
-      
+
                 {/* Action Buttons */}
                 <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pt: 2 }}>
                   <StyledButton
@@ -913,12 +431,11 @@ const input = document.createElement('input');
                   >
                     Cancel
                   </StyledButton>
-                  
+
                   <StyledButton
                     variant="contained"
                     onClick={handleSubmit}
                     startIcon={<CheckCircleIcon />}
-                    // disabled={uploading}
                     sx={{
                       backgroundColor: 'primary.main',
                       color: 'white',
@@ -930,7 +447,6 @@ const input = document.createElement('input');
                       }
                     }}
                   >
-                    {/* {uploading ? 'Creating...' : 'Create Popup'} */}
                     Submit
                   </StyledButton>
                 </Box>
