@@ -15,6 +15,40 @@ import {
   Modal,
 } from "@mui/material";
 
+// ICONS
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BrushIcon from "@mui/icons-material/Brush";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SportsHandballIcon from "@mui/icons-material/SportsHandball";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import PlaceIcon from "@mui/icons-material/Place";
+
+// ICONS AND COLORS (same as EditProfile)
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case "Food & Drink":
+      return <RestaurantIcon fontSize="small" />;
+    case "Art":
+      return <BrushIcon fontSize="small" />;
+    case "Music":
+      return <MusicNoteIcon fontSize="small" />;
+    case "Sports & Fitness":
+      return <SportsHandballIcon fontSize="small" />;
+    case "Hobbies":
+      return <EmojiEmotionsIcon fontSize="small" />;
+    default:
+      return <PlaceIcon fontSize="small" />;
+  }
+};
+
+const categoryColors: { [key: string]: string } = {
+  "Food & Drink": "#FB8C00",
+  Art: "#8E24AA",
+  Music: "#E53935",
+  "Sports & Fitness": "#43A047",
+  Hobbies: "#FDD835",
+};
+
 type Category = { id: number; name: string };
 type Event = {
   id: string;
@@ -173,9 +207,21 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
             {preferences.length > 0 ? (
               <Stack direction="row" spacing={1} flexWrap="wrap" mb={4}>
                 {preferences.map((cat) => (
-                  <Box key={cat.id} sx={{ px: 2, py: 1, borderRadius: "8px", backgroundColor: "#e0e0e0", fontWeight: "bold" }}>
+                  <Button
+                    key={cat.id}
+                    startIcon={getCategoryIcon(cat.name)}
+                    sx={{
+                      backgroundColor: categoryColors[cat.name] || "#999",
+                      color: "#fff",
+                      textTransform: "none",
+                      borderRadius: "20px",
+                      "&:hover": {
+                        backgroundColor: categoryColors[cat.name] || "#777",
+                      },
+                    }}
+                  >
                     {cat.name}
-                  </Box>
+                  </Button>
                 ))}
               </Stack>
             ) : (
