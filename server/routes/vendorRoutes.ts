@@ -55,10 +55,10 @@ router.patch("/:userId", async (req, res) => {
 
   try {
     const [affectedCount] = await Vendor.update(changes, { where: { userId } });
-    res.status(affectedCount ? 200 : 404).json({ affectedCount });
+    res.status(affectedCount ? 200 : 404).json({ affectedCount, message: (affectedCount ? "Vendor profile updated" : "The given fields could not be located in the database, so no changes were made") });
   } catch (err) {
     console.error("Error PATCHING vendor record", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", message: err });
   }
 });
 

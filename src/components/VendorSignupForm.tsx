@@ -40,7 +40,6 @@ import {
   FreeBreakfast as FreeBreakfastIcon,
   Paid as PaidIcon
 } from "@mui/icons-material";
-import { DateTimePicker } from "@mui/x-date-pickers";
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
@@ -88,7 +87,7 @@ type Props = {
 type ModalType = {
   open: boolean;
   title: string;
-  message: string | Element | unknown;
+  message: string;
   success: boolean;
 }
 
@@ -99,7 +98,7 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     email: "",
     facebook: "",
     instagram: "",
-    store: "",
+    website: "",
   });
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [modal, setModal] = useState<ModalType>({
@@ -197,10 +196,10 @@ const input = document.createElement('input');
       else if (!emailAndURLChecker('url', formData.instagram)) newErrors.instagram = 'Instagram link should be valid';
     }
     // if store website link was given, check if the website at least has https and has proper length
-    if (formData.store) {
-      if (formData.store.length > 255) newErrors.store = 'Store link length must be at or below the default limit (255 characters)';
-      else if (formData.store.slice(0, 8) !== 'https://' || formData.store.length === 8) newErrors.store = 'Online store link must have https support (no http)';
-      else if (!emailAndURLChecker('url', formData.store)) newErrors.store = 'Online store link should be valid';
+    if (formData.website) {
+      if (formData.website.length > 255) newErrors.website = 'Store link length must be at or below the default limit (255 characters)';
+      else if (formData.website.slice(0, 8) !== 'https://' || formData.website.length === 8) newErrors.website = 'Online store link must have https support (no http)';
+      else if (!emailAndURLChecker('url', formData.website)) newErrors.website = 'Online store link should be valid';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -228,6 +227,16 @@ const input = document.createElement('input');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    // upon submitting, turn "touched" status to true for all fields
+    setTouched({
+      businessName: true,
+      description: true,
+      email: true,
+      facebook: true,
+      instagram: true,
+      website: true,
+    })
 
     // validate the form inputs first
     if (!validate()) {
@@ -388,14 +397,14 @@ const input = document.createElement('input');
     //           helperText={`${formData.instagram.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.instagram && formData.instagram.length > 255) ? "| " : ""}${errors.instagram ? errors.instagram : ""}`}
     //         />
     //         <TextField
-    //           name="store"
+    //           name="website"
     //           label="Online Store URL (optional)"
     //           fullWidth
     //           margin="normal"
-    //           value={formData.store}
+    //           value={formData.website}
     //           onChange={handleChange}
-    //           error={errors.store !== undefined || formData.store.length > 255}
-    //           helperText={`${formData.store.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.store && formData.store.length > 255) ? "| " : ""}${errors.store ? errors.store : ""}`}
+    //           error={errors.website !== undefined || formData.website.length > 255}
+    //           helperText={`${formData.website.length > 255 ? "Default character limit of 255 has been exceeded" : ""} ${(errors.website && formData.website.length > 255) ? "| " : ""}${errors.website ? errors.website : ""}`}
     //         />
     //         <Button
     //           type="submit"
@@ -708,7 +717,7 @@ const input = document.createElement('input');
                     <Grid item xs={12}>
                       <StyledTextField
                         name="facebook"
-                        label="Facebook Account URL *"
+                        label="Facebook Account URL"
                         value={formData.facebook}
                         onChange={handleChange}
                         onBlur={() => handleBlur('facebook')}
@@ -721,7 +730,7 @@ const input = document.createElement('input');
                     <Grid item xs={12}>
                       <StyledTextField
                         name="instagram"
-                        label="Instagram Account URL *"
+                        label="Instagram Account URL"
                         value={formData.instagram}
                         onChange={handleChange}
                         onBlur={() => handleBlur('instagram')}
@@ -733,13 +742,13 @@ const input = document.createElement('input');
       
                     <Grid item xs={12}>
                       <StyledTextField
-                        name="store"
-                        label="Online Store URL *"
-                        value={formData.store}
+                        name="website"
+                        label="Online Store URL"
+                        value={formData.website}
                         onChange={handleChange}
-                        onBlur={() => handleBlur('store')}
-                        error={touched.store && !!errors.store}
-                        helperText={touched.store && errors.store}
+                        onBlur={() => handleBlur('website')}
+                        error={touched.website && !!errors.website}
+                        helperText={touched.website && errors.website}
                         fullWidth
                       />
                     </Grid>

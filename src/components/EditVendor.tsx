@@ -7,20 +7,14 @@ import {
   Typography,
   Avatar,
   Stack,
+  Alert,
 } from "@mui/material";
 import axios from "axios";
-
-// const categoriesList = [
-//   "Food & Drink",
-//   "Art",
-//   "Music",
-//   "Sports & Fitness",
-//   "Hobbies",
-// ];
+import { Info } from "@mui/icons-material";
 
 type Props = {
   open: boolean;
-  onClose: () => void;
+  onClose: Function;
   vendor: {
     id: string;
     businessName: string;
@@ -36,98 +30,41 @@ type Props = {
   } | null;
   setVendor: (vendor: any) => void;
   fields: {
-    businessName: string;
-    email: string;
-    description: string;
-    website: string;
-    instagram: string;
-    facebook: string;
+    businessName?: string;
+    email?: string;
+    description?: string;
+    website?: string;
+    instagram?: string;
+    facebook?: string;
+  };
+  touched: {
+    businessName?: boolean;
+    email?: boolean;
+    description?: boolean;
+    website?: boolean;
+    instagram?: boolean;
+    facebook?: boolean;
+  };
+  errors: {
+    businessName?: string;
+    email?: string;
+    description?: string;
+    website?: string;
+    instagram?: string;
+    facebook?: string;
   };
   handleUpdateFieldChange: Function;
+  handleBlur: Function;
   updateVendor: Function;
 };
 
-const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields, handleUpdateFieldChange, updateVendor }) => {
-  // const [name, setName] = useState("");
-  // const [uploading, setUploading] = useState(false);
-  // const [imagePreview, setImagePreview] = useState("");
-  // const [imageUrl, setImageUrl] = useState("");
-  // const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
-
-  // useEffect(() => {
-  //   if (open && vendor) {
-  //     // setName(user.name || "");
-  //     // const initialURL = user.profile_picture || "";
-  //     // setImagePreview(initialURL);
-  //     // setImageUrl(initialURL);
-  //     // const prefs = user.Categories?.map((c) => c.name) || [];
-  //     // setSelectedCategories(prefs);
-
-  //   }
-  // }, [open, vendor]);
-
-  // const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (!file || !user) return;
-
-  //   const formData = new FormData();
-  //   formData.append("imageUpload", file);
-  //   setUploading(true);
-
-  //   try {
-  //     const res = await axios.post(`/api/images/user/${user.id}`, formData, {
-  //       headers: { "Content-Type": "multipart/form-data" },
-  //     });
-  //     const url = res.data[0]?.secure_url || res.data[0]?.url;
-  //     setImageUrl(url);
-  //     setImagePreview(url);
-  //   } catch (err) {
-  //     console.error("Error uploading image:", err);
-  //   } finally {
-  //     setUploading(false);
-  //   }
-  // };
-
-  // const toggleCategory = (category: string) => {
-  //   setSelectedCategories((prev) =>
-  //     prev.includes(category)
-  //       ? prev.filter((c) => c !== category)
-  //       : [...prev, category]
-  //   );
-  // };
-
-  // const handleSave = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-  //   if (!vendor?.id) return;
-
-  //   try {
-  //     await fetch(`/api/users/${user.id}`, {
-  //       method: "PATCH",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ name, profile_picture: imageUrl }),
-  //     });
-
-  //     await fetch(`/api/preferences/${user.id}`, {
-  //       method: "PUT",
-  //       headers: { "Content-Type": "application/json" },
-  //       body: JSON.stringify({ categoryNames: selectedCategories }),
-  //     });
-
-  //     const updatedRes = await fetch("/auth/me", { credentials: "include" });
-  //     const updatedUser = await updatedRes.json();
-
-  //     setUser(updatedUser);
-  //     onClose();
-  //   } catch (err) {
-  //     console.error("Error saving changes:", err);
-  //   }
-  // };
+const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields, touched, errors, handleUpdateFieldChange, handleBlur, updateVendor }) => {
 
   return (
-    <Modal open={open} onClose={onClose}>
+    <Modal open={open} onClose={() => {onClose(true)}}>
       <Box
         component="form"
-        onSubmit={() => { updateVendor() }}
+        onSubmit={(e) => { updateVendor(e) }}
         sx={{
           backgroundColor: "white",
           width: 400,
@@ -144,20 +81,63 @@ const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields,
           Edit Vendor Profile
         </Typography>
 
+        <Alert severity="info" icon={<Info />} sx={{ mb: 3 }}>
+          Fields marked with * are required. All vendors are subject to review.
+        </Alert>
+
         <Stack alignItems="center" mb={2}>
-          <Avatar src={vendor ? vendor.profilePicture : ""} sx={{ width: 100, height: 100 }} />
+          <Avatar src={vendor && vendor.profilePicture ? vendor.profilePicture : ""} sx={{ width: 100, height: 100 }} />
         </Stack>
 
         <TextField
-          label="Name"
-          fullWidth
           required
           margin="normal"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
+          name="businessName"
+          label="Business Name "
+          value={fields.businessName}
+          onChange={(e) => { handleUpdateFieldChange(e) }}
+          onBlur={() => handleBlur('businessName')}
+          error={touched.businessName && !!errors.businessName}
+          helperText={
+            ((touched.businessName && errors.businessName) || `${fields.businessName.length}/50 characters`)
+          }
+          fullWidth
         />
 
-        <Button
+        <TextField
+          required
+          margin="normal"
+          name="description"
+          label="Business Description "
+          value={fields.description}
+          onChange={(e) => { handleUpdateFieldChange(e) }}
+          onBlur={() => handleBlur('description')}
+          error={touched.description && !!errors.description}
+          helperText={
+            ((touched.description && errors.description) || `${fields.description.length}/300 characters`)
+          }
+          fullWidth
+          multiline
+          rows={4}
+          inputProps={{
+            maxLength: 300
+          }}
+        />
+
+        <TextField
+          required
+          margin="normal"
+          name="email"
+          label="Business Email "
+          value={fields.email}
+          onChange={(e) => { handleUpdateFieldChange(e) }}
+          onBlur={() => handleBlur('email')}
+          error={touched.email && !!errors.email}
+          helperText={touched.email && errors.email}
+          fullWidth
+        />
+
+        {/* <Button
           variant="outlined"
           component="label"
           fullWidth
@@ -166,31 +146,47 @@ const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields,
         >
           {uploading ? "Uploading..." : "Upload Profile Picture"}
           <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
-        </Button>
+        </Button> */}
 
         <Typography variant="subtitle1" mt={2} mb={1}>
-          Select Your Interests
+          Connections
         </Typography>
 
-        <Stack spacing={1}>
-          {categoriesList.map((category) => (
-            <Button
-              key={category}
-              variant={selectedCategories.includes(category) ? "contained" : "outlined"}
-              onClick={() => toggleCategory(category)}
-              fullWidth
-              sx={{
-                backgroundColor: selectedCategories.includes(category) ? "black" : undefined,
-                color: selectedCategories.includes(category) ? "white" : undefined,
-                "&:hover": {
-                  boxShadow: "0 0 10px rgba(0,0,0,0.5)",
-                },
-              }}
-            >
-              {category.toUpperCase()}
-            </Button>
-          ))}
-        </Stack>
+        <TextField
+          margin="normal"
+          name="facebook"
+          label="Facebook Account URL"
+          value={fields.facebook}
+          onChange={(e) => { handleUpdateFieldChange(e) }}
+          onBlur={() => handleBlur('facebook')}
+          error={touched.facebook && !!errors.facebook}
+          helperText={touched.facebook && errors.facebook}
+          fullWidth
+        />
+
+        <TextField
+          margin="normal"
+          name="instagram"
+          label="Instagram Account URL"
+          value={fields.instagram}
+          onChange={(e) => { handleUpdateFieldChange(e) }}
+          onBlur={() => handleBlur('instagram')}
+          error={touched.instagram && !!errors.instagram}
+          helperText={touched.instagram && errors.instagram}
+          fullWidth
+        />
+
+        <TextField
+          margin="normal"
+          name="website"
+          label="Online Store URL"
+          value={fields.website}
+          onChange={(e) => { handleUpdateFieldChange(e) }}
+          onBlur={() => handleBlur('website')}
+          error={touched.website && !!errors.website}
+          helperText={touched.website && errors.website}
+          fullWidth
+        />
 
         <Stack direction="row" justifyContent="space-between" mt={3}>
           <Button
@@ -209,7 +205,7 @@ const EditVendor: React.FC<Props> = ({ open, onClose, vendor, setVendor, fields,
 
           <Button
             type="button"
-            onClick={onClose}
+            onClick={() => {onClose(true)}}
             sx={{
               backgroundColor: "black",
               color: "white",
