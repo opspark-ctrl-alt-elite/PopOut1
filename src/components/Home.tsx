@@ -112,7 +112,7 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
           py: 4,
           px: 2,
           mt: 4,
-          backgroundColor: "#f9f9f9",
+          backgroundColor: "#f0f0f0",
           borderTop: "1px solid #ddd",
         }}
       >
