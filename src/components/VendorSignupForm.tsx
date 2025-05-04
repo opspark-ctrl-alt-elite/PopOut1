@@ -416,17 +416,26 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
                 </Box>
 
                 {/* Action Buttons */}
-                <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pt: 2 }}>
+                <Box
+                  sx={{
+                    display: 'flex',
+                    justifyContent: 'flex-end',
+                    gap: 2,
+                    pt: 2,
+                  }}
+                >
                   <StyledButton
                     variant="outlined"
                     onClick={() => { navigate('/') }}
                     startIcon={<CancelIcon />}
                     sx={{
-                      borderColor: 'grey.300',
-                      color: 'text.primary',
-                      '&:hover': {
-                        borderColor: 'grey.400',
-                      }
+                      backgroundColor: "#b71c1c",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "#fbe9e7",
+                        borderColor: "#b71c1c",
+                        color: "#b71c1c",
+                      },
                     }}
                   >
                     Cancel
