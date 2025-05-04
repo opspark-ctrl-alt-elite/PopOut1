@@ -266,7 +266,7 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                     }}
                   >
                     {cat.name}
-                  </Button>
+                  </Box>
                 ))}
               </Stack>
             ) : (
