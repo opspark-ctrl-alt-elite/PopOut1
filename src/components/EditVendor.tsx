@@ -115,13 +115,13 @@ const EditVendor: React.FC<Props> = ({ open, onClose, vendor, fields, touched, e
           onBlur={() => handleBlur('description')}
           error={touched.description && !!errors.description}
           helperText={
-            ((touched.description && errors.description) || `${fields.description.length}/300 characters`)
+            ((touched.description && errors.description) || `${fields.description.length}/100 characters`)
           }
           fullWidth
           multiline
           rows={4}
           inputProps={{
-            maxLength: 300
+            maxLength: 100
           }}
         />
 

@@ -103,7 +103,18 @@ INSERT INTO categories (name) VALUES ('Food & Drink'), ('Music'), ('Art'), ('Spo
 - Charles Sublett: Users and Vendors [Github](https://github.com/BMH397)
 
 ## Tech Stack
-  - 
+  - Api for Notification: [Firebase](https://firebase.google.com/)
+  - Api for Map: [Google Maps](https://developers.google.com/maps/documentation)
+  - Image Uploading: [Cloudinary Api](https://cloudinary.com/documentation/image_upload_api_reference) with help from [Multer dependency](https://expressjs.com/en/resources/middleware/multer.html)
+  - Main Programming Language: [TypeScript](https://www.typescriptlang.org/docs/handbook/intro.html)
+  - Frontend: [React](https://react.dev/)
+  - Backend: [Express](https://expressjs.com/en/4x/api.html)
+  - Build: [Webpack](https://webpack.js.org/configuration/) & [Babel](https://babeljs.io/docs/)
+  - Database: [MySQL](https://www.mysql.com/) & [Sequalize](https://sequelize.org/docs/v7/databases/mysql/)
+  - Deployment: [AWS EC2](https://aws.amazon.com/ec2/) & [Firebase](https://firebase.google.com/)
+  - Auth: [Google OAuth 2.0](https://developers.google.com/identity/protocols/oauth2) & [Passport](https://www.passportjs.org/tutorials/google/)
+  - Styling: [Material UI](https://mui.com/)
+  - Environment Variables: [dotenv](https://www.npmjs.com/package/dotenv)
 
 ## Known Bugs
-  - 
+  - Only vendor images are deleted from Cloudinary when they are deleted from the database. All other images stay in cloudinary after their database record is deleted.

@@ -143,7 +143,7 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
     if (!formData.businessName) newErrors.businessName = 'Business name is required';
     else if (formData.businessName.length > 50) newErrors.businessName = 'Business name must be 50 characters or less';
     if (!formData.description) newErrors.description = 'Description is required';
-    else if (formData.description.length > 300) newErrors.description = 'Description must be 300 characters or less';
+    else if (formData.description.length > 100) newErrors.description = 'Description must be 100 characters or less';
     if (!formData.email) newErrors.email = 'Email is required';
     else if (formData.email.length > 255) newErrors.email = 'Email length must be at or below the default limit (255 characters)';
 
@@ -340,14 +340,14 @@ const VendorSignupForm: React.FC<Props> = ({ user, getUser, captcha, setCaptcha 
                         onBlur={() => handleBlur('description')}
                         error={touched.description && !!errors.description}
                         helperText={
-                          ((touched.description && errors.description) || `${formData.description.length}/300 characters`)
+                          ((touched.description && errors.description) || `${formData.description.length}/100 characters`)
                         }
                         fullWidth
                         multiline
                         rows={4}
                         variant="outlined"
                         inputProps={{
-                          maxLength: 300
+                          maxLength: 100
                         }}
                       />
                     </Grid>

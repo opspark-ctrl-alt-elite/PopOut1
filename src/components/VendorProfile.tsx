@@ -242,7 +242,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     if (!fields.businessName) newErrors.businessName = 'Business name is required';
     else if (fields.businessName.length > 50) newErrors.businessName = 'Business name must be 50 characters or less';
     if (!fields.description) newErrors.description = 'Description is required';
-    else if (fields.description.length > 300) newErrors.description = 'Description must be 300 characters or less';
+    else if (fields.description.length > 100) newErrors.description = 'Description must be 100 characters or less';
     if (!fields.email) newErrors.email = 'Email is required';
     else if (fields.email.length > 255) newErrors.email = 'Email length must be at or below the default limit (255 characters)';
 
