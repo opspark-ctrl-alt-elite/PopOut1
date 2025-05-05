@@ -4,17 +4,8 @@ import { Router } from "express";
 import Image from '../models/Image';
 import { Op } from "sequelize";
 
-// type Req = {
-//   files: any[];
-//   file: any{};
-// };
-
 // configure how multer should temporarily store files on the server side
 const storage = multer.diskStorage({
-  // TODO: delete destination from here and utilize cloudinary
-  // destination: function (req, file, cb) {
-  //   cb(null, 'public/uploadedImages/vendorImages')
-  // },
   filename: function (req, file, cb) {
     // create unique suffix
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9)
@@ -25,7 +16,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
   storage: storage,
-  limits: { fileSize: 20000000 /* measured in bytes */ }
+  limits: { fileSize: 5000000 /* measured in bytes (5MB) */ }
 });
 
 // create router
@@ -100,14 +91,6 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), as
       }
     })
 
-    // upload the image to cloudinary
-    // const uploadResult = await cloudinary.uploader.upload(req.file.path);
-
-    console.log('body:', req.body);
-    console.log('files:', req.files);
-    console.log('uploadResults:', uploadResults);
-    console.log('imgObjs:', imgObjs);
-
     // create new image records using the Image model
     await Image.bulkCreate(imgObjs);
 
@@ -119,36 +102,17 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), as
   }
 });
 
-//imageRouter.patch
 // handle PATCH requests by using multer to temporarily hold the given image(s) before using said image(s) to replace old ones (by public id) in both the cloud and the images db
 // HAS TO BE POST DUE TO LIMITATIONS OF HTML FORMS
 imageRouter.post("/:publicIds", upload.array("imageUpload"), async (req, res) => {
 
-  // extract foreign key info and publicIds from the request parameters
-  const { foreignKeyName, foreignKey, publicIds } = req.params;
+  // extract publicIds from the request parameters
+  const { publicIds } = req.params;
 
   // turn publicIds back into an array of public ids
   const parsedPublicIds: string[] = publicIds.split("-");
 
-  console.log(parsedPublicIds)
-
-   // extract the array of publicIds that correspond to the images that will be replaced
-   // const { publicIds } = req.body;
-
   try {
-
-    // // check if the image upload if for vendor
-    // if (foreignKeyName === "vendorId") {
-    //   // check if the vendor already has an uploaded image
-    //   const image = await Image.findOne({ where: { [foreignKeyName]: foreignKey }});
-    //   if (image !== null) {
-    //     // send back 403 error if the vendor already has an uploaded image
-    //     console.error("Given vendor already has an associated image record");
-    //     res.status(403).send("Given vendor already has an associated image record");
-    //     // end function early
-    //     return;
-    //   }
-    // }
 
     // upload the replacement images to cloudinary (if req.files is an array)
     let imgUploadPromises: any[] = [];
@@ -189,21 +153,10 @@ imageRouter.post("/:publicIds", upload.array("imageUpload"), async (req, res) =>
       return image;
     })
 
-    // upload the image to cloudinary
-    // const uploadResult = await cloudinary.uploader.upload(req.file.path);
-
-    console.log('body:', req.body);
-    console.log('files:', req.files);
-    console.log('uploadResults:', uploadResults);
-    console.log('imgObjs:', moddedImages);
-
     // replace the image records using the moddedImages and Image model
     for (let newRec of moddedImages) {
       await Image.update( newRec, { where: { id: newRec.id }});
     }
-    // await Image.bulkCreate(moddedImages, {
-    //   updateOnDuplicate: ['referenceURL']
-    // });
 
     res.status(201).send(uploadResults);
   } catch (err) {
@@ -218,13 +171,9 @@ imageRouter.delete("/", async (req, res) => {
   // extract the array of publicIds that correspond to the images that will be deleted
   const { publicIds } = req.body;
 
-  console.log(req.body);
-  console.log(publicIds);
-
   try {
     // delete the images from the cloudinary asset storage
     let deletedCloudImages = await cloudinary.api.delete_resources(publicIds);
-    console.log(deletedCloudImages);
 
     // delete the corresponding images from the images db
     const deletedRecords = await Image.destroy({
@@ -255,69 +204,5 @@ imageRouter.delete("/", async (req, res) => {
     res.status(500).send(err);
   }
 });
-
-// //TODO:
-// // handle PATCH requests by finding and altering the vendor record associated with the given foreignKey
-// imageRouter.patch("/:foreignKeyName/:foreignKey", async (req, res) => {
-//   // extract foreignKeyName and foreignKey from the request parameters
-//   const { foreignKeyName, foreignKey } = req.params;
-//   // extract the object containing the fields to change and their new values from the request body
-//   const changes = req.body;
-
-//   try {
-//     // find and update the vendor associated with foreignKey
-//     /*
-//       The update method is odd in that instead of returning a record, it simply returns an array
-//       containing the number of records found and modified.
-//     */
-//     const modifiedRecords = await Vendor.update( changes, { where: { foreignKey }});
-//     if (modifiedRecords[0] === 0) {
-//       // if a vendor wasn't found, set the status code to 404
-//       res.status(404);
-//     } else {
-//       // otherwise, set the status code to 200
-//       res.status(200);
-//     }
-//     // send back the number of modified vendor records (should always be either 0 or 1 in an array) returned from the update method
-//     res.send(modifiedRecords);
-
-//   } catch (err) {
-//     // generic error handling
-//     console.error("Error PATCHING vendor record", err);
-//     res.sendStatus(500);
-//     // ADVISE: MAY SWITCH TO USING ERROR MESSAGES
-//     // res.status(500).send("Error PATCHING vendor record");
-//   }
-// });
-
-// //TODO:
-// // handle DELETE requests by finding and deleting the vendor record associated with the given foreignKey
-// imageRouter.delete("/:foreignKeyName/:foreignKey", async (req, res) => {
-//   // extract foreignKeyName and foreignKey from the request parameters
-//   const { foreignKeyName, foreignKey } = req.params;
-
-//   try {
-//     // find the vendor associated with foreignKey
-//     /*
-//       The destroy method is odd in that instead of returning a record, it simply returns a
-//       number of records found and deleted.
-//     */
-//     const deletedRecords = await Vendor.destroy({ where: { foreignKey }});
-//     if (deletedRecords === 0) {
-//       // if a vendor wasn't found, send a status code of 404
-//       res.sendStatus(404);
-//     } else {
-//       // otherwise, update the associated user record to make the user's "is_vendor" status false
-//       await User.update({ is_vendor: false }, { where: { id: foreignKey } });
-//       // send a status code of 200
-//       res.sendStatus(200);
-//     }
-
-//   } catch (err) {
-//     // generic error handling
-//     console.error("Error DELETING vendor record", err);
-//     res.sendStatus(500);
-//   }
-// });
 
 export default imageRouter;

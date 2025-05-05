@@ -28,7 +28,7 @@ Vendor.init(
       allowNull: false,
     },
     businessName: {
-      type: DataTypes.STRING,
+      type: DataTypes.STRING(50),
       allowNull: false,
       unique: true,
     },
@@ -36,29 +36,42 @@ Vendor.init(
       type: DataTypes.STRING,
       allowNull: false,
       unique: true,
-      // // check if email is real email
-      // validate: {
-      //   isEmail: true,
-      // },
+      // check if email is real email
+      validate: {
+        isEmail: true,
+      },
     },
     profilePicture: {
       type: DataTypes.STRING,
       allowNull: true,
-    }, description: {
-      type: DataTypes.STRING,
+    },
+    description: {
+      type: DataTypes.STRING(300),
       allowNull: false,
     },
     website: {
       type: DataTypes.STRING,
       allowNull: true,
+      // check if given url is real url
+      validate: {
+        isUrl: true,
+      },
     },
     instagram: {
       type: DataTypes.STRING,
       allowNull: true,
+      // check if given url is real url
+      validate: {
+        isUrl: true,
+      },
     },
     facebook: {
       type: DataTypes.STRING,
       allowNull: true,
+      // check if given url is real url
+      validate: {
+        isUrl: true,
+      },
     },
     // Establish foreign key
     userId: {
