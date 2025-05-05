@@ -110,16 +110,11 @@ const App: React.FC = () => {
       });
 
     axios.get("api/vendor/all")
-      // .then((res) => {
-      //   if (!res.data) throw new Error("err fetching vendors");
-      //   return res;
-      // })
       .then((res) => {
-        console.log("Client Side: getting all vendors: ", res.data);
         if (res) setVendors(res.data);
       })
       .catch((err) => {
-        // console.error("Error fetching vendors:", err);
+        console.error("Error fetching vendors:", err);
       });
 
       getCategories();
