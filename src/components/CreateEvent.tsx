@@ -208,6 +208,7 @@ const CreateEvent = () => {
 
     try {
       setUploading(true);
+      // TODO: fix this
       setUploadProgress(0);
 
       const response = await axios.post('/api/images/event/new', formData, {

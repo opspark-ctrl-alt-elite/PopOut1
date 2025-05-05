@@ -101,12 +101,13 @@ const App: React.FC = () => {
       })
       .catch((err) => console.error("Error fetching user:", err));
 
-    axios
-      .get("api/vendor/all")
+    axios.get("api/vendor/all")
       .then((res) => {
         if (res) setVendors(res.data);
       })
-      .catch(() => {});
+      .catch((err) => {
+        console.error("Error fetching vendors:", err);
+      });
 
     getCategories();
   }, []);

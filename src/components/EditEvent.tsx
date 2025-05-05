@@ -189,6 +189,7 @@ const EditEvent = () => {
     formData.append('imageUpload', file);
 
     try {
+      // TODO: fix this
       const endpoint = form.image_publicId
         ? `/api/images/${form.image_publicId}`
         : `/api/images/event/${id}`;

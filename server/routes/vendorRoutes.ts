@@ -32,19 +32,29 @@ router.post("/:userId", async (req, res) => {
   const { userId } = req.params;
   const vendorObj = req.body;
 
+  // replace empty fields with null
+  const trimmedFields: Record<string, any> = {};
+  for (const key in vendorObj) {
+    if (vendorObj[key]) {
+      trimmedFields[key] = vendorObj[key];
+    } else if (vendorObj[key] === "") {
+      trimmedFields[key] = null;
+    }
+  }
+
   try {
     const user = await User.findByPk(userId);
     if (!user) return res.status(404).json({ error: "User not found" });
     if (user.is_vendor) return res.status(403).json({ error: "User is already a vendor" });
 
-    vendorObj.userId = userId;
-    const vendor = await Vendor.create(vendorObj);
+    trimmedFields.userId = userId;
+    const vendor = await Vendor.create(trimmedFields);
     await user.update({ is_vendor: true });
     
     res.status(201).json(vendor);
   } catch (err) {
     console.error("Error POSTING vendor record", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", message: err });
   }
 });
 
@@ -53,12 +63,22 @@ router.patch("/:userId", async (req, res) => {
   const { userId } = req.params;
   const changes = req.body;
 
+  // replace empty fields with null
+  const trimmedFields: Record<string, any> = {};
+  for (const key in changes) {
+    if (changes[key]) {
+      trimmedFields[key] = changes[key];
+    } else if (changes[key] === "") {
+      trimmedFields[key] = null;
+    }
+  }
+
   try {
-    const [affectedCount] = await Vendor.update(changes, { where: { userId } });
-    res.status(affectedCount ? 200 : 404).json({ affectedCount });
+    const [affectedCount] = await Vendor.update(trimmedFields, { where: { userId } });
+    res.status(affectedCount ? 200 : 404).json({ affectedCount, message: (affectedCount ? "Vendor profile updated" : "The given fields could not be located in the database, so no changes were made") });
   } catch (err) {
     console.error("Error PATCHING vendor record", err);
-    res.status(500).json({ error: "Internal server error" });
+    res.status(500).json({ error: "Internal server error", message: err });
   }
 });
 
