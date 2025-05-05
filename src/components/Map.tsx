@@ -119,6 +119,7 @@ const Map: React.FC<Props> = ({ user }) => {
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<any | null>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const [zoom, setZoom] = useState<number>(12);
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -132,9 +133,29 @@ const Map: React.FC<Props> = ({ user }) => {
   });
 
   // map center
+  // useEffect(() => {
+  //   if (hasSelectedCoords) {
+  //     setMapCenter({ lat: selectedLat, lng: selectedLng });
+  //   } else {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         const loc = { lat: latitude, lng: longitude };
+  //         setUserLocation(loc);
+  //         setMapCenter(loc);
+  //       },
+  //       (error) => {
+  //         console.warn("Geolocation error", error);
+  //         setMapCenter(defaultCenter);
+  //       }
+  //     );
+  //   }
+  // }, [hasSelectedCoords, selectedLat, selectedLng]);
+
   useEffect(() => {
     if (hasSelectedCoords) {
       setMapCenter({ lat: selectedLat, lng: selectedLng });
+      setZoom(16);
     } else {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -142,14 +163,17 @@ const Map: React.FC<Props> = ({ user }) => {
           const loc = { lat: latitude, lng: longitude };
           setUserLocation(loc);
           setMapCenter(loc);
+          setZoom(14);
         },
         (error) => {
           console.warn("Geolocation error", error);
           setMapCenter(defaultCenter);
+          setZoom(14);
         }
       );
     }
   }, [hasSelectedCoords, selectedLat, selectedLng]);
+  
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -302,7 +326,8 @@ const Map: React.FC<Props> = ({ user }) => {
       <GoogleMap
         mapContainerStyle={containerStyle}
         center={mapCenter}
-        zoom={12}
+        // zoom={12}
+        zoom={zoom}
       >
         {/* markers */}
         {events
