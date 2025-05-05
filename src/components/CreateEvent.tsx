@@ -43,18 +43,18 @@ import {
   Paid as PaidIcon
 } from '@mui/icons-material';
 
-const libraries: ("places")[] = ["places"];
+const libraries: 'places'[] = ['places'];
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: '12px',
     '& fieldset': {
-      borderColor: theme.palette.grey[300],
+      borderColor: theme.palette.grey[300]
     },
     '&:hover fieldset': {
-      borderColor: theme.palette.primary.main,
-    },
-  },
+      borderColor: theme.palette.primary.main
+    }
+  }
 }));
 
 const StyledButton = styled(Button)(({ theme }) => ({
@@ -64,8 +64,8 @@ const StyledButton = styled(Button)(({ theme }) => ({
   fontWeight: 600,
   boxShadow: 'none',
   '&:hover': {
-    boxShadow: 'none',
-  },
+    boxShadow: 'none'
+  }
 }));
 
 const CreateEvent = () => {
@@ -73,7 +73,7 @@ const CreateEvent = () => {
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
-    libraries,
+    libraries
   });
 
   const [form, setForm] = useState({
@@ -89,7 +89,7 @@ const CreateEvent = () => {
     isKidFriendly: false,
     isSober: false,
     image_url: '',
-    categories: [] as string[],
+    categories: [] as string[]
   });
 
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
@@ -101,7 +101,7 @@ const CreateEvent = () => {
     open: false,
     title: '',
     message: '',
-    success: false,
+    success: false
   });
 
   useEffect(() => {
@@ -125,7 +125,11 @@ const CreateEvent = () => {
     }
     if (!form.startDate) newErrors.startDate = 'Start date is required';
     if (!form.endDate) newErrors.endDate = 'End date is required';
-    if (form.startDate && form.endDate && new Date(form.endDate) <= new Date(form.startDate)) {
+    if (
+      form.startDate &&
+      form.endDate &&
+      new Date(form.endDate) <= new Date(form.startDate)
+    ) {
       newErrors.endDate = 'End date must be after start date';
     }
     if (!form.venue_name) newErrors.venue_name = 'Venue is required';
@@ -141,18 +145,20 @@ const CreateEvent = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev) => ({
+    setForm(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value,
+      [name]: type === 'checkbox' ? checked : value
     }));
   };
 
   const handleCategoryToggle = (category: string) => {
-    setForm((prev) => {
+    setForm(prev => {
       const selected = prev.categories.includes(category);
       return {
         ...prev,
-        categories: selected ? prev.categories.filter((c) => c !== category) : [...prev.categories, category],
+        categories: selected
+          ? prev.categories.filter(c => c !== category)
+          : [...prev.categories, category]
       };
     });
   };
@@ -161,11 +167,11 @@ const CreateEvent = () => {
     const place = autocompleteRef.current?.getPlace();
     const location = place?.geometry?.location;
     if (place && location) {
-      setForm((prev) => ({
+      setForm(prev => ({
         ...prev,
         location: place.formatted_address || '',
         latitude: location.lat().toString(),
-        longitude: location.lng().toString(),
+        longitude: location.lng().toString()
       }));
     }
   };
@@ -186,7 +192,8 @@ const CreateEvent = () => {
       return;
     }
 
-    if (file.size > 5 * 1024 * 1024) { // 5MB
+    if (file.size > 5 * 1024 * 1024) {
+      // 5MB
       setModal({
         open: true,
         title: 'File Too Large',
@@ -202,19 +209,24 @@ const CreateEvent = () => {
     try {
       setUploading(true);
       setUploadProgress(0);
-      
+
       const response = await axios.post('/api/images/event/new', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
-        onUploadProgress: (progressEvent) => {
+        onUploadProgress: progressEvent => {
           if (progressEvent.total) {
-            const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            const percentCompleted = Math.round(
+              (progressEvent.loaded * 100) / progressEvent.total
+            );
             setUploadProgress(percentCompleted);
           }
         }
       });
-      
+
       const uploadResult = response.data[0];
-      setForm((prev) => ({ ...prev, image_url: uploadResult.secure_url || uploadResult.url }));
+      setForm(prev => ({
+        ...prev,
+        image_url: uploadResult.secure_url || uploadResult.url
+      }));
     } catch (err) {
       console.error('Error uploading image:', err);
       setModal({
@@ -231,11 +243,11 @@ const CreateEvent = () => {
 
   const handleSubmit = async () => {
     if (!validate()) {
-      setModal({ 
-        open: true, 
-        title: 'Form Errors', 
-        message: 'Please fix the errors in the form before submitting.', 
-        success: false 
+      setModal({
+        open: true,
+        title: 'Form Errors',
+        message: 'Please fix the errors in the form before submitting.',
+        success: false
       });
       return;
     }
@@ -244,22 +256,22 @@ const CreateEvent = () => {
       const payload = {
         ...form,
         latitude: parseFloat(form.latitude),
-        longitude: parseFloat(form.longitude),
+        longitude: parseFloat(form.longitude)
       };
       await axios.post('/api/events', payload, { withCredentials: true });
-      setModal({ 
-        open: true, 
-        title: 'Success!', 
-        message: 'Your popup has been created successfully.', 
-        success: true 
+      setModal({
+        open: true,
+        title: 'Success!',
+        message: 'Your popup has been created successfully.',
+        success: true
       });
     } catch (err) {
       console.error(err);
-      setModal({ 
-        open: true, 
-        title: 'Error', 
-        message: 'There was an error creating your popup. Please try again.', 
-        success: false 
+      setModal({
+        open: true,
+        title: 'Error',
+        message: 'There was an error creating your popup. Please try again.',
+        success: false
       });
     }
   };
@@ -269,7 +281,7 @@ const CreateEvent = () => {
   };
 
   const handleModalClose = () => {
-    setModal((prev) => ({ ...prev, open: false }));
+    setModal(prev => ({ ...prev, open: false }));
     if (modal.success) navigate('/active-events');
   };
 
@@ -279,10 +291,11 @@ const CreateEvent = () => {
 
   if (loadError) {
     return (
-      <Container maxWidth="md" sx={{ mt: 4 }}>
-        <Alert severity="error" sx={{ mb: 3 }}>
+      <Container maxWidth='md' sx={{ mt: 4 }}>
+        <Alert severity='error' sx={{ mb: 3 }}>
           <AlertTitle>Google Maps Error</AlertTitle>
-          Failed to load Google Maps functionality. Please refresh the page or try again later.
+          Failed to load Google Maps functionality. Please refresh the page or
+          try again later.
         </Alert>
       </Container>
     );
@@ -290,15 +303,18 @@ const CreateEvent = () => {
 
   if (!isLoaded) {
     return (
-      <Container maxWidth="md" sx={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        height: '80vh' 
-      }}>
-        <Stack alignItems="center" spacing={2}>
+      <Container
+        maxWidth='md'
+        sx={{
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '80vh'
+        }}
+      >
+        <Stack alignItems='center' spacing={2}>
           <CircularProgress size={60} />
-          <Typography variant="h6">Loading Popup Creator...</Typography>
+          <Typography variant='h6'>Loading Popup Creator...</Typography>
         </Stack>
       </Container>
     );
@@ -306,76 +322,89 @@ const CreateEvent = () => {
 
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
-      <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
+      <Container maxWidth='md' sx={{ mt: 4, mb: 6 }}>
         <Paper elevation={0} sx={{ p: { xs: 2, md: 4 }, borderRadius: 4 }}>
-          <Typography variant="h4" gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
+          <Typography variant='h4' gutterBottom sx={{ fontWeight: 700, mb: 3 }}>
             Create New Popup
           </Typography>
-          
-          <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
+
+          <Alert severity='info' icon={<InfoIcon />} sx={{ mb: 3 }}>
             Fields marked with * are required. All popups are subject to review.
           </Alert>
 
           <Stack spacing={4}>
             {/* Image Upload Section */}
             <Box>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                 Popup Image
               </Typography>
-              <Typography variant="body2" color="text.secondary" gutterBottom>
-                Upload a high-quality image that represents your popup (JPEG, PNG, GIF, max 5MB)
+              <Typography variant='body2' color='text.secondary' gutterBottom>
+                Upload a high-quality image that represents your popup (JPEG,
+                PNG, GIF, max 5MB)
               </Typography>
-              
+
               <Box>
                 <StyledButton
-                  variant="contained"
-                  component="label"
+                  variant='contained'
+                  component='label'
                   startIcon={<UploadIcon />}
                   disabled={uploading}
                   sx={{
                     backgroundColor: 'primary.main',
                     color: 'white',
                     '&:hover': {
-                      backgroundColor: 'primary.dark',
+                      backgroundColor: 'primary.dark'
                     },
                     '&:disabled': {
-                      backgroundColor: 'grey.300',
+                      backgroundColor: 'grey.300'
                     }
                   }}
                 >
-                  {form.image_url ? "Replace Image" : "Upload Image"}
-                  <input type="file" hidden accept="image/*" onChange={handleImageUpload} />
+                  {form.image_url ? 'Replace Image' : 'Upload Image'}
+                  <input
+                    type='file'
+                    hidden
+                    accept='image/*'
+                    onChange={handleImageUpload}
+                  />
                 </StyledButton>
-                
+
                 {uploading && (
                   <Box sx={{ mt: 2 }}>
-                    <Typography variant="body2" gutterBottom>
+                    <Typography variant='body2' gutterBottom>
                       Uploading: {uploadProgress}%
                     </Typography>
-                    <Box sx={{ width: '100%', height: 8, backgroundColor: 'grey.200', borderRadius: 4 }}>
-                      <Box 
-                        sx={{ 
-                          width: `${uploadProgress}%`, 
-                          height: '100%', 
+                    <Box
+                      sx={{
+                        width: '100%',
+                        height: 8,
+                        backgroundColor: 'grey.200',
+                        borderRadius: 4
+                      }}
+                    >
+                      <Box
+                        sx={{
+                          width: `${uploadProgress}%`,
+                          height: '100%',
                           backgroundColor: 'primary.main',
                           borderRadius: 4,
                           transition: 'width 0.3s ease'
-                        }} 
+                        }}
                       />
                     </Box>
                   </Box>
                 )}
-                
+
                 {form.image_url && (
                   <Box sx={{ position: 'relative', mt: 2 }}>
                     <img
                       src={form.image_url}
-                      alt="Popup preview"
+                      alt='Popup preview'
                       style={{
                         width: '100%',
                         maxHeight: '400px',
                         objectFit: 'cover',
-                        borderRadius: '12px',
+                        borderRadius: '12px'
                       }}
                     />
                     <IconButton
@@ -387,7 +416,7 @@ const CreateEvent = () => {
                         backgroundColor: 'rgba(0,0,0,0.5)',
                         color: 'white',
                         '&:hover': {
-                          backgroundColor: 'rgba(0,0,0,0.7)',
+                          backgroundColor: 'rgba(0,0,0,0.7)'
                         }
                       }}
                     >
@@ -400,47 +429,49 @@ const CreateEvent = () => {
 
             {/* Basic Info Section */}
             <Box>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                 Basic Information
               </Typography>
-              
+
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <StyledTextField
-                    name="title"
-                    label="Popup Title *"
+                    name='title'
+                    label='Popup Title *'
                     value={form.title}
                     onChange={handleChange}
                     onBlur={() => handleBlur('title')}
                     error={touched.title && !!errors.title}
                     helperText={touched.title && errors.title}
                     fullWidth
-                    variant="outlined"
+                    variant='outlined'
                     InputProps={{
                       endAdornment: touched.title && !errors.title && (
-                        <InputAdornment position="end">
-                          <CheckCircleIcon color="success" />
+                        <InputAdornment position='end'>
+                          <CheckCircleIcon color='success' />
                         </InputAdornment>
-                      ),
+                      )
                     }}
                   />
                 </Grid>
-                
+
                 <Grid item xs={12}>
                   <StyledTextField
-                    name="description"
-                    label="Description *"
+                    name='description'
+                    label='Description *'
                     value={form.description}
                     onChange={handleChange}
                     onBlur={() => handleBlur('description')}
                     error={touched.description && !!errors.description}
                     helperText={
-                      touched.description && (errors.description || `${form.description.length}/100 characters`)
+                      touched.description &&
+                      (errors.description ||
+                        `${form.description.length}/100 characters`)
                     }
                     fullWidth
                     multiline
                     rows={4}
-                    variant="outlined"
+                    variant='outlined'
                     inputProps={{
                       maxLength: 100
                     }}
@@ -451,18 +482,23 @@ const CreateEvent = () => {
 
             {/* Date & Time Section */}
             <Box>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                 Date & Time
               </Typography>
-              
+
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <DateTimePicker
-                    label="Start Date & Time *"
+                    label='Start Date & Time *'
                     value={form.startDate ? new Date(form.startDate) : null}
-                    onChange={(val) => setForm(prev => ({ ...prev, startDate: val ? val.toISOString() : '' }))}
+                    onChange={val =>
+                      setForm(prev => ({
+                        ...prev,
+                        startDate: val ? val.toISOString() : ''
+                      }))
+                    }
                     onClose={() => handleBlur('startDate')}
-                    renderInput={(params) => (
+                    renderInput={params => (
                       <StyledTextField
                         {...params}
                         fullWidth
@@ -472,15 +508,22 @@ const CreateEvent = () => {
                     )}
                   />
                 </Grid>
-                
+
                 <Grid item xs={12} md={6}>
                   <DateTimePicker
-                    label="End Date & Time *"
+                    label='End Date & Time *'
                     value={form.endDate ? new Date(form.endDate) : null}
-                    onChange={(val) => setForm(prev => ({ ...prev, endDate: val ? val.toISOString() : '' }))}
+                    onChange={val =>
+                      setForm(prev => ({
+                        ...prev,
+                        endDate: val ? val.toISOString() : ''
+                      }))
+                    }
                     onClose={() => handleBlur('endDate')}
-                    minDateTime={form.startDate ? new Date(form.startDate) : undefined}
-                    renderInput={(params) => (
+                    minDateTime={
+                      form.startDate ? new Date(form.startDate) : undefined
+                    }
+                    renderInput={params => (
                       <StyledTextField
                         {...params}
                         fullWidth
@@ -495,15 +538,15 @@ const CreateEvent = () => {
 
             {/* Location Section */}
             <Box>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                 Location
               </Typography>
-              
+
               <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <StyledTextField
-                    name="venue_name"
-                    label="Venue Name *"
+                    name='venue_name'
+                    label='Venue Name *'
                     value={form.venue_name}
                     onChange={handleChange}
                     onBlur={() => handleBlur('venue_name')}
@@ -512,34 +555,39 @@ const CreateEvent = () => {
                     fullWidth
                   />
                 </Grid>
-                
+
                 <Grid item xs={12}>
-                  <Autocomplete 
-                    onLoad={(a) => (autocompleteRef.current = a)} 
+                  <Autocomplete
+                    onLoad={a => (autocompleteRef.current = a)}
                     onPlaceChanged={handlePlaceChanged}
                     fields={['geometry', 'formatted_address']}
                   >
                     <StyledTextField
-                      label="Location *"
-                      name="location"
+                      label='Location *'
+                      name='location'
                       value={form.location}
                       onChange={handleChange}
                       onBlur={() => handleBlur('location')}
                       error={touched.location && !!errors.location}
-                      helperText={touched.location ? (errors.location || 'Start typing to search for a location') : ''}
+                      helperText={
+                        touched.location
+                          ? errors.location ||
+                            'Start typing to search for a location'
+                          : ''
+                      }
                       fullWidth
                       InputProps={{
                         endAdornment: (
-                          <InputAdornment position="end">
-                            <IconButton edge="end">
-                              <img 
-                                src="https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png" 
-                                alt="Powered by Google" 
-                                style={{ height: '16px' }} 
+                          <InputAdornment position='end'>
+                            <IconButton edge='end'>
+                              <img
+                                src='https://maps.gstatic.com/mapfiles/api-3/images/powered-by-google-on-white3.png'
+                                alt='Powered by Google'
+                                style={{ height: '16px' }}
                               />
                             </IconButton>
                           </InputAdornment>
-                        ),
+                        )
                       }}
                     />
                   </Autocomplete>
@@ -549,71 +597,109 @@ const CreateEvent = () => {
 
             {/* Popup Features */}
             <Box>
-              <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+              <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                 Popup Features
               </Typography>
-              
+
               <Grid container spacing={2}>
                 <Grid item xs={12} sm={4}>
-                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isFree ? 'primary.main' : 'grey.200' }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: form.isFree ? 'primary.main' : 'grey.200'
+                    }}
+                  >
                     <FormControlLabel
                       control={
                         <Checkbox
-                          name="isFree"
+                          name='isFree'
                           checked={form.isFree}
                           onChange={handleChange}
                           icon={<PaidIcon />}
-                          checkedIcon={<FreeBreakfastIcon color="success" />}
+                          checkedIcon={<FreeBreakfastIcon color='success' />}
                         />
                       }
                       label={
                         <Box>
-                          <Typography variant="body1" fontWeight={600}>Free Popup</Typography>
-                          <Typography variant="body2" color="text.secondary">No admission fee</Typography>
+                          <Typography variant='body1' fontWeight={600}>
+                            Free Popup
+                          </Typography>
+                          <Typography variant='body2' color='text.secondary'>
+                            No admission fee
+                          </Typography>
                         </Box>
                       }
                       sx={{ width: '100%' }}
                     />
                   </Paper>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={4}>
-                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isKidFriendly ? 'primary.main' : 'grey.200' }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: form.isKidFriendly
+                        ? 'primary.main'
+                        : 'grey.200'
+                    }}
+                  >
                     <FormControlLabel
                       control={
                         <Checkbox
-                          name="isKidFriendly"
+                          name='isKidFriendly'
                           checked={form.isKidFriendly}
                           onChange={handleChange}
                           icon={<ChildCareIcon />}
-                          checkedIcon={<ChildCareIcon color="success" />}
+                          checkedIcon={<ChildCareIcon color='success' />}
                         />
                       }
                       label={
                         <Box>
-                          <Typography variant="body1" fontWeight={600}>Kid-Friendly</Typography>
-                          <Typography variant="body2" color="text.secondary">Suitable for children</Typography>
+                          <Typography variant='body1' fontWeight={600}>
+                            Kid-Friendly
+                          </Typography>
+                          <Typography variant='body2' color='text.secondary'>
+                            Suitable for children
+                          </Typography>
                         </Box>
                       }
                       sx={{ width: '100%' }}
                     />
                   </Paper>
                 </Grid>
-                
+
                 <Grid item xs={12} sm={4}>
-                  <Paper elevation={0} sx={{ p: 2, borderRadius: 2, border: '1px solid', borderColor: form.isSober ? 'primary.main' : 'grey.200' }}>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      borderRadius: 2,
+                      border: '1px solid',
+                      borderColor: form.isSober ? 'primary.main' : 'grey.200'
+                    }}
+                  >
                     <FormControlLabel
                       control={
                         <Checkbox
-                          name="isSober"
+                          name='isSober'
                           checked={form.isSober}
                           onChange={handleChange}
                         />
                       }
                       label={
                         <Box>
-                          <Typography variant="body1" fontWeight={600}>Sober Popup</Typography>
-                          <Typography variant="body2" color="text.secondary">No alcohol served</Typography>
+                          <Typography variant='body1' fontWeight={600}>
+                            Sober Popup
+                          </Typography>
+                          <Typography variant='body2' color='text.secondary'>
+                            No alcohol served
+                          </Typography>
                         </Box>
                       }
                       sx={{ width: '100%' }}
@@ -626,21 +712,29 @@ const CreateEvent = () => {
             {/* Categories Section */}
             {availableCategories.length > 0 && (
               <Box>
-                <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
+                <Typography variant='h6' gutterBottom sx={{ fontWeight: 600 }}>
                   Categories
                 </Typography>
-                <Typography variant="body2" color="text.secondary" gutterBottom>
+                <Typography variant='body2' color='text.secondary' gutterBottom>
                   Select all that apply (max 3)
                 </Typography>
-                
+
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-                  {availableCategories.map((category) => (
+                  {availableCategories.map(category => (
                     <Chip
                       key={category}
                       label={category}
                       clickable
-                      variant={form.categories.includes(category) ? 'filled' : 'outlined'}
-                      color={form.categories.includes(category) ? 'primary' : 'default'}
+                      variant={
+                        form.categories.includes(category)
+                          ? 'filled'
+                          : 'outlined'
+                      }
+                      color={
+                        form.categories.includes(category)
+                          ? 'primary'
+                          : 'default'
+                      }
                       onClick={() => handleCategoryToggle(category)}
                       sx={{
                         borderRadius: 1,
@@ -648,7 +742,7 @@ const CreateEvent = () => {
                         py: 1.5,
                         fontSize: '0.875rem',
                         '& .MuiChip-label': {
-                          px: 1.5,
+                          px: 1.5
                         }
                       }}
                     />
@@ -658,24 +752,38 @@ const CreateEvent = () => {
             )}
 
             {/* Action Buttons */}
-            <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2, pt: 2 }}>
+            <Box
+              sx={{
+                display: 'flex',
+                justifyContent: 'flex-end',
+                gap: 2,
+                pt: 2
+              }}
+            >
+             <StyledButton
+  variant="contained"          
+  onClick={handleCancel}
+  startIcon={<CancelIcon />}
+  sx={{
+    backgroundColor: '#b71c1c',  
+    color: '#fff',
+    fontSize: '0.8125rem',
+    textTransform: 'none',
+    px: 2,
+    py: 0.5,
+    boxShadow: 1,
+    '&:hover': {
+      backgroundColor: '#fbe9e7',
+      borderColor: '#b71c1c',
+      color: '#b71c1c',
+    },
+  }}
+>
+  Cancel
+</StyledButton>
+
               <StyledButton
-                variant="outlined"
-                onClick={handleCancel}
-                startIcon={<CancelIcon />}
-                sx={{
-                  borderColor: 'grey.300',
-                  color: 'text.primary',
-                  '&:hover': {
-                    borderColor: 'grey.400',
-                  }
-                }}
-              >
-                Cancel
-              </StyledButton>
-              
-              <StyledButton
-                variant="contained"
+                variant='contained'
                 onClick={handleSubmit}
                 startIcon={<CheckCircleIcon />}
                 disabled={uploading}
@@ -683,10 +791,10 @@ const CreateEvent = () => {
                   backgroundColor: 'primary.main',
                   color: 'white',
                   '&:hover': {
-                    backgroundColor: 'primary.dark',
+                    backgroundColor: 'primary.dark'
                   },
                   '&:disabled': {
-                    backgroundColor: 'grey.300',
+                    backgroundColor: 'grey.300'
                   }
                 }}
               >
@@ -697,8 +805,8 @@ const CreateEvent = () => {
         </Paper>
 
         {/* Success/Error Modal */}
-        <Dialog 
-          open={modal.open} 
+        <Dialog
+          open={modal.open}
           onClose={handleModalClose}
           PaperProps={{
             sx: {
@@ -707,36 +815,36 @@ const CreateEvent = () => {
             }
           }}
         >
-          <DialogTitle sx={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: 1.5,
-            color: modal.success ? 'success.main' : 'error.main'
-          }}>
+          <DialogTitle
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              color: modal.success ? 'success.main' : 'error.main'
+            }}
+          >
             {modal.success ? (
-              <CheckCircleIcon color="success" fontSize="large" />
+              <CheckCircleIcon color='success' fontSize='large' />
             ) : (
-              <ErrorIcon color="error" fontSize="large" />
+              <ErrorIcon color='error' fontSize='large' />
             )}
             {modal.title}
           </DialogTitle>
-          
+
           <DialogContent>
-            <DialogContentText>
-              {modal.message}
-            </DialogContentText>
+            <DialogContentText>{modal.message}</DialogContentText>
           </DialogContent>
-          
+
           <DialogActions sx={{ p: 2 }}>
             <StyledButton
               onClick={handleModalClose}
-              variant="contained"
+              variant='contained'
               fullWidth
               sx={{
                 backgroundColor: modal.success ? 'success.main' : 'error.main',
                 color: 'white',
                 '&:hover': {
-                  backgroundColor: modal.success ? 'success.dark' : 'error.dark',
+                  backgroundColor: modal.success ? 'success.dark' : 'error.dark'
                 }
               }}
             >
