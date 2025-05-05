@@ -24,15 +24,15 @@ const ensureVendor = async (req: Request, res: Response, next: NextFunction) => 
   next();
 };
 
-// 🌐 PUBLIC: GET /events (with optional filters)
+
 router.get('/', async (req: Request, res: Response) => {
   try {
     const { category, isFree, isKidFriendly, isSober } = req.query;
     const where: any = {};
 
-    if (isFree) where.isFree = isFree === 'true';
+    if (isFree)        where.isFree        = isFree        === 'true';
     if (isKidFriendly) where.isKidFriendly = isKidFriendly === 'true';
-    if (isSober) where.isSober = isSober === 'true';
+    if (isSober)       where.isSober       = isSober       === 'true';
 
     const events = await EventModel.findAll({
       where,
@@ -58,7 +58,6 @@ router.get('/', async (req: Request, res: Response) => {
   }
 });
 
-// GET /events/my-events (for the logged-in vendor)
 router.get('/my-events', ensureVendor, async (req: Request, res: Response) => {
   const vendor = (req as any).vendor;
 
@@ -67,14 +66,9 @@ router.get('/my-events', ensureVendor, async (req: Request, res: Response) => {
       where: { vendor_id: vendor.id },
       order: [['startDate', 'ASC']],
       include: [
-        {
-          model: Category,
-          attributes: ['name'],
-          through: { attributes: [] }
-        }
+        { model: Category, attributes: ['name'], through: { attributes: [] } }
       ]
     });
-    console.log(JSON.stringify(events, null, 2));
     res.json(events);
   } catch (error) {
     console.error('Error fetching vendor events:', error);
@@ -82,95 +76,38 @@ router.get('/my-events', ensureVendor, async (req: Request, res: Response) => {
   }
 });
 
+
 router.post('/', ensureVendor, async (req: Request, res: Response) => {
   try {
     const vendor = (req as any).vendor;
     const {
-      title,
-      description,
-      startDate,
-      endDate,
-      venue_name,
-      location,
-      latitude,
-      longitude,
-      isFree,
-      isKidFriendly,
-      isSober,
-      image_url,
-      categories,
+      title, description, startDate, endDate, venue_name,
+      location, latitude, longitude,
+      isFree, isKidFriendly, isSober,
+      image_url, categories
     } = req.body;
 
     if (!title || !startDate || !endDate || !venue_name || !latitude || !longitude) {
       return res.status(400).json({ error: 'Missing required event fields' });
     }
-
     if (new Date(endDate) <= new Date(startDate)) {
       return res.status(400).json({ error: 'End date must be after start date' });
     }
 
-    // create event
     const event = await EventModel.create({
       vendor_id: vendor.id,
-      title,
-      description,
-      startDate,
-      endDate,
-      venue_name,
-      location,
-      latitude,
-      longitude,
-      isFree,
-      isKidFriendly,
-      isSober,
-      image_url,
+      title, description, startDate, endDate,
+      venue_name, location, latitude, longitude,
+      isFree, isKidFriendly, isSober, image_url,
     });
 
-    // categories
-    if (categories && Array.isArray(categories)) {
-      const categoryInstances = await Category.findAll({ where: { name: categories } });
-      await (event as any).setCategories(categoryInstances);
+    if (Array.isArray(categories)) {
+      const catInstances = categories.length
+        ? await Category.findAll({ where: { name: { [Op.in]: categories } } })
+        : [];
+      await (event as any).setCategories(catInstances);
     }
 
-    // followers fcm tokens
-    const vendorWithFollowers = await Vendor.findByPk(vendor.id, {
-      include: {
-        model: User,
-        as: 'followers',
-        where: { fcm_token: { [Op.ne]: null } },
-        required: false,
-        attributes: ['id', 'name', 'fcm_token'],
-      },
-    });
-
-    if (!vendorWithFollowers) {
-      return res.status(404).json({ error: 'Vendor not found' });
-    }
-
-    const followers = (vendorWithFollowers as any).followers;
-
-    if (followers && followers.length > 0) {
-      const notifications = followers.map((user: any) => ({
-        token: user.fcm_token,
-        notification: {
-          title: `${vendorWithFollowers.businessName} just posted a new event!`,
-          body: `${title} is happening soon - check it out in PopOut.`,
-        },
-      }));
-
-      const results = await Promise.allSettled(
-        notifications.map((msg: any) => messaging.send(msg))
-      );
-
-      const sentCount = results.filter((r: any) => r.status === 'fulfilled').length;
-      console.log(`EVENT CREATED ${sentCount} FOLLOWERS NOTIFIED.`);
-
-      results.forEach((r: any, i: number) => {
-        if (r.status === 'rejected') {
-          console.warn(`failed to notify user ${notifications[i].token}`, r.reason);
-        }
-      });
-    }
 
     res.status(201).json(event);
   } catch (error) {
@@ -179,71 +116,16 @@ router.post('/', ensureVendor, async (req: Request, res: Response) => {
   }
 });
 
-// router.post('/', ensureVendor, async (req: Request, res: Response) => {
-//   try {
-//     const vendor = (req as any).vendor;
-//     const {
-//       title,
-//       description,
-//       startDate,
-//       endDate,
-//       venue_name,
-//       latitude,
-//       longitude,
-//       isFree,
-//       isKidFriendly,
-//       isSober,
-//       image_url,
-//       categories
-//     } = req.body;
-
-//     // Required field validation
-//     if (!title || !startDate || !endDate || !venue_name || !latitude || !longitude) {
-//       return res.status(400).json({ error: 'Missing required event fields' });
-//     }
-
-//     if (new Date(endDate) <= new Date(startDate)) {
-//       return res.status(400).json({ error: 'End date must be after start date' });
-//     }
-
-//     const event = await EventModel.create({
-//       vendor_id: vendor.id,
-//       title,
-//       description,
-//       startDate,
-//       endDate,
-//       venue_name,
-//       latitude,
-//       longitude,
-//       isFree,
-//       isKidFriendly,
-//       isSober,
-//       image_url,
-//     });
-
-//     if (categories && Array.isArray(categories)) {
-//       const categoryInstances = await Category.findAll({ where: { name: categories } });
-//       await (event as any).setCategories(categoryInstances);
-//     }
-
-//     res.status(201).json(event);
-//   } catch (error) {
-//     console.error('Error creating event:', error);
-//     res.status(500).json({ error: 'Failed to create event' });
-//   }
-// });
-
 router.put('/:id', ensureVendor, async (req: Request, res: Response) => {
   try {
     const vendor = (req as any).vendor;
     const event = await EventModel.findByPk(req.params.id);
     if (!event) return res.status(404).json({ error: 'Event not found' });
-
     if ((event as any).vendor_id !== vendor.id) {
       return res.status(403).json({ error: 'You do not own this event' });
     }
 
-    // Optional: validate date logic if both provided
+    /* optional date check */
     if (req.body.startDate && req.body.endDate) {
       if (new Date(req.body.endDate) <= new Date(req.body.startDate)) {
         return res.status(400).json({ error: 'End date must be after start date' });
@@ -252,9 +134,12 @@ router.put('/:id', ensureVendor, async (req: Request, res: Response) => {
 
     await event.update(req.body);
 
-    if (req.body.categories && Array.isArray(req.body.categories)) {
-      const categoryInstances = await Category.findAll({ where: { name: req.body.categories } });
-      await (event as any).setCategories(categoryInstances);
+
+    if ('categories' in req.body && Array.isArray(req.body.categories)) {
+      const catInstances = req.body.categories.length
+        ? await Category.findAll({ where: { name: { [Op.in]: req.body.categories } } })
+        : [];
+      await (event as any).setCategories(catInstances);
     }
 
     res.status(200).json(event);
@@ -264,13 +149,12 @@ router.put('/:id', ensureVendor, async (req: Request, res: Response) => {
   }
 });
 
-// DELETE /events/:id
+
 router.delete('/:id', ensureVendor, async (req: Request, res: Response) => {
   try {
     const vendor = (req as any).vendor;
     const event = await EventModel.findByPk(req.params.id);
     if (!event) return res.status(404).json({ error: 'Event not found' });
-
     if ((event as any).vendor_id !== vendor.id) {
       return res.status(403).json({ error: 'You do not own this event' });
     }
@@ -283,18 +167,13 @@ router.delete('/:id', ensureVendor, async (req: Request, res: Response) => {
   }
 });
 
-// GET /events/vendor/:vendorId
 router.get('/vendor/:vendorId', async (req: Request, res: Response) => {
   try {
     const events = await EventModel.findAll({
       where: { vendor_id: req.params.vendorId },
       order: [['startDate', 'ASC']],
       include: [
-        {
-          model: Category,
-          attributes: ['name'],
-          through: { attributes: [] },
-        },
+        { model: Category, attributes: ['name'], through: { attributes: [] } }
       ],
     });
     res.json(events);

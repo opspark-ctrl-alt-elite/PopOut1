@@ -2,33 +2,29 @@ import React, { useEffect, useState, useRef } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import {
-  Box,
-  Typography,
-  CircularProgress,
-  Card,
-  CardContent,
-  Stack,
+  Alert,
   Avatar,
-  IconButton,
+  Box,
   Button,
-  Tabs,
-  Tab,
   Chip,
+  CircularProgress,
+  Container,
+  Divider,
+  IconButton,
   List,
   ListItem,
   ListItemAvatar,
   ListItemText,
-  Divider,
   Rating,
-  Alert,
-  Container,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
 } from "@mui/material";
 import {
   Facebook,
   Instagram,
   Language,
-  ArrowBackIos,
-  ArrowForwardIos,
   PersonAddAlt,
   PersonRemove,
 } from "@mui/icons-material";
@@ -36,13 +32,10 @@ import ReviewComponent from "./Review";
 import EventDetails from "./EventDetails";
 import EventCarousel from "./EventCarousel";
 
+/* ────────────────────────── Types ────────────────────────── */
+
 type Props = {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    profile_picture?: string;
-  } | null;
+  user: { id: string; name: string; email: string; profile_picture?: string } | null;
 };
 
 type Event = {
@@ -58,11 +51,7 @@ type Event = {
   isKidFriendly: boolean;
   isSober: boolean;
   Categories?: { name: string }[];
-  vendor: {
-    id: string;
-    businessName: string;
-    averageRating?: number;
-  };
+  vendor: { id: string; businessName: string; averageRating?: number };
 };
 
 type Vendor = {
@@ -85,13 +74,15 @@ type Review = {
   createdAt: string;
 };
 
+/* ────────────────────────── Component ────────────────────────── */
+
 const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const { vendorId } = useParams<{ vendorId: string }>();
   const [events, setEvents] = useState<Event[]>([]);
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
-  const [avgRating, setAvgRating] = useState<number>(0);
-  const [reviewCount, setReviewCount] = useState<number>(0);
+  const [avgRating, setAvgRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
   const [reviews, setReviews] = useState<Review[]>([]);
   const [isFollowing, setIsFollowing] = useState(false);
   const [tabIndex, setTabIndex] = useState(0);
@@ -100,13 +91,9 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<Event | null>(null);
 
-  const scrollRef = useRef<HTMLDivElement>(null);
   const now = new Date();
 
-  const handleCloseModal = () => {
-    setModalOpen(false);
-    setSelectedEvent(null);
-  };
+  /* ────────────────────────── Data Fetch ────────────────────────── */
 
   const fetchData = async () => {
     if (!vendorId) return;
@@ -118,16 +105,17 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         axios.get(`/api/events/vendor/${vendorId}`),
         axios.get(`/api/vendor/${vendorId}/average-rating`),
       ]);
+
       const v: Vendor = { ...vRes.data, id: vendorId };
       setVendor(v);
 
-      const events = (eRes.data as Event[])
+      const evts: Event[] = (eRes.data as Event[])
         .map((e) => ({ ...e, vendor: v }))
         .sort(
           (a, b) =>
             new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
         );
-      setEvents(events);
+      setEvents(evts);
 
       if (imgRes.data?.length) {
         setUploadedImage(imgRes.data[0].referenceURL);
@@ -136,8 +124,9 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
       setAvgRating(parseFloat(rRes.data.averageRating) || 0);
       setReviewCount(parseInt(rRes.data.reviewCount, 10) || 0);
 
-      const revs = (await axios.get(`/api/vendor/${vendorId}/reviews`))
-        .data as Review[];
+      const revs = (
+        await axios.get(`/api/vendor/${vendorId}/reviews`)
+      ).data as Review[];
       setReviews(
         revs.map((r) => ({ ...r, user: r.user || { name: "Anonymous" } }))
       );
@@ -167,10 +156,14 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
     }
   }, [vendorId, user]);
 
+  /* ────────────────────────── Derived Data ────────────────────────── */
+
   const filteredEvents =
     tabIndex === 0
       ? events.filter((e) => new Date(e.endDate) >= now)
       : events.filter((e) => new Date(e.endDate) < now);
+
+  /* ────────────────────────── Render ────────────────────────── */
 
   return (
     <Container maxWidth="lg" sx={{ pt: 4, pb: 8 }}>
@@ -182,6 +175,7 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
 
       {vendor && (
         <>
+          {/* Header */}
           <Stack
             direction="row"
             spacing={3}
@@ -247,15 +241,11 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
             </Stack>
           </Stack>
 
+          {/* Description */}
           {vendor.description && (
             <Typography
               variant="body1"
-              sx={{
-                mt: 1,
-                color: "#000",
-                maxWidth: 720,
-                fontSize: "0.95rem",
-              }}
+              sx={{ mt: 1, color: "#000", maxWidth: 720, fontSize: "0.95rem" }}
             >
               {vendor.description}
             </Typography>
@@ -263,8 +253,9 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         </>
       )}
 
-  <Divider sx={{ my: 4 }} />
+      <Divider sx={{ my: 4 }} />
 
+      {/* Tabs */}
       <Tabs
         value={tabIndex}
         onChange={(_, v) => setTabIndex(v)}
@@ -287,28 +278,45 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         <Tab label="Past Popups" />
       </Tabs>
 
+      {/* Events / No‑events message */}
       {loading ? (
         <CircularProgress />
       ) : filteredEvents.length === 0 ? (
-        <Typography>
-          No {tabIndex === 0 ? "Upcoming" : "Past"} Popups
-        </Typography>
-      ) : (
-        <React.Fragment>
-          <EventCarousel
-            events={filteredEvents}
-            onDetailsClick={(event) => {
-              setSelectedEvent(event);
-              setModalOpen(true);
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            minHeight: 120,
+          }}
+        >
+          <Typography
+            sx={{
+              fontFamily: "'Bebas Neue', sans-serif",
+              fontSize: "1.7rem",
+              fontWeight: 600,
+              textAlign: "center",
             }}
-          />
-        </React.Fragment>
+          >
+            No&nbsp;{tabIndex === 0 ? "Upcoming" : "Past"}&nbsp;Popups
+          </Typography>
+        </Box>
+      ) : (
+        <EventCarousel
+          events={filteredEvents}
+          onDetailsClick={(e) => {
+            setSelectedEvent(e);
+            setModalOpen(true);
+          }}
+        />
       )}
 
+      {/* Reviews */}
       <Box sx={{ mt: 4 }}>
         <Typography variant="h4" gutterBottom>
           Reviews ({reviewCount})
         </Typography>
+
         {reviewCount > 0 && (
           <List
             sx={{
@@ -319,29 +327,27 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
               p: 1,
             }}
           >
-            {reviews.map((review) => (
-              <React.Fragment key={review.id}>
+            {reviews.map((r) => (
+              <React.Fragment key={r.id}>
                 <ListItem alignItems="flex-start">
                   <ListItemAvatar>
-                    <Avatar src={review.user?.profile_picture} />
+                    <Avatar src={r.user?.profile_picture} />
                   </ListItemAvatar>
                   <ListItemText
-                    primary={review.user?.name || "Anonymous"}
+                    primary={r.user?.name || "Anonymous"}
                     secondary={
                       <>
                         <Rating
-                          value={review.rating}
+                          value={r.rating}
                           precision={0.5}
                           readOnly
                           size="small"
                         />
-                        {review.comment && (
-                          <Typography variant="body2">
-                            {review.comment}
-                          </Typography>
+                        {r.comment && (
+                          <Typography variant="body2">{r.comment}</Typography>
                         )}
                         <Typography variant="caption">
-                          {new Date(review.createdAt).toLocaleDateString()}
+                          {new Date(r.createdAt).toLocaleDateString()}
                         </Typography>
                       </>
                     }
@@ -352,6 +358,8 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
             ))}
           </List>
         )}
+
+        {/* Add review */}
         {vendorId && (
           <>
             {user ? (
@@ -369,9 +377,13 @@ const PublicVendorProfile: React.FC<Props> = ({ user }) => {
         )}
       </Box>
 
+      {/* Event modal */}
       <EventDetails
         open={modalOpen}
-        onClose={handleCloseModal}
+        onClose={() => {
+          setModalOpen(false);
+          setSelectedEvent(null);
+        }}
         event={selectedEvent}
         currentUserId={user?.id || ""}
       />

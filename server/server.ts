@@ -69,6 +69,7 @@ app.use('/vendors', vendorRoutes);
 app.use('/vendors', reviewRoutes);
 app.use('/search', searchRoutes)
 app.use('/api/vendor', reviewRoutes);
+app.use('/api/vendors', vendorSpotlightRouter)
 
 app.use((req, res, next) => {
   console.log(`Incoming request: ${req.method} ${req.path}`);
