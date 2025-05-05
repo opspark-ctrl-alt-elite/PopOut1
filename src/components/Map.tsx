@@ -47,22 +47,41 @@ const defaultCenter = {
   lng: -90.0715,
 };
 
-const libraries: ("places")[] = ["places"];
+const libraries: "places"[] = ["places"];
 
-const getCategoryIcon = (category: string) => {
+// const getCategoryIcon = (category: string) => {
+//   switch (category) {
+//     case "Food & Drink":
+//       return <RestaurantIcon fontSize="small" />;
+//     case "Art":
+//       return <BrushIcon fontSize="small" />;
+//     case "Music":
+//       return <MusicNoteIcon fontSize="small" />;
+//     case "Sports & Fitness":
+//       return <SportsHandballIcon fontSize="small" />;
+//     case "Hobbies":
+//       return <EmojiEmotionsIcon fontSize="small" />;
+//     default:
+//       return <PlaceIcon fontSize="small" />;
+//   }
+// };
+
+const getCategoryIcon = (category: string, color?: string) => {
+  const props = { fontSize: "small", sx: color ? { color } : {} };
+
   switch (category) {
     case "Food & Drink":
-      return <RestaurantIcon fontSize="small" />;
+      return <RestaurantIcon {...props} />;
     case "Art":
-      return <BrushIcon fontSize="small" />;
+      return <BrushIcon {...props} />;
     case "Music":
-      return <MusicNoteIcon fontSize="small" />;
+      return <MusicNoteIcon {...props} />;
     case "Sports & Fitness":
-      return <SportsHandballIcon fontSize="small" />;
+      return <SportsHandballIcon {...props} />;
     case "Hobbies":
-      return <EmojiEmotionsIcon fontSize="small" />;
+      return <EmojiEmotionsIcon {...props} />;
     default:
-      return <PlaceIcon fontSize="small" />;
+      return <PlaceIcon {...props} />;
   }
 };
 
@@ -92,12 +111,15 @@ const getMarkerIcon = (category: string) => {
 };
 
 const Map: React.FC<Props> = ({ user }) => {
-  const [mapCenter, setMapCenter] = useState<google.maps.LatLngLiteral>(defaultCenter);
-  const [userLocation, setUserLocation] = useState<google.maps.LatLngLiteral | null>(null);
+  const [mapCenter, setMapCenter] =
+    useState<google.maps.LatLngLiteral>(defaultCenter);
+  const [userLocation, setUserLocation] =
+    useState<google.maps.LatLngLiteral | null>(null);
   const [events, setEvents] = useState<any[]>([]);
   const [activeCategory, setActiveCategory] = useState<string | null>(null);
   const [activeEvent, setActiveEvent] = useState<any | null>(null);
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+  const [zoom, setZoom] = useState<number>(12);
 
   const location = useLocation();
   const queryParams = new URLSearchParams(location.search);
@@ -111,9 +133,29 @@ const Map: React.FC<Props> = ({ user }) => {
   });
 
   // map center
+  // useEffect(() => {
+  //   if (hasSelectedCoords) {
+  //     setMapCenter({ lat: selectedLat, lng: selectedLng });
+  //   } else {
+  //     navigator.geolocation.getCurrentPosition(
+  //       (position) => {
+  //         const { latitude, longitude } = position.coords;
+  //         const loc = { lat: latitude, lng: longitude };
+  //         setUserLocation(loc);
+  //         setMapCenter(loc);
+  //       },
+  //       (error) => {
+  //         console.warn("Geolocation error", error);
+  //         setMapCenter(defaultCenter);
+  //       }
+  //     );
+  //   }
+  // }, [hasSelectedCoords, selectedLat, selectedLng]);
+
   useEffect(() => {
     if (hasSelectedCoords) {
       setMapCenter({ lat: selectedLat, lng: selectedLng });
+      setZoom(16);
     } else {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -121,14 +163,17 @@ const Map: React.FC<Props> = ({ user }) => {
           const loc = { lat: latitude, lng: longitude };
           setUserLocation(loc);
           setMapCenter(loc);
+          setZoom(14);
         },
         (error) => {
           console.warn("Geolocation error", error);
           setMapCenter(defaultCenter);
+          setZoom(14);
         }
       );
     }
   }, [hasSelectedCoords, selectedLat, selectedLng]);
+  
 
   useEffect(() => {
     const fetchEvents = async () => {
@@ -144,7 +189,7 @@ const Map: React.FC<Props> = ({ user }) => {
     fetchEvents();
   }, []);
 
-    // useEffect(() => {
+  // useEffect(() => {
   //   if (!selected) return;
 
   //   // const fetchEvents = async () => {
@@ -179,10 +224,25 @@ const Map: React.FC<Props> = ({ user }) => {
   return (
     <Box>
       <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
-        <Toolbar sx={{ flexWrap: "wrap", justifyContent: "space-between", gap: 2, px: 2, py: 1 }}>
-          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
+        <Toolbar
+          sx={{
+            flexWrap: "wrap",
+            justifyContent: "space-between",
+            gap: 2,
+            px: 2,
+            py: 1,
+          }}
+        >
+          <Stack
+            direction="row"
+            spacing={2}
+            alignItems="center"
+            flexWrap="wrap"
+          >
             <Autocomplete
-              onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
+              onLoad={(autocomplete) =>
+                (autocompleteRef.current = autocomplete)
+              }
               onPlaceChanged={() => {
                 const place = autocompleteRef.current?.getPlace();
                 const location = place?.geometry?.location;
@@ -203,22 +263,42 @@ const Map: React.FC<Props> = ({ user }) => {
               />
             </Autocomplete>
 
-            <Stack direction="row" spacing={1} alignItems="center" sx={{ ml: 2 }}>
-              {["Food & Drink", "Art", "Music", "Sports & Fitness", "Hobbies"].map((cat) => (
+            <Stack
+              direction="row"
+              spacing={1}
+              alignItems="center"
+              sx={{ ml: 2 }}
+            >
+              {[
+                "Food & Drink",
+                "Art",
+                "Music",
+                "Sports & Fitness",
+                "Hobbies",
+              ].map((cat) => (
                 <IconButton
                   key={cat}
-                  size="small"
-                  onClick={() => setActiveCategory((prev) => (prev === cat ? null : cat))}
+                  size="medium"
+                  onClick={() =>
+                    setActiveCategory((prev) => (prev === cat ? null : cat))
+                  }
                   sx={{
-                    bgcolor: activeCategory === cat ? categoryColors[cat] : "#f0f0f0",
-                    color: activeCategory === cat ? "#fff" : "#000",
+                    bgcolor: categoryColors[cat],
+                    color: "#fff",
+                    transition: "transform 0.2s, box-shadow 0.2s",
+                    transform:
+                      activeCategory === cat ? "scale(1.25)" : "scale(1)",
+                    boxShadow:
+                      activeCategory === cat ? "0 0 0 2px white" : "none",
                     "&:hover": {
                       bgcolor: categoryColors[cat],
                       color: "#fff",
                     },
                   }}
                 >
-                  {getCategoryIcon(cat)}
+                  {React.cloneElement(getCategoryIcon(cat), {
+                    fontSize: "medium",
+                  })}
                 </IconButton>
               ))}
 
@@ -243,15 +323,25 @@ const Map: React.FC<Props> = ({ user }) => {
         </Toolbar>
       </AppBar>
 
-      <GoogleMap mapContainerStyle={containerStyle} center={mapCenter} zoom={12}>
+      <GoogleMap
+        mapContainerStyle={containerStyle}
+        center={mapCenter}
+        // zoom={12}
+        zoom={zoom}
+      >
         {/* markers */}
         {events
           .filter((event) => {
             const category = event.category_name || event.Categories?.[0]?.name;
-            return !activeCategory || category === activeCategory;
+            const now = new Date();
+            const endDate = new Date(event.endDate || event.startDate);
+            return (
+              endDate > now && (!activeCategory || category === activeCategory)
+            );
           })
           .map((event, i) => {
-            const category = event.category_name || event.Categories?.[0]?.name || "Unknown";
+            const category =
+              event.category_name || event.Categories?.[0]?.name || "Unknown";
             return (
               <Marker
                 key={i}
@@ -267,7 +357,9 @@ const Map: React.FC<Props> = ({ user }) => {
         {userLocation && (
           <Marker
             position={userLocation}
-            icon={{ url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png" }}
+            icon={{
+              url: "http://maps.google.com/mapfiles/ms/icons/blue-dot.png",
+            }}
           />
         )}
 
@@ -280,16 +372,49 @@ const Map: React.FC<Props> = ({ user }) => {
             }}
             onCloseClick={() => setActiveEvent(null)}
           >
-            <div style={{ maxWidth: "200px" }}>
-              <h4 style={{ margin: "0 0 4px" }}>{activeEvent.title}</h4>
-              <p style={{ margin: 0 }}>{activeEvent.venue_name}</p>
-              <p style={{ margin: 0 }}>{activeEvent.description}</p>
-              <p style={{ margin: 0 }}>
+            <div style={{ maxWidth: "220px" }}>
+              <div style={{ marginBottom: "4px" }}>
+                <strong style={{ fontSize: "1rem", lineHeight: 1.2 }}>
+                  {activeEvent.title}
+                </strong>
+                {activeEvent.vendor?.id && (
+                  <span
+                    style={{
+                      fontSize: "0.85rem",
+                      color: "#444",
+                      marginLeft: 4,
+                    }}
+                  >
+                    by{" "}
+                    <Link
+                      to={`/vendor/${activeEvent.vendor.id}`}
+                      style={{ textDecoration: "none", color: "#1976d2" }}
+                    >
+                      {activeEvent.vendor.businessName}
+                    </Link>
+                  </span>
+                )}
+              </div>
+
+              <p
+                style={{
+                  margin: "2px 0 6px",
+                  fontSize: "0.85rem",
+                  color: "#555",
+                }}
+              >
                 {new Date(activeEvent.startDate).toLocaleString(undefined, {
                   dateStyle: "medium",
                   timeStyle: "short",
                 })}
               </p>
+
+              <p style={{ margin: "2px 0 4px", fontWeight: 500 }}>
+                {activeEvent.venue_name}
+              </p>
+
+              <p style={{ margin: 0 }}>{activeEvent.description}</p>
+
               <p
                 style={{
                   margin: "4px 0 0",
@@ -301,7 +426,14 @@ const Map: React.FC<Props> = ({ user }) => {
                 }}
               >
                 {getCategoryIcon(
-                  activeEvent.category_name || activeEvent.Categories?.[0]?.name || "Unknown"
+                  activeEvent.category_name ||
+                    activeEvent.Categories?.[0]?.name ||
+                    "Unknown",
+                  categoryColors[
+                    activeEvent.category_name ||
+                      activeEvent.Categories?.[0]?.name ||
+                      "Unknown"
+                  ]
                 )}{" "}
                 {activeEvent.category_name ||
                   activeEvent.Categories?.[0]?.name ||
