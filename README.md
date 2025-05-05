@@ -51,7 +51,7 @@ INSERT INTO categories (name) VALUES ('Food & Drink'), ('Music'), ('Art'), ('Spo
 
 ## User Profile
 - View user profile picture, name, Gmail, and interests.
-- Edit event to alter the user profile's name, picture (is uploaded), and interests (are the same as the categories that can be applied to events).
+- Edit event to alter the user profile's name, picture (is uploaded), and interests (are the same as the popup categories and helps to recommend popups to you based on said interests).
 - See bookmarked events.
 - Delete user profile.
 
@@ -98,23 +98,28 @@ INSERT INTO categories (name) VALUES ('Food & Drink'), ('Music'), ('Art'), ('Spo
 
 - Katherine Hebbler: Map and Styling [Github](https://github.com/khebbler)
 
-- Khamal Chanley: Popups [Github](https://github.com/khamal22)
+- Khamal Chaney: Popups [Github](https://github.com/khamal22)
 
-- Charles Sublett: Users and Vendors [Github](https://github.com/BMH397)
+- Charles Sublett II: Users and Vendors [Github](https://github.com/BMH397)
 
 ## Tech Stack
   - Api for Notification: [Firebase](https://firebase.google.com/)
   - Api for Map: [Google Maps](https://developers.google.com/maps/documentation)
-  - Image Uploading: [Cloudinary Api](https://cloudinary.com/documentation/image_upload_api_reference) with help from [Multer dependency](https://expressjs.com/en/resources/middleware/multer.html)
+  - Api for Image Uploading: [Cloudinary Api](https://cloudinary.com/documentation/image_upload_api_reference)
   - Main Programming Language: [TypeScript](https://www.typescriptlang.org/docs/handbook/intro.html)
-  - Frontend: [React](https://react.dev/)
-  - Backend: [Express](https://expressjs.com/en/4x/api.html)
+  - Frontend: [React](https://react.dev/) & [React Router](https://reactrouter.com/home)
+    - Styling: [Material UI](https://mui.com/)
+  - Backend: [Express](https://expressjs.com/en/4x/api.html) & [Node](https://nodejs.org/docs/latest/api/)
+    - Database: [MySQL](https://www.mysql.com/) & [Sequalize](https://sequelize.org/docs/v7/databases/mysql/)
+    - Auth: [Google OAuth 2.0](https://developers.google.com/identity/protocols/oauth2) & [Passport](https://www.passportjs.org/tutorials/google/)
+    - Environment Variables: [dotenv](https://www.npmjs.com/package/dotenv)
+    - Image File Processing: [Multer](https://expressjs.com/en/resources/middleware/multer.html)
+    - Making Requests to Backend: [Axios](https://axios-http.com/docs/intro)
   - Build: [Webpack](https://webpack.js.org/configuration/) & [Babel](https://babeljs.io/docs/)
-  - Database: [MySQL](https://www.mysql.com/) & [Sequalize](https://sequelize.org/docs/v7/databases/mysql/)
-  - Deployment: [AWS EC2](https://aws.amazon.com/ec2/) & [Firebase](https://firebase.google.com/)
-  - Auth: [Google OAuth 2.0](https://developers.google.com/identity/protocols/oauth2) & [Passport](https://www.passportjs.org/tutorials/google/)
-  - Styling: [Material UI](https://mui.com/)
-  - Environment Variables: [dotenv](https://www.npmjs.com/package/dotenv)
+  - Deployment: [AWS EC2](https://aws.amazon.com/ec2/) & [AWS Route 53](https://aws.amazon.com/route53/)
+    - Domain Name: [GoDaddy](https://www.godaddy.com/), [NGINX](https://nginx.org/en/), and [Certbot](https://certbot.eff.org/)
+  - Testing: [Jest](https://jestjs.io/)
+  - Linting: [ESLint](https://eslint.org/docs/latest/)
 
 ## Known Bugs
   - Only vendor images are deleted from Cloudinary when they are deleted from the database. All other images stay in cloudinary after their database record is deleted.
