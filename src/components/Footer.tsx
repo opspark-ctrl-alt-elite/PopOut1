@@ -28,8 +28,8 @@ const Footer: React.FC<Props> = ({ user }) => (
       width: "100%",
       py: 4,
       px: 2,
-      mt: "auto",          // <- let flexbox push it down
-      backgroundColor: "#f0f0f0",
+      mt: "auto",
+      backgroundColor: "#e6eef5",
       borderTop: "1px solid #ddd",
     }}
   >

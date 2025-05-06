@@ -117,7 +117,7 @@ const Navbar: React.FC<Props> = ({
 
   return (
     <>
-      <AppBar position="static" sx={{ bgcolor: "#fff", color: "#000" }}>
+      <AppBar position="static" sx={{ bgcolor: "#f8fbff", color: "#000" }}>
         <Toolbar
           sx={{
             flexWrap: "nowrap",

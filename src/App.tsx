@@ -1,28 +1,28 @@
-import React, { useEffect, useState } from "react";
-import { Routes, Route } from "react-router-dom";
-import Map from "./components/Map";
-import Home from "./components/Home";
-import VendorSignupForm from "./components/VendorSignupForm";
-import UserProfile from "./components/UserProfile";
-import VendorProfile from "./components/VendorProfile";
-import EditProfile from "./components/EditProfile";
-import Preferences from "./components/Preferences";
-import CreateEvent from "./components/CreateEvent";
-import EditEvent from "./components/EditEvent";
-import ActiveEvents from "./components/ActiveEvents";
-import EventsFeed from "./components/EventsFeed";
-import GameApp from "./components/gameComponents/GameApp";
-import PublicVendorProfile from "./components/PublicVendorProfile";
-import TopVendorSpotlight from "./components/TopVendorSpotlight";
-import Navbar from "./components/NavBar";
-import Footer from "./components/Footer";
-import NotificationListener from "./components/NotificationListener";
+import React, { useEffect, useState } from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Map from './components/Map';
+import Home from './components/Home';
+import VendorSignupForm from './components/VendorSignupForm';
+import UserProfile from './components/UserProfile';
+import VendorProfile from './components/VendorProfile';
+import EditProfile from './components/EditProfile';
+import Preferences from './components/Preferences';
+import CreateEvent from './components/CreateEvent';
+import EditEvent from './components/EditEvent';
+import ActiveEvents from './components/ActiveEvents';
+import EventsFeed from './components/EventsFeed';
+import GameApp from './components/gameComponents/GameApp';
+import PublicVendorProfile from './components/PublicVendorProfile';
+import TopVendorSpotlight from './components/TopVendorSpotlight';
+import Navbar from './components/NavBar';
+import Footer from './components/Footer';
+import NotificationListener from './components/NotificationListener';
 
-import { registerServiceWorker } from "./firebase/sw-registration";
-import { requestNotificationPermission } from "./firebase/requestPermission";
-import { onMessageListener } from "./firebase/onMessageListener";
-import axios from "axios";
-import { Box } from "@mui/material";
+import { registerServiceWorker } from './firebase/sw-registration';
+import { requestNotificationPermission } from './firebase/requestPermission';
+import { onMessageListener } from './firebase/onMessageListener';
+import axios from 'axios';
+import { Box } from '@mui/material';
 
 type User = {
   id: string;
@@ -60,7 +60,7 @@ const App: React.FC = () => {
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [captcha, setCaptcha] = useState<Captcha>({
     beatCaptcha: false,
-    wantsToBeVendor: false,
+    wantsToBeVendor: false
   });
 
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -69,21 +69,21 @@ const App: React.FC = () => {
   /* ─── Helpers ─────────────────────────────────────────────────────────── */
   const getCategories = async () => {
     try {
-      const res = await axios.get("/api/categories", { withCredentials: true });
+      const res = await axios.get('/api/categories', { withCredentials: true });
       setCategories(res.data);
     } catch (err) {
       setCategories(null);
-      console.error("Error retrieving categories:", err);
+      console.error('Error retrieving categories:', err);
     }
   };
 
   const getUser = async () => {
     try {
-      const res = await axios.get("/user/me", { withCredentials: true });
+      const res = await axios.get('/user/me', { withCredentials: true });
       setUser(res.data);
     } catch (err) {
       setUser(null);
-      console.error("Error retrieving user:", err);
+      console.error('Error retrieving user:', err);
     }
   };
 
@@ -91,22 +91,23 @@ const App: React.FC = () => {
   useEffect(() => {
     registerServiceWorker();
 
-    fetch("/auth/me", { credentials: "include" })
-      .then((res) => {
-        if (!res.ok) throw new Error("err fetching user");
+    fetch('/auth/me', { credentials: 'include' })
+      .then(res => {
+        if (!res.ok) throw new Error('err fetching user');
         return res.json();
       })
-      .then((data) => {
+      .then(data => {
         if (data?.id) setUser(data);
       })
-      .catch((err) => console.error("Error fetching user:", err));
+      .catch(err => console.error('Error fetching user:', err));
 
-    axios.get("api/vendor/all")
-      .then((res) => {
+    axios
+      .get('api/vendor/all')
+      .then(res => {
         if (res) setVendors(res.data);
       })
-      .catch((err) => {
-        console.error("Error fetching vendors:", err);
+      .catch(err => {
+        console.error('Error fetching vendors:', err);
       });
 
     getCategories();
@@ -118,8 +119,8 @@ const App: React.FC = () => {
 
   useEffect(() => {
     onMessageListener().then((payload: any) => {
-      setNotifications((prev) => [payload.notification, ...prev]);
-      setUnreadCount((prev) => prev + 1);
+      setNotifications(prev => [payload.notification, ...prev]);
+      setUnreadCount(prev => prev + 1);
     });
   }, []);
 
@@ -131,10 +132,10 @@ const App: React.FC = () => {
       {/* FLEX LAYOUT ENSURES FOOTER STAYS AT SCREEN BOTTOM */}
       <Box
         sx={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100vh",
-          bgcolor: "background.default",
+          display: 'flex',
+          flexDirection: 'column',
+          minHeight: '100vh',
+          bgcolor: 'background.default'
         }}
       >
         <Navbar
@@ -149,7 +150,7 @@ const App: React.FC = () => {
         <Box sx={{ flexGrow: 1 }}>
           <Routes>
             <Route
-              path="/"
+              path='/'
               element={
                 <Home
                   user={user}
@@ -163,10 +164,10 @@ const App: React.FC = () => {
                 />
               }
             />
-            <Route path="/map" element={<Map user={user} />} />
-            <Route path="/edit-profile" element={<EditProfile user={user} />} />
+            <Route path='/map' element={<Map user={user} />} />
+            <Route path='/edit-profile' element={<EditProfile user={user} />} />
             <Route
-              path="/userprofile"
+              path='/userprofile'
               element={
                 <UserProfile
                   user={user}
@@ -176,11 +177,11 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/vendorprofile"
+              path='/vendorprofile'
               element={<VendorProfile user={user} getUser={getUser} />}
             />
             <Route
-              path="/vendor-signup"
+              path='/vendor-signup'
               element={
                 <VendorSignupForm
                   user={user}
@@ -191,20 +192,23 @@ const App: React.FC = () => {
               }
             />
             <Route
-              path="/preferences"
+              path='/preferences'
               element={<Preferences setUser={setUser} />}
             />
-            <Route path="/create-event" element={<CreateEvent />} />
-            <Route path="/edit-event/:id" element={<EditEvent />} />
-            <Route path="/active-events" element={<ActiveEvents user={user} />} />
-            <Route path="/events" element={<EventsFeed />} />
+            <Route path='/create-event' element={<CreateEvent />} />
+            <Route path='/edit-event/:id' element={<EditEvent />} />
             <Route
-              path="/game"
+              path='/active-events'
+              element={<ActiveEvents user={user} />}
+            />
+            <Route path='/events' element={<EventsFeed />} />
+            <Route
+              path='/game'
               element={<GameApp captcha={captcha} setCaptcha={setCaptcha} />}
             />
-            <Route path="/vendor-spotlight" element={<TopVendorSpotlight />} />
+            <Route path='/vendor-spotlight' element={<TopVendorSpotlight />} />
             <Route
-              path="/vendor/:vendorId"
+              path='/vendor/:vendorId'
               element={<PublicVendorProfile user={user} />}
             />
           </Routes>

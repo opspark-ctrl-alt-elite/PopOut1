@@ -10,6 +10,14 @@ import {
 } from "@mui/material";
 import axios from "axios";
 
+// ICONS
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BrushIcon from "@mui/icons-material/Brush";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SportsHandballIcon from "@mui/icons-material/SportsHandball";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import PlaceIcon from "@mui/icons-material/Place";
+
 const categoriesList = [
   "Food & Drink",
   "Art",
@@ -17,6 +25,32 @@ const categoriesList = [
   "Sports & Fitness",
   "Hobbies",
 ];
+
+// ICON and COLOR FUNCTIONS
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case "Food & Drink":
+      return <RestaurantIcon fontSize="small" />;
+    case "Art":
+      return <BrushIcon fontSize="small" />;
+    case "Music":
+      return <MusicNoteIcon fontSize="small" />;
+    case "Sports & Fitness":
+      return <SportsHandballIcon fontSize="small" />;
+    case "Hobbies":
+      return <EmojiEmotionsIcon fontSize="small" />;
+    default:
+      return <PlaceIcon fontSize="small" />;
+  }
+};
+
+const categoryColors: { [key: string]: string } = {
+  "Food & Drink": "#FB8C00",
+  Art: "#8E24AA",
+  Music: "#E53935",
+  "Sports & Fitness": "#43A047",
+  Hobbies: "#FDD835",
+};
 
 type Props = {
   open: boolean;
@@ -155,23 +189,27 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
         </Typography>
 
         <Stack spacing={1}>
-          {categoriesList.map((category) => (
-            <Button
-              key={category}
-              variant={selectedCategories.includes(category) ? "contained" : "outlined"}
-              onClick={() => toggleCategory(category)}
-              fullWidth
-              sx={{
-                backgroundColor: selectedCategories.includes(category) ? "black" : undefined,
-                color: selectedCategories.includes(category) ? "white" : undefined,
-                "&:hover": {
-                  boxShadow: "0 0 10px rgba(0,0,0,0.5)",
-                },
-              }}
-            >
-              {category.toUpperCase()}
-            </Button>
-          ))}
+          {categoriesList.map((category) => {
+            const selected = selectedCategories.includes(category);
+            return (
+              <Button
+                key={category}
+                onClick={() => toggleCategory(category)}
+                fullWidth
+                startIcon={getCategoryIcon(category)}
+                sx={{
+                  justifyContent: "flex-start",
+                  backgroundColor: selected ? categoryColors[category] : "#212121",
+                  color: selected ? "#fff" : "#fff",
+                  "&:hover": {
+                    backgroundColor: selected ? categoryColors[category] : "#424242",
+                  },
+                }}
+              >
+                {category.toUpperCase()}
+              </Button>
+            );
+          })}
         </Stack>
 
         <Stack direction="row" justifyContent="space-between" mt={3}>
@@ -209,5 +247,4 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
   );
 };
 
-// lime bean
 export default EditProfile;
