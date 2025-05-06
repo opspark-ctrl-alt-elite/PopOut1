@@ -23,7 +23,6 @@ import SportsHandballIcon from "@mui/icons-material/SportsHandball";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import PlaceIcon from "@mui/icons-material/Place";
 
-// ICONS AND COLORS (same as EditProfile)
 const getCategoryIcon = (category: string) => {
   switch (category) {
     case "Food & Drink":
@@ -49,6 +48,7 @@ const categoryColors: { [key: string]: string } = {
   Hobbies: "#FDD835",
 };
 
+// TYPES
 type Category = { id: number; name: string };
 type Event = {
   id: string;
@@ -57,6 +57,13 @@ type Event = {
   startDate: string;
   endDate: string;
   venue_name: string;
+  image_url?: string;
+  isFree: boolean;
+  vendor?: {
+    id: string;
+    businessName: string;
+  };
+  Categories?: { name: string }[];
 };
 type FollowedVendor = {
   id: string;
@@ -83,6 +90,7 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
   const [bookmarkedEvents, setBookmarkedEvents] = useState<Event[]>([]);
   const [preferences, setPreferences] = useState<Category[]>([]);
   const [followedVendors, setFollowedVendors] = useState<FollowedVendor[]>([]);
+  const [recommendedEvents, setRecommendedEvents] = useState<Event[]>([]);
   const [openEdit, setOpenEdit] = useState(false);
   const [confirmDelete, setConfirmDelete] = useState(false);
 
@@ -111,23 +119,7 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
     const fetchFollowedVendors = async () => {
       try {
         const res = await axios.get(`/users/${user.id}/followed-vendors`);
-        const withImages = await Promise.all(
-          res.data.map(async (vendor: FollowedVendor) => {
-            try {
-              const imgRes = await axios.get(
-                `/api/images/vendorId/${vendor.id}`
-              );
-              return {
-                ...vendor,
-                profilePicture:
-                  imgRes.data?.[0]?.referenceURL || vendor.profilePicture,
-              };
-            } catch {
-              return vendor;
-            }
-          })
-        );
-        setFollowedVendors(withImages);
+        setFollowedVendors(res.data);
       } catch (err) {
         console.error("Error fetching vendors:", err);
       }
@@ -145,6 +137,28 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
     fetchFollowedVendors();
     fetchBookmarkedEvents();
   }, [user]);
+
+  useEffect(() => {
+    const fetchRecommended = async () => {
+      if (!preferences.length) return;
+
+      try {
+        const res = await axios.get("/api/events");
+        const allEvents: Event[] = res.data;
+
+        const preferredNames = preferences.map((c) => c.name);
+        const matchingEvents = allEvents.filter((event) =>
+          event.Categories?.some((cat) => preferredNames.includes(cat.name))
+        );
+
+        setRecommendedEvents(matchingEvents.slice(0, 3));
+      } catch (err) {
+        console.error("Error fetching recommended events:", err);
+      }
+    };
+
+    fetchRecommended();
+  }, [preferences]);
 
   const handleDeleteUser = async () => {
     if (!user) return;
@@ -183,7 +197,6 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                 </Box>
               </Stack>
 
-              {/* edit profile */}
               <Button
                 variant="outlined"
                 size="small"
@@ -191,11 +204,8 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                 sx={{
                   backgroundColor: "black",
                   color: "white",
-                  "&:hover": {
-                    backgroundColor: "#333",
-                  },
+                  "&:hover": { backgroundColor: "#333" },
                   textTransform: "none",
-                  alignSelf: "flex-start",
                 }}
               >
                 Edit Profile
@@ -261,11 +271,15 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
                       px: 2,
                       py: 1,
                       borderRadius: "8px",
-                      backgroundColor: "#e0e0e0",
                       fontWeight: "bold",
+                      backgroundColor: categoryColors[cat.name] || "#e0e0e0",
+                      color: "#fff",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 0.5,
                     }}
                   >
-                    {cat.name}
+                    {getCategoryIcon(cat.name)} {cat.name}
                   </Box>
                 ))}
               </Stack>
@@ -273,24 +287,92 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
               <Typography>No interests selected yet.</Typography>
             )}
 
-            {/* delete profile*/}
+            {recommendedEvents.length > 0 && (
+              <Box mt={4}>
+                <Typography variant="h5" gutterBottom>
+                  Recommended Popups:
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    gap: 2,
+                    flexWrap: "wrap",
+                  }}
+                >
+                  {recommendedEvents.map((event) => (
+                    <RouterLink
+                      to={`/vendor/${event.vendor?.id}`}
+                      key={event.id}
+                      style={{ textDecoration: "none", color: "inherit" }}
+                    >
+                      <Card 
+                        sx={{
+                          width: 220,
+                          boxShadow: 2,
+                          borderRadius: 2,
+                        }}
+                      >
+                        {event.image_url && (
+                          <Box>
+                            <img
+                              src={event.image_url}
+                              alt={event.title}
+                              style={{
+                                width: "100%",
+                                height: "100px",
+                                objectFit: "cover",
+                                borderTopLeftRadius: "8px",
+                                borderTopRightRadius: "8px",
+                              }}
+                            />
+                          </Box>
+                        )}
+                        <Box p={2} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                          <Typography fontWeight="bold">{event.title}</Typography>
+                          <Typography variant="body2" color="text.secondary">
+                            by {event.vendor?.businessName || "Unknown Vendor"}
+                          </Typography>
+                          <Typography variant="body2">
+                            {new Date(event.startDate).toLocaleDateString()} -{" "}
+                            {new Date(event.startDate).toLocaleTimeString([], {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </Typography>
+                          <Typography variant="body2">
+                            {event.venue_name}
+                          </Typography>
+                          {event.isFree && (
+                            <Box
+                              sx={{
+                                mt: 1,
+                                backgroundColor: "#e0e0e0",
+                                px: 1,
+                                borderRadius: 1,
+                                width: "fit-content",
+                                fontSize: "0.75rem",
+                              }}
+                            >
+                              Free
+                            </Box>
+                          )}
+                        </Box>
+                      </Card>
+                    </RouterLink>
+                  ))}
+                </Box>
+              </Box>
+            )}
+
             <Box display="flex" justifyContent="flex-end" mt={6}>
               <Button
                 variant="contained"
                 color="error"
                 onClick={() => setConfirmDelete(true)}
-                size="medium"
                 sx={{
                   backgroundColor: "#b71c1c",
-                  color: "#fff",
-                  fontSize: "0.8125rem",
-                  textTransform: "none",
-                  px: 2,
-                  py: 0.5,
-                  boxShadow: 1,
                   "&:hover": {
                     backgroundColor: "#fbe9e7",
-                    borderColor: "#b71c1c",
                     color: "#b71c1c",
                   },
                 }}

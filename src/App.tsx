@@ -12,16 +12,14 @@ import EditEvent from "./components/EditEvent";
 import ActiveEvents from "./components/ActiveEvents";
 import EventsFeed from "./components/EventsFeed";
 import GameApp from "./components/gameComponents/GameApp";
-import PublicVendorProfile from "./components/PublicVendorProfile";
-import TopVendorSpotlight from "./components/TopVendorSpotlight";
-import Navbar from "./components/NavBar";
-import Footer from "./components/Footer";
-import NotificationListener from "./components/NotificationListener";
-
 import { registerServiceWorker } from "./firebase/sw-registration";
 import { requestNotificationPermission } from "./firebase/requestPermission";
-import { onMessageListener } from "./firebase/onMessageListener";
+import PublicVendorProfile from "./components/PublicVendorProfile";
+import TopVendorSpotlight from "./components/TopVendorSpotlight";
 import axios from "axios";
+import { onMessageListener } from "./firebase/onMessageListener";
+import NotificationListener from "./components/NotificationListener";
+import Navbar from "./components/NavBar";
 import { Box } from "@mui/material";
 
 type User = {
@@ -30,7 +28,6 @@ type User = {
   email: string;
   profile_picture?: string;
   Categories?: { id: number; name: string }[];
-  is_vendor?: boolean;
 };
 
 type Vendor = {
@@ -47,7 +44,20 @@ type Vendor = {
   updatedAt: any;
 };
 
-type Category = { id: number; name: string };
+type Category = {
+  id: number;
+  name: string;
+};
+
+type Event = {
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  venue_name: string;
+  categories: Category[]; // Important
+};
 
 type Captcha = {
   beatCaptcha: boolean;
@@ -58,6 +68,7 @@ const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [vendors, setVendors] = useState<Vendor[] | null>(null);
   const [categories, setCategories] = useState<Category[] | null>(null);
+  const [allEvents, setAllEvents] = useState<Event[]>([]); // All events
   const [captcha, setCaptcha] = useState<Captcha>({
     beatCaptcha: false,
     wantsToBeVendor: false,
@@ -66,54 +77,70 @@ const App: React.FC = () => {
   const [notifications, setNotifications] = useState<any[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
 
-  /* ─── Helpers ─────────────────────────────────────────────────────────── */
   const getCategories = async () => {
     try {
-      const res = await axios.get("/api/categories", { withCredentials: true });
-      setCategories(res.data);
+      const categoriesObj = await axios.get(`/api/categories`, {
+        withCredentials: true,
+      });
+      setCategories(categoriesObj.data);
     } catch (err) {
       setCategories(null);
-      console.error("Error retrieving categories:", err);
+      console.error("Error retrieving category records:", err);
     }
   };
 
   const getUser = async () => {
     try {
-      const res = await axios.get("/user/me", { withCredentials: true });
-      setUser(res.data);
+      const userObj = await axios.get(`/user/me`, {
+        withCredentials: true,
+      });
+      setUser(userObj.data);
     } catch (err) {
       setUser(null);
-      console.error("Error retrieving user:", err);
+      console.error("Error retrieving user record:", err);
     }
   };
 
-  /* ─── Effects ─────────────────────────────────────────────────────────── */
   useEffect(() => {
     registerServiceWorker();
 
-    fetch("/auth/me", { credentials: "include" })
+    fetch("/auth/me", {
+      credentials: "include",
+    })
       .then((res) => {
         if (!res.ok) throw new Error("err fetching user");
         return res.json();
       })
       .then((data) => {
-        if (data?.id) setUser(data);
+        if (data && data.id) setUser(data);
       })
-      .catch((err) => console.error("Error fetching user:", err));
+      .catch((err) => {
+        console.error("Error fetching user:", err);
+      });
 
     axios.get("api/vendor/all")
       .then((res) => {
+        console.log("Client Side: getting all vendors: ", res.data);
         if (res) setVendors(res.data);
       })
+      .catch(() => {});
+
+    axios.get("/api/events") // Get all events
+      .then((res) => {
+        console.log("Client Side: getting all events: ", res.data);
+        setAllEvents(res.data);
+      })
       .catch((err) => {
-        console.error("Error fetching vendors:", err);
+        console.error("Error fetching events:", err);
       });
 
     getCategories();
   }, []);
 
   useEffect(() => {
-    if (user?.id) requestNotificationPermission(user.id);
+    if (user?.id) {
+      requestNotificationPermission(user.id);
+    }
   }, [user]);
 
   useEffect(() => {
@@ -123,20 +150,10 @@ const App: React.FC = () => {
     });
   }, []);
 
-  /* ─── Render ──────────────────────────────────────────────────────────── */
   return (
     <>
       <NotificationListener />
-
-      {/* FLEX LAYOUT ENSURES FOOTER STAYS AT SCREEN BOTTOM */}
-      <Box
-        sx={{
-          display: "flex",
-          flexDirection: "column",
-          minHeight: "100vh",
-          bgcolor: "background.default",
-        }}
-      >
+      <Box sx={{ bgcolor: "background.default", minHeight: "100vh" }}>
         <Navbar
           user={user}
           notifications={notifications}
@@ -144,74 +161,46 @@ const App: React.FC = () => {
           setUnreadCount={setUnreadCount}
           setNotifications={setNotifications}
         />
-
-        {/* Main content area grows to push footer down */}
-        <Box sx={{ flexGrow: 1 }}>
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Home
-                  user={user}
-                  vendors={vendors}
-                  captcha={captcha}
-                  setCaptcha={setCaptcha}
-                  notifications={notifications}
-                  unreadCount={unreadCount}
-                  setUnreadCount={setUnreadCount}
-                  setNotifications={setNotifications}
-                />
-              }
-            />
-            <Route path="/map" element={<Map user={user} />} />
-            <Route path="/edit-profile" element={<EditProfile user={user} />} />
-            <Route
-              path="/userprofile"
-              element={
-                <UserProfile
-                  user={user}
-                  setUser={setUser}
-                  categories={categories}
-                />
-              }
-            />
-            <Route
-              path="/vendorprofile"
-              element={<VendorProfile user={user} getUser={getUser} />}
-            />
-            <Route
-              path="/vendor-signup"
-              element={
-                <VendorSignupForm
-                  user={user}
-                  getUser={getUser}
-                  captcha={captcha}
-                  setCaptcha={setCaptcha}
-                />
-              }
-            />
-            <Route
-              path="/preferences"
-              element={<Preferences setUser={setUser} />}
-            />
-            <Route path="/create-event" element={<CreateEvent />} />
-            <Route path="/edit-event/:id" element={<EditEvent />} />
-            <Route path="/active-events" element={<ActiveEvents user={user} />} />
-            <Route path="/events" element={<EventsFeed />} />
-            <Route
-              path="/game"
-              element={<GameApp captcha={captcha} setCaptcha={setCaptcha} />}
-            />
-            <Route path="/vendor-spotlight" element={<TopVendorSpotlight />} />
-            <Route
-              path="/vendor/:vendorId"
-              element={<PublicVendorProfile user={user} />}
-            />
-          </Routes>
-        </Box>
-
-        {/* Sticky‑to‑bottom footer */}
-        <Footer user={user} />
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <Home
+                user={user}
+                vendors={vendors}
+                captcha={captcha}
+                setCaptcha={setCaptcha}
+                notifications={notifications}
+                unreadCount={unreadCount}
+                setUnreadCount={setUnreadCount}
+                setNotifications={setNotifications}
+              />
+            }
+          />
+          <Route path="/map" element={<Map user={user} />} />
+          <Route
+            path="/userprofile"
+            element={
+              <UserProfile
+                user={user}
+                setUser={setUser}
+                categories={categories}
+                allEvents={allEvents} // Pass all events here
+              />
+            }
+          />
+          <Route path="/edit-profile" element={<EditProfile user={user} />} />
+          <Route path="/vendorprofile" element={<VendorProfile user={user} getUser={getUser} />} />
+          <Route path="/vendor-signup" element={<VendorSignupForm user={user} getUser={getUser} captcha={captcha} setCaptcha={setCaptcha} />} />
+          <Route path="/preferences" element={<Preferences setUser={setUser} />} />
+          <Route path="/create-event" element={<CreateEvent />} />
+          <Route path="/edit-event/:id" element={<EditEvent />} />
+          <Route path="/active-events" element={<ActiveEvents user={user} />} />
+          <Route path="/events" element={<EventsFeed />} />
+          <Route path="/game" element={<GameApp captcha={captcha} setCaptcha={setCaptcha} />} />
+          <Route path="/vendor-spotlight" element={<TopVendorSpotlight />} />
+          <Route path="/vendor/:vendorId" element={<PublicVendorProfile user={user} />} />
+        </Routes>
       </Box>
     </>
   );
