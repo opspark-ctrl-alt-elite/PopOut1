@@ -28,6 +28,7 @@ import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SportsHandballIcon from "@mui/icons-material/SportsHandball";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 import PlaceIcon from "@mui/icons-material/Place";
+import Dialog from "@mui/material/Dialog";
 
 type Event = {
   id: string;
@@ -82,6 +83,8 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
   const itemsPerPage = isMobile ? 2 : 3;
   const autoScrollTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [hasUserInteracted, setHasUserInteracted] = useState(false);
+  const [openFullImage, setOpenFullImage] = useState(false);
+  const [fullImageUrl, setFullImageUrl] = useState<string | null>(null);
 
   const fetchCategories = async () => {
     const res = await axios.get("/api/categories");
@@ -517,8 +520,30 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
                 >
                   {/* image & info */}
                   <Box>
-                    {event.image_url && (
+                    {/* {event.image_url && (
                       <Box mb={2}>
+                        <img
+                          src={event.image_url}
+                          alt={event.title}
+                          style={{
+                            width: "100%",
+                            height: "160px",
+                            objectFit: "cover",
+                            borderRadius: "6px",
+                          }}
+                        />
+                      </Box>
+                    )} */}
+
+                    {event.image_url && (
+                      <Box
+                        mb={2}
+                        onClick={() => {
+                          setFullImageUrl(event.image_url!);
+                          setOpenFullImage(true);
+                        }}
+                        sx={{ cursor: "pointer" }}
+                      >
                         <img
                           src={event.image_url}
                           alt={event.title}
@@ -655,6 +680,38 @@ const EventsFeed: React.FC<Props> = ({ user }) => {
         event={selectedEvent}
         currentUserId={user?.id}
       />
+
+      {openFullImage && fullImageUrl && (
+        <Box
+          onClick={() => setOpenFullImage(false)}
+          sx={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            width: "100vw",
+            height: "100vh",
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "rgba(0, 0, 0, 0.7)",
+            zIndex: 1300,
+            cursor: "zoom-out",
+          }}
+        >
+          <Box
+            component="img"
+            src={fullImageUrl}
+            alt="Full Size"
+            sx={{
+              maxWidth: "90vw",
+              maxHeight: "90vh",
+              objectFit: "contain",
+              borderRadius: "8px",
+              boxShadow: 3,
+            }}
+          />
+        </Box>
+      )}
     </Box>
   );
 };

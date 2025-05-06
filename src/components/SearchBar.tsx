@@ -82,7 +82,13 @@ const SearchBar: React.FC = () => {
   };
 
   return (
-    <Box ref={containerRef} width="75%" maxWidth={400} position="relative">
+    <Box
+      ref={containerRef}
+      width="75%"
+      maxWidth={400}
+      position="relative"
+      sx={{ backgroundColor: "transparent", borderRadius: "20px" }}
+    >
       <TextField
         fullWidth
         size="small"
@@ -90,6 +96,7 @@ const SearchBar: React.FC = () => {
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         onFocus={() => setShowResults(true)}
+        variant="outlined"
         InputProps={{
           endAdornment: (
             <InputAdornment position="end">
@@ -101,17 +108,27 @@ const SearchBar: React.FC = () => {
           sx: {
             fontSize: "0.85rem",
             fontFamily: "'Inter', sans-serif",
+            backgroundColor: "#ffffff",
+            borderRadius: "20px",
           },
         }}
         sx={{
+          backgroundColor: "transparent",
           "& .MuiOutlinedInput-root": {
             borderRadius: "20px",
-            "&.Mui-focused .MuiOutlinedInput-notchedOutline": {
+            backgroundColor: "#ffffff",
+            "& fieldset": {
               borderColor: "#ccc",
             },
+            "&:hover fieldset": {
+              borderColor: "#bbb",
+            },
+            "&.Mui-focused fieldset": {
+              borderColor: "#aaa",
+            },
           },
-          "& .MuiOutlinedInput-notchedOutline": {
-            borderColor: "#ccc",
+          "& .MuiInputBase-root": {
+            borderRadius: "20px",
           },
         }}
       />
