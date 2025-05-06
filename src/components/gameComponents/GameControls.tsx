@@ -28,10 +28,11 @@ type Props = {
 
 const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
 
-  //TODO:
   // create states to handle button arrow colors
-  // const [upColor, setUpColor] = useState("primary");
-  // sx={{ color: "red" }}
+  const [upColor, setUpColor] = useState("primary");
+  const [downColor, setDownColor] = useState("primary");
+  const [leftColor, setLeftColor] = useState("primary");
+  const [rightColor, setRightColor] = useState("primary");
 
   // register event listeners for keyboard controls
   useEffect(() => {
@@ -94,6 +95,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
 
   // make the player go upwards upon pressing the up button
   const pressUp = () => {
+    // move player
     setPlayer((prev: Player) => {
       return {
         x: prev.x,
@@ -102,6 +104,8 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         yVel: -10
       };
     });
+    // set up button arrow color
+    setUpColor("cyan");
   }
 
   // stop upwards movement if up button is unpressed
@@ -118,10 +122,13 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         };
       });
     }
+    // set up button arrow color
+    setUpColor("primary");
   }
 
   // make the player go downwards upon pressing the down button
   const pressDown = () => {
+    // move player
     setPlayer((prev: Player) => {
       return {
         x: prev.x,
@@ -130,6 +137,8 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         yVel: 10
       };
     });
+     // set down button arrow color
+     setDownColor("cyan");
   }
 
   // stop downwards movement if down button is unpressed
@@ -146,10 +155,13 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         };
       });
     }
+    // set down button arrow color
+    setDownColor("primary");
   }
 
   // make the player go leftwards upon pressing the left button
   const pressLeft = () => {
+    // move player
     setPlayer((prev: Player) => {
       return {
         x: prev.x,
@@ -158,6 +170,8 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         yVel: prev.yVel
       };
     });
+    // set left button arrow color
+    setLeftColor("cyan");
   }
 
   // stop leftwards movement if left button is unpressed
@@ -174,10 +188,13 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         };
       });
     }
+    // set left button arrow color
+    setLeftColor("primary");
   }
 
   // make the player go rightwards upon pressing the right button
   const pressRight = () => {
+    // move player
     setPlayer((prev: Player) => {
       return {
         x: prev.x,
@@ -186,6 +203,8 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         yVel: prev.yVel
       };
     });
+    // set right button arrow color
+    setRightColor("cyan");
   }
 
   // stop rightwards movement if right button is unpressed
@@ -202,6 +221,8 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
         };
       });
     }
+    // set right button arrow color
+    setRightColor("primary");
   }
 
   return (
@@ -211,7 +232,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
           <Typography>
             W
           </Typography>
-          <Button variant="contained" onMouseDown={pressUp} onTouchStart={pressUp} onMouseUp={unPressUp} onMouseOut={unPressUp} onTouchEnd={unPressUp} onTouchCancel={unPressUp}>
+          <Button variant="contained" onMouseDown={pressUp} onTouchStart={pressUp} onMouseUp={unPressUp} onMouseOut={unPressUp} onTouchEnd={unPressUp} onTouchCancel={unPressUp} sx={{color: upColor}}>
             <ArrowDropUp/>
           </Button>
         </Stack>
@@ -220,7 +241,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
             <Typography>
               A
             </Typography>
-            <Button variant="contained" onMouseDown={pressLeft} onTouchStart={pressLeft} onMouseUp={unPressLeft} onMouseOut={unPressLeft} onTouchEnd={unPressLeft} onTouchCancel={unPressLeft}>
+            <Button variant="contained" onMouseDown={pressLeft} onTouchStart={pressLeft} onMouseUp={unPressLeft} onMouseOut={unPressLeft} onTouchEnd={unPressLeft} onTouchCancel={unPressLeft} sx={{color: leftColor}}>
               <ArrowLeft />
             </Button>
           </Stack>
@@ -228,7 +249,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
             <Typography>
               S
             </Typography>
-            <Button variant="contained" onMouseDown={pressDown} onTouchStart={pressDown} onMouseUp={unPressDown} onMouseOut={unPressDown} onTouchEnd={unPressDown} onTouchCancel={unPressDown}>
+            <Button variant="contained" onMouseDown={pressDown} onTouchStart={pressDown} onMouseUp={unPressDown} onMouseOut={unPressDown} onTouchEnd={unPressDown} onTouchCancel={unPressDown} sx={{color: downColor}}>
               <ArrowDropDown />
             </Button>
           </Stack>
@@ -236,7 +257,7 @@ const GameControls: React.FC<Props> = ({ player, setPlayer }) => {
             <Typography>
               D
             </Typography>
-            <Button variant="contained" onMouseDown={pressRight} onTouchStart={pressRight} onMouseUp={unPressRight} onMouseOut={unPressRight} onTouchEnd={unPressRight} onTouchCancel={unPressRight}>
+            <Button variant="contained" onMouseDown={pressRight} onTouchStart={pressRight} onMouseUp={unPressRight} onMouseOut={unPressRight} onTouchEnd={unPressRight} onTouchCancel={unPressRight} sx={{color: rightColor}}>
               <ArrowRight />
             </Button>
           </Stack>
