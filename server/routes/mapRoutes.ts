@@ -3,6 +3,7 @@ import { QueryTypes } from "sequelize";
 import { Router } from "express";
 import Event from "../models/EventModel";
 import Category from "../models/Category";
+import Vendor from "../models/Vendor";
 
 
 const router = Router();
@@ -29,6 +30,11 @@ router.get("/events", async (req, res) => {
           attributes: ["name"],
           through: { attributes: [] },
           required: false,
+        },
+        {
+          model: Vendor,
+          as: "vendor",
+          attributes: ["id", "businessName"],
         },
       ],
     });

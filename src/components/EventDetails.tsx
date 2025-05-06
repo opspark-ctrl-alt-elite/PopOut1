@@ -240,21 +240,25 @@ const EventDetails: React.FC<Props> = ({
               sx={{ mt: 0.5 }}
             />
           </Box>
-          <Tooltip
-            title={bookmarked ? "Remove bookmark" : "Bookmark this PopUp"}
-          >
-            <IconButton
-              onClick={handleToggleBookmark}
-              aria-label={bookmarked ? "Unbookmark" : "Bookmark"}
-              sx={{ ml: 2 }}
+          {currentUserId ? (
+            <Tooltip
+              title={bookmarked ? "Remove bookmark" : "Bookmark this PopUp"}
             >
-              {bookmarked ? (
-                <BookmarkIcon color="primary" />
-              ) : (
-                <BookmarkBorderIcon />
-              )}
-            </IconButton>
-          </Tooltip>
+              <IconButton
+                onClick={handleToggleBookmark}
+                aria-label={bookmarked ? "Unbookmark" : "Bookmark"}
+                sx={{ ml: 2 }}
+              >
+                {bookmarked ? (
+                  <BookmarkIcon color="primary" />
+                ) : (
+                  <BookmarkBorderIcon />
+                )}
+              </IconButton>
+            </Tooltip>
+          ) : (
+            <div />
+          )}
         </Stack>
       </Box>
     </Modal>

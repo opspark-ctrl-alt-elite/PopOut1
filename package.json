@@ -65,7 +65,7 @@
     "passport-google-oauth20": "^2.0.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
-    "react-router-dom": "^7.4.0",
+    "react-router-dom": "^7.5.3",
     "sequelize": "^6.37.7",
     "style-loader": "^4.0.0",
     "ts-jest": "^29.3.0"

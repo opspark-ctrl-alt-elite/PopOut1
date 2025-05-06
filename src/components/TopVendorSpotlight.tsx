@@ -33,7 +33,7 @@ const TopVendorSpotlight: React.FC = () => {
   useEffect(() => {
     const fetchTopVendors = async () => {
       try {
-        const res = await axios.get("/vendors/spotlight/top3");
+        const res = await axios.get("/vendors/spotlight/top5");
 
         const vendorData = await Promise.all(
           res.data.map(async (vendor: VendorSpotlightData) => {

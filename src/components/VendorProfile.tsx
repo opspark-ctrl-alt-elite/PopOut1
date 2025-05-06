@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import axios from "axios";
+import EditVendor from "./EditVendor";
 
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
@@ -19,15 +20,34 @@ import {
   IconButton,
   Stack,
   Typography,
-  TextField,
   Avatar,
   Divider,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogContentText,
+  DialogActions,
 } from "@mui/material";
 import { styled } from "@mui/material/styles";
+import {
+  CheckCircle,
+  Error
+} from "@mui/icons-material";
 
 const HiddenInput = styled("input")({
   display: "none",
 });
+
+const StyledButton = styled(Button)(({ theme }) => ({
+  borderRadius: '12px',
+  textTransform: 'none',
+  padding: '8px 16px',
+  fontWeight: 600,
+  boxShadow: 'none',
+  '&:hover': {
+    boxShadow: 'none',
+  },
+}));
 
 type Vendor = {
   id: string;
@@ -44,13 +64,12 @@ type Vendor = {
 };
 
 type Fields = {
-  businessName?: string;
-  email?: string;
-  description?: string;
-  website?: string;
-  instagram?: string;
-  facebook?: string;
-  profilePicture?: any;
+  businessName: string;
+  email: string;
+  description: string;
+  website: string;
+  instagram: string;
+  facebook: string;
 };
 
 type User = {
@@ -73,6 +92,13 @@ type Props = {
   getUser: Function;
 };
 
+type ModalType = {
+  open: boolean;
+  title: string;
+  message: string;
+  success: boolean;
+}
+
 const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   const [vendor, setVendor] = useState<Vendor | null>(null);
   const [fields, setFields] = useState<Fields>({
@@ -82,7 +108,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     website: "",
     instagram: "",
     facebook: "",
-    profilePicture: "",
   });
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
     null
@@ -91,17 +116,15 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   const [openDelete, setOpenDelete] = useState(false);
   const [openEdit, setOpenEdit] = useState(false);
 
-  const style = {
-    position: "absolute" as const,
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 400,
-    bgcolor: "background.paper",
-    border: "2px solid #000",
-    boxShadow: 24,
-    p: 4,
-  };
+  // states related to error handling with the "edit vendor" form
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [modal, setModal] = useState<ModalType>({
+    open: false,
+    title: '',
+    message: '',
+    success: false,
+  });
+  const [touched, setTouched] = useState<{ [key: string]: boolean }>({});
 
   useEffect(() => {
     getVendor();
@@ -117,7 +140,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         website,
         instagram,
         facebook,
-        profilePicture,
       } = vendor;
       setFields({
         businessName,
@@ -126,7 +148,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         website: website ? website : "",
         instagram: instagram ? instagram : "",
         facebook: facebook ? facebook : "",
-        profilePicture: profilePicture ? profilePicture : "",
       });
     }
   }, [vendor]);
@@ -168,10 +189,16 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
       : `/api/images/vendorId/${vendor.id}`;
 
     try {
-      await axios.post(uploadUrl, formData, {
+      const res = await axios.post(uploadUrl, formData, {
         headers: { "Content-Type": "multipart/form-data" },
         withCredentials: true,
       });
+      // replace the quick-access vendor image url on the vendor record with the url associated with the uploaded image
+      await axios.patch(
+        `/api/vendor/${user?.id}`,
+        { profilePicture: res.data[0].url },
+        { withCredentials: true }
+      );
       await getUploadedImage();
     } catch (err) {
       console.error("err uploading image", err);
@@ -185,26 +212,147 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         withCredentials: true,
         data: { publicIds: [uploadedImage.publicId] },
       });
+      // delete the quick-access vendor image url on the vendor record and replace the column's value with null
+      await axios.patch(
+        `/api/vendor/${user?.id}`,
+        { profilePicture: null },
+        { withCredentials: true }
+      );
       getUploadedImage();
     } catch (err) {
       console.error("err deleting image", err);
     }
   };
 
-  const updateVendor = async () => {
+  // helper function that checks the validity of emails and urls
+  const emailAndURLChecker = (type: string, value: string) => {
+    // create an element with the given type and value
+    const input = document.createElement('input');
+    input.type = type;
+    input.value = value;
+    // check if the value is valid for the given type
+    return input.checkValidity();
+  }
+
+  // function to determine whether or not the form is ready to be submitted
+  const validate = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    // check if required fields are present and aren't over the character limit
+    if (!fields.businessName) newErrors.businessName = 'Business name is required';
+    else if (fields.businessName.length > 50) newErrors.businessName = 'Business name must be 50 characters or less';
+    if (!fields.description) newErrors.description = 'Description is required';
+    else if (fields.description.length > 300) newErrors.description = 'Description must be 300 characters or less';
+    if (!fields.email) newErrors.email = 'Email is required';
+    else if (fields.email.length > 255) newErrors.email = 'Email length must be at or below the default limit (255 characters)';
+
+    // make sure that email is valid
+     else if (!fields.email.match(/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/)) newErrors.email = 'Email address should be valid';
+     else if (!emailAndURLChecker('email', fields.email)) newErrors.email = 'Email address should be valid';
+
+    // if facebook profile link was given, check if valid and has proper length
+    if (fields.facebook) {
+      if (fields.facebook.length > 255) newErrors.facebook = 'Facebook link length must be at or below the default limit (255 characters)';
+      else if (fields.facebook.slice(0, 25) !== 'https://www.facebook.com/' || fields.facebook.length === 25) newErrors.facebook = 'Facebook link must follow this format "https://www.facebook.com/YourAccountNameHere"';
+      else if (!emailAndURLChecker('url', fields.facebook)) newErrors.facebook = 'Facebook link should be valid';
+    }
+    // if instagram profile link was given, check if valid and has proper length
+    if (fields.instagram) {
+      if (fields.instagram.length > 255) newErrors.instagram = 'Instagram link length must be at or below the default limit (255 characters)';
+      else if (fields.instagram.slice(0, 26) !== 'https://www.instagram.com/' || fields.instagram.length === 26) newErrors.instagram = 'Instagram link must follow this format "https://www.instagram.com/YourAccountNameHere"';
+      else if (!emailAndURLChecker('url', fields.instagram)) newErrors.instagram = 'Instagram link should be valid';
+    }
+    // if store website link was given, check if the website at least has https and has proper length
+    if (fields.website) {
+      if (fields.website.length > 255) newErrors.website = 'Store link length must be at or below the default limit (255 characters)';
+      else if (fields.website.slice(0, 8) !== 'https://' || fields.website.length === 8) newErrors.website = 'Online store link must have https support (no http)';
+      else if (!emailAndURLChecker('url', fields.website)) newErrors.website = 'Online store link should be valid';
+    }
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // check for validity with every change made to the form
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
+    validate();
+  };
+  
+  // determine whether or not to close "EditVendor" modal after closing Success/Error modal
+  // also handles regular closing of "EditVendor" modal
+  const handleModalClose = (force: boolean) => {
+    setModal((prev) => ({ ...prev, open: false }));
+    if (modal.success || force) setOpenEdit(false);
+  };
+
+  const handleUpdateFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = e.target;
+    setFields((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const updateVendor = async (e: React.FormEvent) => {
+    // prevent auto refresh of page
+    e.preventDefault();
+
+    // upon submitting, turn "touched" status to true for all fields
+    setTouched({
+      businessName: true,
+      description: true,
+      email: true,
+      facebook: true,
+      instagram: true,
+      store: true,
+    })
+
+    // validate the form inputs first
+    if (!validate()) {
+      setModal({ 
+        open: true, 
+        title: 'Form Errors', 
+        message: 'Please fix the errors in the form before submitting.', 
+        success: false 
+      });
+      return;
+    }
+
     try {
-      const trimmedFields: Record<string, any> = {};
-      for (const key in fields) {
-        if (fields[key as keyof Fields]) {
-          trimmedFields[key] = fields[key as keyof Fields];
-        }
-      }
-      await axios.patch(`/api/vendor/${user?.id}`, trimmedFields, {
+      await axios.patch(`/api/vendor/${user?.id}`, fields, {
         withCredentials: true,
       });
-      getVendor();
-    } catch (err) {
+      await getVendor();
+
+      // open success modal;
+      setModal({ open: true, title: 'Success', message: 'Your vendor profile was updated', success: true });
+    } catch (err: any) {
       console.error("Error updating vendor:", err);
+
+      // determine the error message to display
+      let errMessage = err.response.data;
+      if (errMessage.message && errMessage.message.original) {
+        if (errMessage.message.original.code === 'ER_DATA_TOO_LONG') {
+          // handle errors for overly-long data
+          errMessage = `Too long of an input was given for the ${errMessage.message.original.sqlMessage.split("'")[1]} field`;
+        } else if (errMessage.message.original.code === 'ER_DUP_ENTRY') {
+          // handle errors for duplicate unique vendor properties
+          const errMsgRef = errMessage.message.original.sqlMessage.split("vendors.");
+          let fieldRef: keyof typeof fields = errMsgRef[errMsgRef.length - 1];
+          fieldRef = fieldRef.slice(0, fieldRef.length - 1) as keyof typeof fields;
+          errMessage = `Another vendor already was given ${fields[fieldRef]} for the ${fieldRef} field`;
+          setErrors((prev) => ({
+            ...prev,
+            [fieldRef]: "More than one vendor cannot have the same value for this field",
+          }));
+        } else {
+          // handle any other less common database-related errors
+          errMessage = `Uncommon database error: ${errMessage.message.original.sqlMessage}`
+        }
+      } else if (typeof errMessage.message === "string") {
+        // cover 404 errors
+        errMessage = errMessage.message;
+      }
+
+      // open failure modal
+      setModal({ open: true, title: 'Error', message: `Failed to submit vendor changes, please ensure there are no unresolved errors left in the form: ${String(errMessage)}`, success: false });
     }
   };
 
@@ -212,15 +360,11 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     try {
       await deleteUploadedImage();
       await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
-      getUser();
+      await getUser();
+      setOpenDelete(false);
     } catch (err) {
       console.error("Error deleting vendor record: ", err);
     }
-  };
-
-  const handleUpdateFieldChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target;
-    setFields((prev) => ({ ...prev, [name]: value }));
   };
 
   return (
@@ -239,7 +383,8 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
               <Stack direction="row" spacing={2}>
                 <Box sx={{ position: "relative" }}>
                   <Avatar
-                    src={uploadedImage?.referenceURL || vendor.profilePicture}
+                  // TODO: possibly delete avatar?
+                    src={vendor.profilePicture || uploadedImage?.referenceURL}
                     alt={vendor.businessName}
                     sx={{ width: 100, height: 100 }}
                   />
@@ -442,63 +587,91 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
             </Box>
 
             {/* edit profile */}
-            <Modal open={openEdit}>
-              <Box sx={style}>
-                <Typography variant="h6">Edit Vendor Profile</Typography>
-                {Object.keys(fields).map((key) => (
-                  <TextField
-                    key={key}
-                    name={key}
-                    label={
-                      key[0].toUpperCase() +
-                      key.slice(1).replace(/([A-Z])/g, " $1")
+            <EditVendor open={openEdit} onClose={handleModalClose} vendor={vendor} fields={fields} touched={touched} errors={errors} handleUpdateFieldChange={handleUpdateFieldChange} handleBlur={handleBlur} updateVendor={updateVendor}/>
+
+            {/* Success/Error Modal */}
+            <Dialog 
+              open={modal.open} 
+              onClose={() => { handleModalClose(false) }}
+              PaperProps={{
+                sx: {
+                  borderRadius: 3,
+                  minWidth: '400px'
+                }
+              }}
+            >
+              <DialogTitle sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 1.5,
+                color: modal.success ? 'success.main' : 'error.main'
+              }}>
+                {modal.success ? (
+                  <CheckCircle color="success" fontSize="large" />
+                ) : (
+                  <Error color="error" fontSize="large" />
+                )}
+                {modal.title}
+              </DialogTitle>
+              
+              <DialogContent>
+                <DialogContentText>
+                  {modal.message}
+                </DialogContentText>
+              </DialogContent>
+              
+              <DialogActions sx={{ p: 2 }}>
+                <StyledButton
+                  onClick={() => { handleModalClose(false) }}
+                  variant="contained"
+                  fullWidth
+                  sx={{
+                    backgroundColor: modal.success ? 'success.main' : 'error.main',
+                    color: 'white',
+                    '&:hover': {
+                      backgroundColor: modal.success ? 'success.dark' : 'error.dark',
                     }
-                    fullWidth
-                    margin="normal"
-                    value={fields[key as keyof Fields]}
-                    onChange={handleUpdateFieldChange}
-                    placeholder={
-                      ["website", "instagram", "facebook"].includes(key)
-                        ? "Link must start with http://"
-                        : undefined
-                    }
-                  />
-                ))}
-                <Button
-                  onClick={() => {
-                    updateVendor();
-                    setOpenEdit(false);
                   }}
-                  variant="outlined"
                 >
-                  Confirm
-                </Button>
-                <Button onClick={() => setOpenEdit(false)} variant="outlined">
-                  Cancel
-                </Button>
-              </Box>
-            </Modal>
+                  {modal.success ? 'View Vendor Profile' : 'Got It'}
+                </StyledButton>
+              </DialogActions>
+            </Dialog>
 
             {/* delete */}
-            <Modal open={openDelete}>
-              <Box sx={style}>
-                <Typography variant="h6">Are you sure?</Typography>
-                <Button
-                  onClick={() => {
-                    deleteVendor();
-                    setOpenDelete(false);
-                  }}
-                  variant="outlined"
-                >
-                  Yes
-                </Button>
-                <Button
-                  onClick={() => setOpenDelete(false)}
-                  variant="outlined"
-                  color="error"
-                >
-                  No
-                </Button>
+            <Modal open={openDelete} onClose={() => setOpenDelete(false)}>
+              <Box
+                sx={{
+                  backgroundColor: "white",
+                  p: 4,
+                  borderRadius: 2,
+                  maxWidth: 400,
+                  mx: "auto",
+                  my: "20vh",
+                  textAlign: "center",
+                  boxShadow: 24,
+                }}
+              >
+                <Typography variant="h6" mb={2}>
+                  Are you sure you want to delete your vendor account?
+                </Typography>
+                <Stack direction="row" spacing={2} justifyContent="center">
+                  <Button
+                    variant="contained"
+                    color="error"
+                    onClick={() => {
+                      deleteVendor();
+                    }}
+                  >
+                    Delete
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    onClick={() => setOpenDelete(false)}
+                  >
+                    Cancel
+                  </Button>
+                </Stack>
               </Box>
             </Modal>
           </Box>
