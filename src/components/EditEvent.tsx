@@ -65,6 +65,24 @@ const StyledButton = styled(Button)(({ theme }) => ({
   }
 }));
 
+interface EventForm {
+  id: string;
+  title: string;
+  description: string;
+  startDate: string;
+  endDate: string;
+  venue_name: string;
+  location: string;
+  latitude: string;
+  longitude: string;
+  isFree: boolean;
+  isKidFriendly: boolean;
+  isSober: boolean;
+  categories: string[];
+  image_url: string;
+  image_publicId: string;
+}
+
 const EditEvent = () => {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -74,17 +92,18 @@ const EditEvent = () => {
     libraries
   });
 
-  const [form, setForm] = useState<any>(null);
+  const [form, setForm] = useState<EventForm | null>(null);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [uploading, setUploading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({
     open: false,
     title: '',
     message: '',
-    success: false
+    success: false,
+    onConfirm: null as (() => void) | null
   });
-  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchEvent = async () => {
@@ -110,8 +129,9 @@ const EditEvent = () => {
         setForm({
           ...event,
           location: event.location || '',
-          categories: catNames, // ✅ now pre‑selects chips
-          image_publicId: event.image_publicId || ''
+          categories: catNames,
+          image_publicId: event.image_publicId || '',
+          image_url: event.image_url || ''
         });
         setAvailableCategories(categoriesRes.data.map((cat: any) => cat.name));
       } catch (err) {
@@ -129,17 +149,17 @@ const EditEvent = () => {
     fetchEvent();
   }, [id]);
 
-  const validate = () => {
+  const validate = (): boolean => {
     const newErrors: { [key: string]: string } = {};
-    if (!form.title) newErrors.title = 'Title is required';
-    if (!form.description) newErrors.description = 'Description is required';
-    if (!form.startDate) newErrors.startDate = 'Start date is required';
-    if (!form.endDate) newErrors.endDate = 'End date is required';
-    if (!form.venue_name) newErrors.venue_name = 'Venue is required';
-    if (!form.location) newErrors.location = 'Location is required';
+    if (!form?.title) newErrors.title = 'Title is required';
+    if (!form?.description) newErrors.description = 'Description is required';
+    if (!form?.startDate) newErrors.startDate = 'Start date is required';
+    if (!form?.endDate) newErrors.endDate = 'End date is required';
+    if (!form?.venue_name) newErrors.venue_name = 'Venue is required';
+    if (!form?.location) newErrors.location = 'Location is required';
     if (
-      form.startDate &&
-      form.endDate &&
+      form?.startDate &&
+      form?.endDate &&
       new Date(form.endDate) <= new Date(form.startDate)
     ) {
       newErrors.endDate = 'End date must be after start date';
@@ -150,19 +170,20 @@ const EditEvent = () => {
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setForm((prev: any) => ({
-      ...prev,
+    setForm(prev => ({
+      ...prev!,
       [name]: type === 'checkbox' ? checked : value
     }));
   };
 
   const handleCategoryToggle = (category: string) => {
-    setForm((prev: any) => {
+    setForm(prev => {
+      if (!prev) return null;
       const alreadySelected = prev.categories.includes(category);
       return {
         ...prev,
         categories: alreadySelected
-          ? prev.categories.filter((c: string) => c !== category)
+          ? prev.categories.filter(c => c !== category)
           : [...prev.categories, category]
       };
     });
@@ -172,8 +193,8 @@ const EditEvent = () => {
     const place = autocompleteRef.current?.getPlace();
     const location = place?.geometry?.location;
     if (place && location) {
-      setForm((prev: any) => ({
-        ...prev,
+      setForm(prev => ({
+        ...prev!,
         location: place.formatted_address || '',
         latitude: location.lat().toString(),
         longitude: location.lng().toString()
@@ -183,27 +204,48 @@ const EditEvent = () => {
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file) return;
+    if (!file || !form) return;
+
+    // Validate file size (5MB max)
+    if (file.size > 5 * 1024 * 1024) {
+      setModal({
+        open: true,
+        title: 'Upload Failed',
+        message: 'File size exceeds 5MB limit',
+        success: false
+      });
+      return;
+    }
 
     const formData = new FormData();
-    formData.append('imageUpload', file);
+    formData.append('image', file); // Changed from 'imageUpload' to 'image' for consistency
 
     try {
-      // TODO: fix this
-      const endpoint = form.image_publicId
-        ? `/api/images/${form.image_publicId}`
-        : `/api/images/event/${id}`;
-      const response = await axios.post(endpoint, formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
+      setUploading(true);
+      
+      // First get a signed URL from your backend
+      const { data: { signedUrl, publicId } } = await axios.post('/api/images/generate-signed-url', {
+        fileName: file.name,
+        fileType: file.type,
+        existingPublicId: form.image_publicId || undefined
       });
-      const uploadResult = Array.isArray(response.data)
-        ? response.data[0]
-        : response.data;
-      setForm((prev: any) => ({
-        ...prev,
-        image_url: uploadResult.secure_url || uploadResult.url,
-        image_publicId: uploadResult.public_id || prev.image_publicId
+
+      // Then upload directly to S3 using the signed URL
+      await axios.put(signedUrl, file, {
+        headers: {
+          'Content-Type': file.type,
+          'x-amz-acl': 'public-read'
+        }
+      });
+
+      // Update the form with the new image URL and public ID
+      const imageUrl = signedUrl.split('?')[0]; // Remove query params from signed URL
+      setForm(prev => ({
+        ...prev!,
+        image_url: imageUrl,
+        image_publicId: publicId
       }));
+
     } catch (err) {
       console.error('Error uploading image:', err);
       setModal({
@@ -212,17 +254,19 @@ const EditEvent = () => {
         message: 'There was an error uploading your image. Please try again.',
         success: false
       });
+    } finally {
+      setUploading(false);
     }
   };
 
   const handleDeleteImage = async () => {
-    if (!form.image_publicId) return;
+    if (!form?.image_publicId) return;
     try {
       await axios.delete('/api/images', {
-        data: { publicIds: [form.image_publicId] }
+        data: { publicId: form.image_publicId }
       });
-      setForm((prev: any) => ({
-        ...prev,
+      setForm(prev => ({
+        ...prev!,
         image_url: '',
         image_publicId: ''
       }));
@@ -238,7 +282,7 @@ const EditEvent = () => {
   };
 
   const handleSubmit = async () => {
-    if (!validate()) {
+    if (!form || !validate()) {
       setModal({
         open: true,
         title: 'Form Errors',
@@ -276,7 +320,7 @@ const EditEvent = () => {
   };
 
   const handleModalClose = () => {
-    setModal((prev: any) => ({ ...prev, open: false }));
+    setModal(prev => ({ ...prev, open: false }));
     if (modal.success) navigate('/active-events');
   };
 
@@ -332,7 +376,7 @@ const EditEvent = () => {
               </Typography>
               <Typography variant='body2' color='text.secondary' gutterBottom>
                 Upload a high-quality image that represents your event (JPEG,
-                PNG, GIF, max 5MB)
+                PNG, max 5MB)
               </Typography>
 
               <Box>
@@ -352,11 +396,20 @@ const EditEvent = () => {
                     }
                   }}
                 >
-                  {form.image_url ? 'Replace Image' : 'Upload Image'}
+                  {uploading ? (
+                    <>
+                      <CircularProgress size={20} sx={{ mr: 1 }} />
+                      Uploading...
+                    </>
+                  ) : form.image_url ? (
+                    'Replace Image'
+                  ) : (
+                    'Upload Image'
+                  )}
                   <input
                     type='file'
                     hidden
-                    accept='image/*'
+                    accept='image/jpeg,image/png'
                     onChange={handleImageUpload}
                   />
                 </StyledButton>
@@ -451,8 +504,8 @@ const EditEvent = () => {
                     label='Start Date & Time *'
                     value={form.startDate ? new Date(form.startDate) : null}
                     onChange={newValue =>
-                      setForm((prev: any) => ({
-                        ...prev,
+                      setForm(prev => ({
+                        ...prev!,
                         startDate: newValue ? newValue.toISOString() : ''
                       }))
                     }
@@ -472,8 +525,8 @@ const EditEvent = () => {
                     label='End Date & Time *'
                     value={form.endDate ? new Date(form.endDate) : null}
                     onChange={newValue =>
-                      setForm((prev: any) => ({
-                        ...prev,
+                      setForm(prev => ({
+                        ...prev!,
                         endDate: newValue ? newValue.toISOString() : ''
                       }))
                     }
