@@ -1,6 +1,20 @@
 import React from "react";
 import { Link as RouterLink } from "react-router-dom";
-import { Box, Typography, Card, CardContent, Chip, Stack } from "@mui/material";
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Chip,
+  Stack,
+} from "@mui/material";
+
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BrushIcon from "@mui/icons-material/Brush";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SportsHandballIcon from "@mui/icons-material/SportsHandball";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import PlaceIcon from "@mui/icons-material/Place";
 
 import formatDate from "../utils/formatDate";
 
@@ -27,13 +41,40 @@ interface Props {
   events: Event[];
 }
 
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case "Food & Drink":
+      return <RestaurantIcon fontSize="small" />;
+    case "Art":
+      return <BrushIcon fontSize="small" />;
+    case "Music":
+      return <MusicNoteIcon fontSize="small" />;
+    case "Sports & Fitness":
+      return <SportsHandballIcon fontSize="small" />;
+    case "Hobbies":
+      return <EmojiEmotionsIcon fontSize="small" />;
+    default:
+      return <PlaceIcon fontSize="small" />;
+  }
+};
+
+const categoryColors: { [key: string]: string } = {
+  "Food & Drink": "#FB8C00",
+  Art: "#8E24AA",
+  Music: "#E53935",
+  "Sports & Fitness": "#43A047",
+  Hobbies: "#FDD835",
+};
+
 const RecommendedEvents: React.FC<Props> = ({ events }) => {
-  if (!events || !Array.isArray(events) || events.length === 0) return null;
+  if (!events || events.length === 0) return null;
 
   const now = new Date();
   const upcomingEvents = events.filter(
-    (event) => new Date(event.endDate) >= now
+    (event) => new Date(event.endDate) >= now && event.vendor?.id
   );
+
+  if (upcomingEvents.length === 0) return null;
 
   return (
     <Box mt={6}>
@@ -41,13 +82,7 @@ const RecommendedEvents: React.FC<Props> = ({ events }) => {
         Recommended Popups:
       </Typography>
 
-      <Box
-        sx={{
-          display: "flex",
-          gap: 2,
-          flexWrap: "wrap",
-        }}
-      >
+      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
         {upcomingEvents.map((event) => (
           <Card
             key={event.id}
@@ -56,6 +91,11 @@ const RecommendedEvents: React.FC<Props> = ({ events }) => {
               boxShadow: 2,
               borderRadius: 2,
               flex: "0 0 auto",
+              transition: "transform 0.2s",
+              "&:hover": {
+                transform: "scale(1.02)",
+                boxShadow: 4,
+              },
             }}
           >
             {event.image_url && (
@@ -75,14 +115,9 @@ const RecommendedEvents: React.FC<Props> = ({ events }) => {
             )}
 
             <CardContent sx={{ p: 1.5 }}>
-              <Typography
-                variant="subtitle2"
-                fontWeight="bold"
-                noWrap
-                title={event.title}
-              >
+              <Typography variant="subtitle2" fontWeight="bold" noWrap title={event.title}>
                 {event.title}{" "}
-                {event.vendor?.id && event.vendor?.businessName && (
+                {event.vendor && (
                   <Typography
                     component="span"
                     variant="caption"
@@ -108,39 +143,34 @@ const RecommendedEvents: React.FC<Props> = ({ events }) => {
                 {event.venue_name}
               </Typography>
 
-              {(event.Categories?.length ||
-                event.isFree ||
-                event.isKidFriendly ||
-                event.isSober) && (
-                <Stack direction="row" spacing={0.5} flexWrap="wrap" mt={1}>
+              {(event.Categories?.length || event.isFree || event.isKidFriendly || event.isSober) && (
+                <Stack direction="row" spacing={0.5} flexWrap="wrap" mt={1} alignItems="center">
                   {event.Categories?.map((cat) => (
-                    <Chip
+                    <Box
                       key={cat.name}
-                      label={cat.name}
-                      size="small"
-                      sx={{ fontSize: "0.65rem", height: 20 }}
-                    />
+                      sx={{
+                        backgroundColor: categoryColors[cat.name] || "#9e9e9e",
+                        borderRadius: "50%",
+                        width: 24,
+                        height: 24,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {React.cloneElement(getCategoryIcon(cat.name), {
+                        sx: { color: "#fff", fontSize: 16 },
+                      })}
+                    </Box>
                   ))}
                   {event.isFree && (
-                    <Chip
-                      label="Free"
-                      size="small"
-                      sx={{ fontSize: "0.65rem", height: 20 }}
-                    />
+                    <Chip label="Free" size="small" sx={{ fontSize: "0.65rem", height: 20 }} />
                   )}
                   {event.isKidFriendly && (
-                    <Chip
-                      label="Kid-Friendly"
-                      size="small"
-                      sx={{ fontSize: "0.65rem", height: 20 }}
-                    />
+                    <Chip label="Kid-Friendly" size="small" sx={{ fontSize: "0.65rem", height: 20 }} />
                   )}
                   {event.isSober && (
-                    <Chip
-                      label="Sober"
-                      size="small"
-                      sx={{ fontSize: "0.65rem", height: 20 }}
-                    />
+                    <Chip label="Sober" size="small" sx={{ fontSize: "0.65rem", height: 20 }} />
                   )}
                 </Stack>
               )}
