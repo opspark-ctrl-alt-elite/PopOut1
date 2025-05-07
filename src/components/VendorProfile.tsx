@@ -186,7 +186,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
 
     const uploadUrl = uploadedImage?.publicId
       ? `/api/images/${uploadedImage.publicId}`
-      : `/api/images/vendorId/${vendor.id}`;
+      : `/api/images/${user ? user.id : "null"}/${vendor.id}/null`;
 
     try {
       const res = await axios.post(uploadUrl, formData, {
