@@ -214,7 +214,8 @@ const CreateEvent: React.FC = () => {
 
   const uploadToBackend = async (file: File) => {
     const formData = new FormData();
-    formData.append('imageUpload', file);
+    formData.append('file', file);
+    formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET as string);
 
     const response = await axios.post('/api/images/event/new', formData, {
       headers: { 'Content-Type': 'multipart/form-data' },

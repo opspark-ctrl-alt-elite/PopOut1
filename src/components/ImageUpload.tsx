@@ -156,12 +156,12 @@ document.getElementById('uploadForm').addEventListener('submit', function(event)
   <iframe name="dummyframe" id="dummyframe" style={{display: 'none'}}></iframe>
   <form onSubmit={runImageGetter} action={`/api/images/${foreignKeyName}/${foreignKey}`} target="dummyframe" method="post" encType="multipart/form-data">
     <p>max size is 20mb</p>
-    <input type="file" name="imageUpload" accept="image/*" multiple={multi}/>
+    <input type="file" name="file" accept="image/*" multiple={multi}/>
     <button type="submit">Submit (new upload)</button>
   </form>
   <form onSubmit={runImageGetter} action={`/api/images/${publicIdsString}`} target="dummyframe" method="post" encType="multipart/form-data">
     <p>max size is 20mb</p>
-    <input type="file" name="imageUpload" accept="image/*" multiple={multi}/>
+    <input type="file" name="file" accept="image/*" multiple={multi}/>
     <button type="submit">Submit (replace upload)</button>
   </form>
 </Box>

@@ -48,14 +48,14 @@ imageRouter.get("/:foreignKeyName/:foreignKey", async (req, res) => {
 });
 
 // handle POST requests by using multer to temporarily hold the given image(s) before posting said image(s) to both the cloud and the images db
-imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), async (req, res) => {
+imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("file"), async (req, res) => {
 
   // extract foreignKeyName and foreignKey from the request parameters
   const { foreignKeyName, foreignKey } = req.params;
 
   try {
 
-    // check if the image upload if for vendor
+    // check if the image upload is for vendor
     if (foreignKeyName === "vendorId") {
       // check if the vendor already has an uploaded image
       const image = await Image.findOne({ where: { [foreignKeyName]: foreignKey }});
@@ -104,7 +104,7 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("imageUpload"), as
 
 // handle PATCH requests by using multer to temporarily hold the given image(s) before using said image(s) to replace old ones (by public id) in both the cloud and the images db
 // HAS TO BE POST DUE TO LIMITATIONS OF HTML FORMS
-imageRouter.post("/:publicIds", upload.array("imageUpload"), async (req, res) => {
+imageRouter.post("/:publicIds", upload.array("file"), async (req, res) => {
 
   // extract publicIds from the request parameters
   const { publicIds } = req.params;
