@@ -39,7 +39,11 @@ router.get('/users/:userId/bookmarked-events', async (req, res) => {
     if (!user) return res.status(404).json({ error: 'User not found' });
 
     const events = await user.getBookmarkedEvents({
-      include: [{ model: Vendor, as: 'vendor' }],
+      include: [
+        { model: Vendor, as: 'vendor' },
+        { model: Category, through: { attributes: [] } },
+
+      ],
     });
 
     res.status(200).json(events);

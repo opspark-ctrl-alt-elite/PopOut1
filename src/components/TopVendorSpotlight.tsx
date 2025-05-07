@@ -92,16 +92,29 @@ const TopVendorSpotlight: React.FC = () => {
 
       <Box
         sx={{
-          display: "flex",
-          gap: 2,
-          overflowX: "auto",
-          WebkitOverflowScrolling: "touch",
-          scrollBehavior: "smooth",
-          pb: 1,
-          scrollSnapType: "x mandatory",
-          "& > *": {
-            scrollSnapAlign: "start",
+          display: {
+            xs: "flex",
+            md: "grid",
           },
+          gridTemplateColumns: {
+            md: "repeat(5, 1fr)",
+          },
+          gap: 2,
+          overflowX: {
+            xs: "auto",
+            md: "unset",
+          },
+          scrollSnapType: {
+            xs: "x mandatory",
+            md: "none",
+          },
+          "& > *": {
+            scrollSnapAlign: {
+              xs: "start",
+              md: "unset",
+            },
+          },
+          pb: 1,
           "&::-webkit-scrollbar": { display: "none" },
           "-ms-overflow-style": "none",
           scrollbarWidth: "none",
@@ -115,8 +128,8 @@ const TopVendorSpotlight: React.FC = () => {
             sx={{
               textDecoration: "none",
               color: "inherit",
-              minWidth: 240,
-              flex: "0 0 auto",
+              minWidth: { xs: 240, md: "auto" },
+              flex: { xs: "0 0 auto", md: "unset" },
             }}
           >
             <Card
@@ -130,63 +143,56 @@ const TopVendorSpotlight: React.FC = () => {
                 },
               }}
             >
-              <CardContent>
+              <CardContent sx={{ pt: 2 }}>
+                {/* number avatar */}
                 <Stack
                   direction="row"
-                  alignItems="center"
-                  spacing={1}
-                  sx={{ mb: 2, pl: 6 }}
-                >
-                  <Box sx={{ position: "relative", width: 70, height: 60 }}>
-                    <Avatar
-                      src={vendor.uploadedImage}
-                      alt={vendor.businessName}
-                      sx={{ width: 60, height: 60 }}
-                    />
-                    <Typography
-                      sx={{
-                        position: "absolute",
-                        top: "50%",
-                        left: "-2.0rem",
-                        transform: "translateY(-50%)",
-                        fontFamily: `'Bebas Neue', sans-serif`,
-                        fontSize: {
-                          xs: "3.6rem",
-                          sm: "4rem",
-                          md: "4.6rem",
-                        },
-                        fontWeight: 850,
-                        color: "black",
-                        lineHeight: 1,
-                        textShadow: "1px 1px 2px rgba(255, 255, 255, 0.89)",
-                      }}
-                    >
-                      {index + 1}
-                    </Typography>
-                  </Box>
-
-                  <Typography
-                    variant="subtitle1"
-                    fontWeight="bold"
-                    sx={{
-                      fontSize: {
-                        xs: "0.9rem",
-                        sm: "1rem",
-                        md: "1.05rem",
-                      },
-                      wordBreak: "break-word",
-                    }}
-                  >
-                    {vendor.businessName}
-                  </Typography>
-                </Stack>
-
-                <Stack
-                  direction="row"
-                  spacing={1}
                   alignItems="center"
                   justifyContent="center"
-                  sx={{ mt: 1 }}
+                  spacing={1}
+                  sx={{ mb: 0.5 }}
+                >
+                  <Typography
+                    sx={{
+                      fontFamily: `'Bebas Neue', sans-serif`,
+                      fontSize: "4.6rem",
+                      fontWeight: 900,
+                      color: "black",
+                      textShadow: "1px 1px 2px rgba(255, 255, 255, 0.89)",
+                      lineHeight: 1,
+                    }}
+                  >
+                    {index + 1}
+                  </Typography>
+
+                  <Avatar
+                    src={vendor.uploadedImage}
+                    alt={vendor.businessName}
+                    sx={{ width: 80, height: 80 }}
+                  />
+                </Stack>
+
+                {/* vendor name */}
+                <Typography
+                  variant="subtitle1"
+                  fontWeight="bold"
+                  textAlign="center"
+                  sx={{
+                    fontSize: "1rem",
+                    wordBreak: "break-word",
+                    maxWidth: "100%",
+                  }}
+                >
+                  {vendor.businessName}
+                </Typography>
+
+                {/* rating */}
+                <Stack
+                  direction="row"
+                  spacing={0.5}
+                  alignItems="center"
+                  justifyContent="center"
+                  sx={{ mt: 0.5 }}
                 >
                   <Rating
                     value={vendor.averageRating || 0}
