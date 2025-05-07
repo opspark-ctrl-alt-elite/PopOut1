@@ -2,6 +2,11 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { Box, Card, CardContent, Typography, Stack, Chip } from "@mui/material";
 import formatDate from "../utils/formatDate";
+import RestaurantIcon from "@mui/icons-material/Restaurant";
+import BrushIcon from "@mui/icons-material/Brush";
+import MusicNoteIcon from "@mui/icons-material/MusicNote";
+import SportsHandballIcon from "@mui/icons-material/SportsHandball";
+import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
 
 type Event = {
   id: string;
@@ -34,11 +39,45 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
   const now = new Date();
 
   const upcomingEvents = events
-  .filter((event) => new Date(event.endDate) >= now)
-  .sort(
-    (a, b) =>
-      new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-  );
+    .filter((event) => new Date(event.endDate) >= now)
+    .sort(
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+    );
+
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "Food & Drink":
+        return <RestaurantIcon sx={{ fontSize: 14 }} />;
+      case "Art":
+        return <BrushIcon sx={{ fontSize: 14 }} />;
+      case "Music":
+        return <MusicNoteIcon sx={{ fontSize: 14 }} />;
+      case "Sports & Fitness":
+        return <SportsHandballIcon sx={{ fontSize: 14 }} />;
+      case "Hobbies":
+        return <EmojiEmotionsIcon sx={{ fontSize: 14 }} />;
+      default:
+        return null;
+    }
+  };
+
+  const getCategoryStyles = (category: string) => {
+    switch (category) {
+      case "Food & Drink":
+        return { backgroundColor: "#FB8C00", color: "white" };
+      case "Art":
+        return { backgroundColor: "#8E24AA", color: "white" };
+      case "Music":
+        return { backgroundColor: "#E53935", color: "white" };
+      case "Sports & Fitness":
+        return { backgroundColor: "#43A047", color: "white" };
+      case "Hobbies":
+        return { backgroundColor: "#FDD835", color: "white" };
+      default:
+        return {};
+    }
+  };
 
   if (upcomingEvents.length === 0) return null;
 
@@ -120,13 +159,27 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
                 event.isSober) && (
                 <Stack direction="row" spacing={0.5} flexWrap="wrap" mt={1}>
                   {event.Categories?.map((cat) => (
-                    <Chip
+                    <Box
                       key={cat.name}
-                      label={cat.name}
-                      size="small"
-                      sx={{ fontSize: "0.65rem", height: 20 }}
-                    />
+                      sx={{
+                        backgroundColor:
+                          getCategoryStyles(cat.name).backgroundColor ||
+                          "#9e9e9e",
+                        borderRadius: "50%",
+                        width: 24,
+                        height: 24,
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      {getCategoryIcon(cat.name) &&
+                        React.cloneElement(getCategoryIcon(cat.name) as React.ReactElement, {
+                          sx: { color: "#fff", fontSize: 16 },
+                        })}
+                    </Box>
                   ))}
+
                   {event.isFree && (
                     <Chip
                       label="Free"
@@ -157,6 +210,5 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
     </Box>
   );
 };
-
 
 export default Bookmarks;
