@@ -1,5 +1,4 @@
-/* eslint-disable @typescript-eslint/no-misused-promises */
-import React, { useState, useEffect, useRef, useMemo } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import {
   Container,
@@ -41,13 +40,12 @@ import {
   Paid as PaidIcon,
 } from '@mui/icons-material';
 
-// -----------------------------------------------------------------------------
-// constants & styling helpers
-// -----------------------------------------------------------------------------
+// Constants
 const libraries = ['places'] as const;
-const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
 
+// Styled components
 const StyledTextField = styled(TextField)(({ theme }) => ({
   '& .MuiOutlinedInput-root': {
     borderRadius: 12,
@@ -65,9 +63,6 @@ const StyledButton = styled(Button)({
   '&:hover': { boxShadow: 'none' },
 });
 
-// -----------------------------------------------------------------------------
-// types
-// -----------------------------------------------------------------------------
 interface EventForm {
   title: string;
   description: string;
@@ -84,20 +79,17 @@ interface EventForm {
   categories: string[];
 }
 
-// -----------------------------------------------------------------------------
-// component
-// -----------------------------------------------------------------------------
 const CreateEvent: React.FC = () => {
   const navigate = useNavigate();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
+
+  // Google Maps initialization
   const { isLoaded, loadError } = useLoadScript({
     googleMapsApiKey: process.env.REACT_APP_GOOGLE_MAPS_API_KEY as string,
     libraries,
   });
 
-  // ---------------------------------------------------------------------------
-  // state
-  // ---------------------------------------------------------------------------
+  // Form state
   const [form, setForm] = useState<EventForm>({
     title: '',
     description: '',
@@ -113,181 +105,246 @@ const CreateEvent: React.FC = () => {
     image_url: '',
     categories: [],
   });
+
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [touched, setTouched] = useState<Record<string, boolean>>({});
-  const [uploadState, setUploadState] = useState({ isUploading: false, progress: 0 });
-  const [modal, setModal] = useState({ open: false, title: '', message: '', success: false });
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploadState, setUploadState] = useState({
+    isUploading: false,
+    progress: 0,
+  });
 
-  // preview URL
-  const previewURL = useMemo(() => (selectedFile ? URL.createObjectURL(selectedFile) : form.image_url), [selectedFile, form.image_url]);
-  useEffect(() => () => { if (selectedFile) URL.revokeObjectURL(previewURL); }, [previewURL, selectedFile]);
+  const [modal, setModal] = useState({
+    open: false,
+    title: '',
+    message: '',
+    success: false,
+  });
 
-  // ---------------------------------------------------------------------------
-  // category fetch
-  // ---------------------------------------------------------------------------
+  // Fetch available categories on mount
   useEffect(() => {
-    (async () => {
+    const fetchCategories = async () => {
       try {
-        const { data } = await axios.get('/api/categories');
-        setAvailableCategories(data.map((c: any) => c.name));
+        const res = await axios.get('/api/categories');
+        setAvailableCategories(res.data.map((c: any) => c.name));
       } catch (err) {
-        console.error(err);
+        console.error('Failed to fetch categories:', err);
       }
-    })();
+    };
+
+    fetchCategories();
   }, []);
 
-  // ---------------------------------------------------------------------------
-  // validation helpers
-  // ---------------------------------------------------------------------------
+  // Form validation
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
+    
     if (!form.title) newErrors.title = 'Title is required';
     if (!form.description) newErrors.description = 'Description is required';
-    if (form.description.length > 100) newErrors.description = 'Max 100 characters';
+    if (form.description.length > 100) {
+      newErrors.description = 'Description must be 100 characters or less';
+    }
     if (!form.startDate) newErrors.startDate = 'Start date is required';
     if (!form.endDate) newErrors.endDate = 'End date is required';
-    if (form.startDate && form.endDate && new Date(form.endDate) <= new Date(form.startDate)) newErrors.endDate = 'End date must be after start date';
+    if (form.startDate && form.endDate && new Date(form.endDate) <= new Date(form.startDate)) {
+      newErrors.endDate = 'End date must be after start date';
+    }
     if (!form.venue_name) newErrors.venue_name = 'Venue is required';
     if (!form.location) newErrors.location = 'Location is required';
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleBlur = (f: string) => {
-    setTouched((p) => ({ ...p, [f]: true }));
+  // Handlers
+  const handleBlur = (field: string) => {
+    setTouched(prev => ({ ...prev, [field]: true }));
     validateForm();
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value, type, checked } = e.target;
-    setForm((p) => ({ ...p, [name]: type === 'checkbox' ? checked : value }));
+    setForm(prev => ({ ...prev, [name]: type === 'checkbox' ? checked : value }));
   };
 
-  const toggleCategory = (c: string) =>
-    setForm((p) => ({
-      ...p,
-      categories: p.categories.includes(c) ? p.categories.filter((x) => x !== c) : [...p.categories, c],
+  const toggleCategory = (category: string) => {
+    setForm(prev => ({
+      ...prev,
+      categories: prev.categories.includes(category)
+        ? prev.categories.filter(c => c !== category)
+        : [...prev.categories, category],
     }));
+  };
 
   const handlePlaceChanged = () => {
     const place = autocompleteRef.current?.getPlace();
-    const loc = place?.geometry?.location;
-    if (place && loc) {
-      setForm((p) => ({
-        ...p,
+    const location = place?.geometry?.location;
+    
+    if (place && location) {
+      setForm(prev => ({
+        ...prev,
         location: place.formatted_address || '',
-        latitude: loc.lat().toString(),
-        longitude: loc.lng().toString(),
+        latitude: location.lat().toString(),
+        longitude: location.lng().toString(),
       }));
     }
   };
 
-  // ---------------------------------------------------------------------------
-  // image selection (validate only)
-  // ---------------------------------------------------------------------------
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Image upload handlers
+  const uploadToCloudinary = async (file: File) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET as string);
+
+    const response = await axios.post(
+      `https://api.cloudinary.com/v1_1/${process.env.REACT_APP_CLOUDINARY_CLOUD_NAME}/upload`,
+      formData,
+      {
+        onUploadProgress: (progressEvent) => {
+          if (progressEvent.total) {
+            const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadState(prev => ({ ...prev, progress }));
+          }
+        },
+      }
+    );
+
+    return response.data.secure_url;
+  };
+
+  const uploadToBackend = async (file: File) => {
+    const formData = new FormData();
+    formData.append('imageUpload', file);
+
+    const response = await axios.post('/api/images/event/new', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (progressEvent) => {
+        if (progressEvent.total) {
+          const progress = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadState(prev => ({ ...prev, progress }));
+        }
+      },
+    });
+
+    return response.data[0]?.secure_url || response.data[0]?.url;
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!ALLOWED_FILE_TYPES.includes(file.type))
-      return setModal({ open: true, title: 'Invalid File', message: 'JPEG, PNG or GIF only.', success: false });
-    if (file.size > MAX_FILE_SIZE)
-      return setModal({ open: true, title: 'File Too Large', message: 'Maximum file size is 5 MB.', success: false });
+    // Validate file
+    if (!ALLOWED_FILE_TYPES.includes(file.type)) {
+      setModal({
+        open: true,
+        title: 'Invalid File',
+        message: 'Please upload a JPEG, PNG, or GIF image.',
+        success: false,
+      });
+      return;
+    }
 
-    setSelectedFile(file);
-  };
-
-  const removeImage = () => {
-    setSelectedFile(null);
-    setForm((p) => ({ ...p, image_url: '' }));
-  };
-
-  // ---------------------------------------------------------------------------
-  // helper: upload after event created
-  // ---------------------------------------------------------------------------
-  const uploadImageForEvent = async (eventId: string, file: File) => {
-    const formData = new FormData();
-    formData.append('imageUpload', file);
-    const { data } = await axios.post(`/api/images/eventId/${eventId}`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
-      onUploadProgress: (e) => {
-        if (e.total)
-          setUploadState({ isUploading: true, progress: Math.round((e.loaded * 100) / e.total) });
-      },
-      withCredentials: true,
-    });
-    return data[0]?.secure_url || data[0]?.url || '';
-  };
-
-  // ---------------------------------------------------------------------------
-  // submit
-  // ---------------------------------------------------------------------------
-  const handleSubmit = async () => {
-    if (!validateForm())
-      return setModal({ open: true, title: 'Form Errors', message: 'Fix errors before submitting.', success: false });
+    if (file.size > MAX_FILE_SIZE) {
+      setModal({
+        open: true,
+        title: 'File Too Large',
+        message: 'Maximum file size is 5MB.',
+        success: false,
+      });
+      return;
+    }
 
     try {
-      const payload = {
-        ...form,
-        image_url: '',
-        latitude: parseFloat(form.latitude),
-        longitude: parseFloat(form.longitude),
-      };
-      const { data: createdEvent } = await axios.post('/api/events', payload, { withCredentials: true });
+      setUploadState({ isUploading: true, progress: 0 });
 
-      let finalImageURL = '';
-      if (selectedFile) {
-        finalImageURL = await uploadImageForEvent(createdEvent.id, selectedFile);
-        if (finalImageURL) {
-          await axios.put(`/api/events/${createdEvent.id}`, { image_url: finalImageURL }, { withCredentials: true });
-        }
-      }
+      const uploadMethod = process.env.NODE_ENV === 'production' ? uploadToCloudinary : uploadToBackend;
+      const imageUrl = await uploadMethod(file);
 
-      setModal({ open: true, title: 'Success!', message: 'Event created.', success: true });
-    } catch (err) {
-      console.error(err);
-      setModal({ open: true, title: 'Error', message: 'Failed to create event.', success: false });
+      setForm(prev => ({ ...prev, image_url: imageUrl }));
+    } catch (error) {
+      console.error('Image upload failed:', error);
+      setModal({
+        open: true,
+        title: 'Upload Failed',
+        message: 'Unable to upload image. Please try again.',
+        success: false,
+      });
     } finally {
       setUploadState({ isUploading: false, progress: 0 });
     }
   };
 
+  const removeImage = () => {
+    setForm(prev => ({ ...prev, image_url: '' }));
+  };
+
+  // Form submission
+  const handleSubmit = async () => {
+    if (!validateForm()) {
+      setModal({
+        open: true,
+        title: 'Form Errors',
+        message: 'Please fix all errors before submitting.',
+        success: false,
+      });
+      return;
+    }
+
+    try {
+      const payload = {
+        ...form,
+        latitude: parseFloat(form.latitude),
+        longitude: parseFloat(form.longitude),
+      };
+
+      await axios.post('/api/events', payload, { withCredentials: true });
+      
+      setModal({
+        open: true,
+        title: 'Success!',
+        message: 'Your event has been created successfully.',
+        success: true,
+      });
+    } catch (error) {
+      console.error('Event creation failed:', error);
+      setModal({
+        open: true,
+        title: 'Error',
+        message: 'Failed to create event. Please try again.',
+        success: false,
+      });
+    }
+  };
+
   const closeModal = () => {
-    setModal((p) => ({ ...p, open: false }));
+    setModal(prev => ({ ...prev, open: false }));
     if (modal.success) navigate('/active-events');
   };
 
-  // ---------------------------------------------------------------------------
-  // guards
-  // ---------------------------------------------------------------------------
-  if (loadError)
+  // Render guards
+  if (loadError) {
     return (
       <Container maxWidth="md" sx={{ mt: 4 }}>
         <Alert severity="error">
           <AlertTitle>Google Maps Error</AlertTitle>
-          Could not load Google Maps.
+          Could not load Google Maps. Please refresh the page and try again.
         </Alert>
       </Container>
     );
+  }
 
-  if (!isLoaded)
+  if (!isLoaded) {
     return (
-      <Container
-        maxWidth="md"
-        sx={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-      >
+      <Container maxWidth="md" sx={{ height: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Stack spacing={2} alignItems="center">
           <CircularProgress size={60} />
-          <Typography variant="h6">Loading…</Typography>
+          <Typography variant="h6">Loading Event Creator...</Typography>
         </Stack>
       </Container>
     );
+  }
 
-  // ---------------------------------------------------------------------------
-  // checkbox config
-  // ---------------------------------------------------------------------------
+  // Feature checkboxes configuration
   const featureOptions = [
     {
       key: 'isFree',
@@ -298,7 +355,7 @@ const CreateEvent: React.FC = () => {
     },
     {
       key: 'isKidFriendly',
-      label: 'Kid‑Friendly',
+      label: 'Kid-Friendly',
       description: 'Suitable for children',
       icon: <ChildCareIcon />,
       checkedIcon: <ChildCareIcon color="success" />,
@@ -312,9 +369,6 @@ const CreateEvent: React.FC = () => {
     },
   ];
 
-  // ---------------------------------------------------------------------------
-  // render
-  // ---------------------------------------------------------------------------
   return (
     <LocalizationProvider dateAdapter={AdapterDateFns}>
       <Container maxWidth="md" sx={{ mt: 4, mb: 6 }}>
@@ -322,18 +376,19 @@ const CreateEvent: React.FC = () => {
           <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
             Create New Event
           </Typography>
+
           <Alert severity="info" icon={<InfoIcon />} sx={{ mb: 3 }}>
-            Fields marked with * are required. All events are reviewed.
+            Fields marked with * are required. All events are subject to review.
           </Alert>
 
           <Stack spacing={4}>
-            {/* IMAGE UPLOAD */}
+            {/* Image Upload Section */}
             <Box>
               <Typography variant="h6" fontWeight={600}>
                 Event Image
               </Typography>
               <Typography variant="body2" color="text.secondary" mb={1}>
-                JPEG, PNG or GIF • Max 5 MB
+                JPEG, PNG or GIF • Max 5MB
               </Typography>
 
               <StyledButton
@@ -348,14 +403,26 @@ const CreateEvent: React.FC = () => {
                   '&:disabled': { backgroundColor: 'grey.300' },
                 }}
               >
-                {selectedFile || form.image_url ? 'Replace Image' : 'Upload Image'}
-                <input hidden type="file" accept={ALLOWED_FILE_TYPES.join(',')} onChange={handleFileSelect} />
+                {form.image_url ? 'Replace Image' : 'Upload Image'}
+                <input 
+                  hidden 
+                  type="file" 
+                  accept={ALLOWED_FILE_TYPES.join(',')} 
+                  onChange={handleImageUpload} 
+                />
               </StyledButton>
 
               {uploadState.isUploading && (
                 <Box sx={{ mt: 2 }}>
-                  <Typography variant="body2">Uploading… {uploadState.progress}%</Typography>
-                  <Box sx={{ width: '100%', height: 8, backgroundColor: 'grey.200', borderRadius: 4 }}>
+                  <Typography variant="body2">
+                    Uploading... {uploadState.progress}%
+                  </Typography>
+                  <Box sx={{ 
+                    width: '100%', 
+                    height: 8, 
+                    backgroundColor: 'grey.200', 
+                    borderRadius: 4 
+                  }}>
                     <Box
                       sx={{
                         width: `${uploadState.progress}%`,
@@ -369,12 +436,17 @@ const CreateEvent: React.FC = () => {
                 </Box>
               )}
 
-              {previewURL && (
+              {form.image_url && (
                 <Box sx={{ position: 'relative', mt: 2 }}>
                   <img
-                    src={previewURL}
-                    alt="preview"
-                    style={{ width: '100%', maxHeight: 400, objectFit: 'cover', borderRadius: 12 }}
+                    src={form.image_url}
+                    alt="Event preview"
+                    style={{ 
+                      width: '100%', 
+                      maxHeight: 400, 
+                      objectFit: 'cover', 
+                      borderRadius: 12 
+                    }}
                   />
                   <IconButton
                     onClick={removeImage}
@@ -393,7 +465,7 @@ const CreateEvent: React.FC = () => {
               )}
             </Box>
 
-            {/* BASIC INFORMATION */}
+            {/* Basic Information Section */}
             <Box>
               <Typography variant="h6" fontWeight={600}>
                 Basic Information
@@ -410,12 +482,11 @@ const CreateEvent: React.FC = () => {
                     helperText={touched.title && errors.title}
                     fullWidth
                     InputProps={{
-                      endAdornment:
-                        touched.title && !errors.title ? (
-                          <InputAdornment position="end">
-                            <CheckCircleIcon color="success" />
-                          </InputAdornment>
-                        ) : null,
+                      endAdornment: touched.title && !errors.title ? (
+                        <InputAdornment position="end">
+                          <CheckCircleIcon color="success" />
+                        </InputAdornment>
+                      ) : null,
                     }}
                   />
                 </Grid>
@@ -429,9 +500,8 @@ const CreateEvent: React.FC = () => {
                     onBlur={() => handleBlur('description')}
                     error={touched.description && !!errors.description}
                     helperText={
-                      touched.description
-                        ? errors.description || `${form.description.length}/100 characters`
-                        : ''
+                      touched.description && 
+                      (errors.description || `${form.description.length}/100 characters`)
                     }
                     fullWidth
                     multiline
@@ -442,7 +512,7 @@ const CreateEvent: React.FC = () => {
               </Grid>
             </Box>
 
-            {/* DATE & TIME */}
+            {/* Date & Time Section */}
             <Box>
               <Typography variant="h6" fontWeight={600}>
                 Date & Time
@@ -452,8 +522,11 @@ const CreateEvent: React.FC = () => {
                   <DateTimePicker
                     label="Start Date & Time *"
                     value={form.startDate ? new Date(form.startDate) : null}
-                    onChange={(date) =>
-                      setForm((p) => ({ ...p, startDate: date ? date.toISOString() : '' }))
+                    onChange={(date) => 
+                      setForm(prev => ({ 
+                        ...prev, 
+                        startDate: date ? date.toISOString() : '' 
+                      }))
                     }
                     onClose={() => handleBlur('startDate')}
                     renderInput={(props) => (
@@ -470,8 +543,11 @@ const CreateEvent: React.FC = () => {
                   <DateTimePicker
                     label="End Date & Time *"
                     value={form.endDate ? new Date(form.endDate) : null}
-                    onChange={(date) =>
-                      setForm((p) => ({ ...p, endDate: date ? date.toISOString() : '' }))
+                    onChange={(date) => 
+                      setForm(prev => ({ 
+                        ...prev, 
+                        endDate: date ? date.toISOString() : '' 
+                      }))
                     }
                     onClose={() => handleBlur('endDate')}
                     minDateTime={form.startDate ? new Date(form.startDate) : undefined}
@@ -488,7 +564,7 @@ const CreateEvent: React.FC = () => {
               </Grid>
             </Box>
 
-            {/* LOCATION */}
+            {/* Location Section */}
             <Box>
               <Typography variant="h6" fontWeight={600}>
                 Location
@@ -508,7 +584,7 @@ const CreateEvent: React.FC = () => {
                 </Grid>
                 <Grid item xs={12}>
                   <Autocomplete
-                    onLoad={(a) => (autocompleteRef.current = a)}
+                    onLoad={(autocomplete) => (autocompleteRef.current = autocomplete)}
                     onPlaceChanged={handlePlaceChanged}
                     fields={['geometry', 'formatted_address']}
                   >
@@ -520,7 +596,9 @@ const CreateEvent: React.FC = () => {
                       onBlur={() => handleBlur('location')}
                       error={touched.location && !!errors.location}
                       helperText={
-                        touched.location ? errors.location || 'Start typing to search for a location' : ''
+                        touched.location
+                          ? errors.location || 'Start typing to search for a location'
+                          : ''
                       }
                       fullWidth
                       InputProps={{
@@ -541,7 +619,7 @@ const CreateEvent: React.FC = () => {
               </Grid>
             </Box>
 
-            {/* EVENT FEATURES */}
+            {/* Event Features Section */}
             <Box>
               <Typography variant="h6" fontWeight={600}>
                 Event Features
@@ -555,7 +633,9 @@ const CreateEvent: React.FC = () => {
                         p: 2,
                         borderRadius: 2,
                         border: '1px solid',
-                        borderColor: form[key as keyof EventForm] ? 'primary.main' : 'grey.200',
+                        borderColor: form[key as keyof EventForm] 
+                          ? 'primary.main' 
+                          : 'grey.200',
                       }}
                     >
                       <FormControlLabel
@@ -584,7 +664,7 @@ const CreateEvent: React.FC = () => {
               </Grid>
             </Box>
 
-            {/* CATEGORIES */}
+            {/* Categories Section */}
             {availableCategories.length > 0 && (
               <Box>
                 <Typography variant="h6" fontWeight={600}>
@@ -603,20 +683,29 @@ const CreateEvent: React.FC = () => {
                       variant={form.categories.includes(category) ? 'filled' : 'outlined'}
                       color={form.categories.includes(category) ? 'primary' : 'default'}
                       onClick={() => toggleCategory(category)}
-                      sx={{ borderRadius: 1, px: 1.5, py: 1.5, fontSize: '0.875rem' }}
+                      sx={{ 
+                        borderRadius: 1, 
+                        px: 1.5, 
+                        py: 1.5, 
+                        fontSize: '0.875rem' 
+                      }}
                     />
                   ))}
                 </Box>
               </Box>
             )}
 
-            {/* ACTION BUTTONS */}
+            {/* Action Buttons */}
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 2 }}>
               <StyledButton
                 variant="contained"
                 onClick={() => navigate(-1)}
                 startIcon={<CancelIcon />}
-                sx={{ backgroundColor: '#b71c1c', color: '#fff', '&:hover': { backgroundColor: '#a31818' } }}
+                sx={{
+                  backgroundColor: '#b71c1c',
+                  color: '#fff',
+                  '&:hover': { backgroundColor: '#a31818' },
+                }}
               >
                 Cancel
               </StyledButton>
@@ -633,16 +722,31 @@ const CreateEvent: React.FC = () => {
                   '&:disabled': { backgroundColor: 'grey.300' },
                 }}
               >
-                {uploadState.isUploading ? 'Creating…' : 'Create Event'}
+                {uploadState.isUploading ? 'Creating...' : 'Create Event'}
               </StyledButton>
             </Box>
           </Stack>
         </Paper>
 
-        {/* MODAL */}
-        <Dialog open={modal.open} onClose={closeModal} PaperProps={{ sx: { borderRadius: 3, minWidth: 400 } }}>
-          <DialogTitle sx={{ display: 'flex', alignItems: 'center', gap: 1.5, color: modal.success ? 'success.main' : 'error.main' }}>
-            {modal.success ? <CheckCircleIcon color="success" fontSize="large" /> : <ErrorIcon color="error" fontSize="large" />}
+        {/* Modal Dialog */}
+        <Dialog
+          open={modal.open}
+          onClose={closeModal}
+          PaperProps={{ sx: { borderRadius: 3, minWidth: 400 } }}
+        >
+          <DialogTitle
+            sx={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: 1.5,
+              color: modal.success ? 'success.main' : 'error.main',
+            }}
+          >
+            {modal.success ? (
+              <CheckCircleIcon color="success" fontSize="large" />
+            ) : (
+              <ErrorIcon color="error" fontSize="large" />
+            )}
             {modal.title}
           </DialogTitle>
           <DialogContent>
@@ -656,7 +760,9 @@ const CreateEvent: React.FC = () => {
               sx={{
                 backgroundColor: modal.success ? 'success.main' : 'error.main',
                 color: '#fff',
-                '&:hover': { backgroundColor: modal.success ? 'success.dark' : 'error.dark' },
+                '&:hover': { 
+                  backgroundColor: modal.success ? 'success.dark' : 'error.dark' 
+                },
               }}
             >
               {modal.success ? 'View Events' : 'Got it'}
