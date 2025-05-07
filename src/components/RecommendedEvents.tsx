@@ -1,13 +1,6 @@
 import React from "react";
 import { Link as RouterLink } from "react-router-dom";
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Chip,
-  Stack,
-} from "@mui/material";
+import { Box, Typography, Card, CardContent, Chip, Stack } from "@mui/material";
 
 import formatDate from "../utils/formatDate";
 
@@ -37,6 +30,11 @@ interface Props {
 const RecommendedEvents: React.FC<Props> = ({ events }) => {
   if (!events || !Array.isArray(events) || events.length === 0) return null;
 
+  const now = new Date();
+  const upcomingEvents = events.filter(
+    (event) => new Date(event.endDate) >= now
+  );
+
   return (
     <Box mt={6}>
       <Typography variant="h5" gutterBottom>
@@ -50,7 +48,7 @@ const RecommendedEvents: React.FC<Props> = ({ events }) => {
           flexWrap: "wrap",
         }}
       >
-        {events.map((event) => (
+        {upcomingEvents.map((event) => (
           <Card
             key={event.id}
             sx={{
