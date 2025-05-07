@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link as RouterLink } from "react-router-dom";
 import Bookmarks from "../components/Bookmarks";
 import EditProfile from "../components/EditProfile";
+import RecommendedEvents from "../components/RecommendedEvents";
 import axios from "axios";
 import {
   Box,
@@ -288,80 +289,7 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
             )}
 
             {recommendedEvents.length > 0 && (
-              <Box mt={4}>
-                <Typography variant="h5" gutterBottom>
-                  Recommended Popups:
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    gap: 2,
-                    flexWrap: "wrap",
-                  }}
-                >
-                  {recommendedEvents.map((event) => (
-                    <RouterLink
-                      to={`/vendor/${event.vendor?.id}`}
-                      key={event.id}
-                      style={{ textDecoration: "none", color: "inherit" }}
-                    >
-                      <Card 
-                        sx={{
-                          width: 220,
-                          boxShadow: 2,
-                          borderRadius: 2,
-                        }}
-                      >
-                        {event.image_url && (
-                          <Box>
-                            <img
-                              src={event.image_url}
-                              alt={event.title}
-                              style={{
-                                width: "100%",
-                                height: "100px",
-                                objectFit: "cover",
-                                borderTopLeftRadius: "8px",
-                                borderTopRightRadius: "8px",
-                              }}
-                            />
-                          </Box>
-                        )}
-                        <Box p={2} sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
-                          <Typography fontWeight="bold">{event.title}</Typography>
-                          <Typography variant="body2" color="text.secondary">
-                            by {event.vendor?.businessName || "Unknown Vendor"}
-                          </Typography>
-                          <Typography variant="body2">
-                            {new Date(event.startDate).toLocaleDateString()} -{" "}
-                            {new Date(event.startDate).toLocaleTimeString([], {
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
-                          </Typography>
-                          <Typography variant="body2">
-                            {event.venue_name}
-                          </Typography>
-                          {event.isFree && (
-                            <Box
-                              sx={{
-                                mt: 1,
-                                backgroundColor: "#e0e0e0",
-                                px: 1,
-                                borderRadius: 1,
-                                width: "fit-content",
-                                fontSize: "0.75rem",
-                              }}
-                            >
-                              Free
-                            </Box>
-                          )}
-                        </Box>
-                      </Card>
-                    </RouterLink>
-                  ))}
-                </Box>
-              </Box>
+              <RecommendedEvents events={recommendedEvents} />
             )}
 
             <Box display="flex" justifyContent="flex-end" mt={6}>
