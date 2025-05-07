@@ -262,7 +262,7 @@ const EditEvent = () => {
   const handleDeleteImage = async () => {
     if (!form?.image_publicId) return;
     try {
-      await axios.delete('/api/images', {
+      await axios.delete('/api/images/', {
         data: { publicId: form.image_publicId }
       });
       setForm(prev => ({

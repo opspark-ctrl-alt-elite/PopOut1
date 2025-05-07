@@ -195,7 +195,7 @@ const App: React.FC = () => {
               path='/preferences'
               element={<Preferences setUser={setUser} />}
             />
-            <Route path='/create-event' element={<CreateEvent />} />
+            <Route path='/create-event' element={<CreateEvent user={user} />} />
             <Route path='/edit-event/:id' element={<EditEvent />} />
             <Route
               path='/active-events'

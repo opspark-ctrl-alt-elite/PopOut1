@@ -192,7 +192,7 @@ imageRouter.post("/:publicIds", upload.array("file"), async (req, res) => {
       return {
         publicId: result.public_id,
         // use result.url (for http) instead of result.secure_url (for https)
-        referenceURL: result.url,
+        referenceURL: result.secure_url,
       }
     })
 

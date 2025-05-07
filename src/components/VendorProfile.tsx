@@ -400,7 +400,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     onChange={handleImageUpload}
                   />
                   <label htmlFor="profile-upload">
-                    <Tooltip title="Change Profile Image">
+                    <Tooltip title="Change Profile Image (max size 5MB)">
                       <IconButton
                         component="span"
                         size="small"

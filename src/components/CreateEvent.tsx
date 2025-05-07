@@ -84,10 +84,35 @@ interface EventForm {
   categories: string[];
 }
 
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  profile_picture?: string;
+}
+
+type Props = {
+  user: User;
+}
+
+type Vendor = {
+  id: string;
+  businessName: string;
+  email: string;
+  description: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  profilePicture?: string;
+  userId: string;
+  createdAt: any;
+  updatedAt: any;
+};
+
 // -----------------------------------------------------------------------------
 // component
 // -----------------------------------------------------------------------------
-const CreateEvent: React.FC = () => {
+const CreateEvent: React.FC<Props> = ({ user }) => {
   const navigate = useNavigate();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const { isLoaded, loadError } = useLoadScript({
@@ -119,6 +144,8 @@ const CreateEvent: React.FC = () => {
   const [uploadState, setUploadState] = useState({ isUploading: false, progress: 0 });
   const [modal, setModal] = useState({ open: false, title: '', message: '', success: false });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  //TODO: maybe make vendor a state in app.jsx
+  const [vendor, setVendor] = useState<Vendor | null>(null);
 
   // preview URL
   const previewURL = useMemo(() => (selectedFile ? URL.createObjectURL(selectedFile) : form.image_url), [selectedFile, form.image_url]);
@@ -137,6 +164,27 @@ const CreateEvent: React.FC = () => {
       }
     })();
   }, []);
+
+  //TODO: maybe make vendor a state in app.jsx
+  // ---------------------------------------------------------------------------
+  // get vendor
+  // ---------------------------------------------------------------------------
+
+  useEffect(() => {
+    getVendor();
+  }, [ user ]);
+
+  const getVendor = async () => {
+    try {
+      const res = await axios.get(`/api/vendor/${user?.id}`, {
+        withCredentials: true,
+      });
+      setVendor(res.data);
+    } catch (err) {
+      setVendor(null);
+      console.error("Error retrieving vendor record:", err);
+    }
+  };
 
   // ---------------------------------------------------------------------------
   // validation helpers
@@ -210,7 +258,7 @@ const CreateEvent: React.FC = () => {
   const uploadImageForEvent = async (eventId: string, file: File) => {
     const formData = new FormData();
     formData.append('file', file);
-    const { data } = await axios.post(`/api/images/eventId/${eventId}`, formData, {
+    const { data } = await axios.post(`/api/images/${user.id}/${vendor ? vendor.id : "error"}/${eventId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: (e) => {
         if (e.total)

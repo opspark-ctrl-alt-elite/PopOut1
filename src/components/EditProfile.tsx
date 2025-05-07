@@ -91,7 +91,7 @@ const EditProfile: React.FC<Props> = ({ open, onClose, user, setUser }) => {
     setUploading(true);
 
     try {
-      const res = await axios.post(`/api/images/user/${user.id}`, formData, {
+      const res = await axios.post(`/api/images/${user.id}/null/null`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
       const url = res.data[0]?.secure_url || res.data[0]?.url;
