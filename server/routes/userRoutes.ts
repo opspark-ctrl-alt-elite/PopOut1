@@ -465,3 +465,24 @@ router.post('/users/:userId/bookmark/:eventId', async (req, res) => {
   }
 });
 export default router;
+
+router.get('/users/:userId/bookmarked-events', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const user = await User.findByPk(userId);
+    if (!user) return res.status(404).json({ error: 'not found' });
+
+    const events = await user.getBookmarkedEvents({
+      include: [
+        { model: Vendor, as: 'vendor' },
+        { model: Category, through: { attributes: [] } },
+      ],
+    });
+
+    res.status(200).json(events);
+  } catch (err) {
+    console.error('err fetching bookmarked events', err);
+    res.status(500).json({ error: 'failed to fetch bookmarked events' });
+  }
+});

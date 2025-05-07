@@ -1,14 +1,24 @@
 import React from "react";
-import { Link } from "react-router-dom";
-import { Box, Card, CardContent, Typography, Stack, Chip } from "@mui/material";
-import formatDate from "../utils/formatDate";
+import { Link as RouterLink } from "react-router-dom";
+import {
+  Box,
+  Typography,
+  Card,
+  CardContent,
+  Chip,
+  Stack,
+} from "@mui/material";
+
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import BrushIcon from "@mui/icons-material/Brush";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
 import SportsHandballIcon from "@mui/icons-material/SportsHandball";
 import EmojiEmotionsIcon from "@mui/icons-material/EmojiEmotions";
+import PlaceIcon from "@mui/icons-material/Place";
 
-type Event = {
+import formatDate from "../utils/formatDate";
+
+interface Event {
   id: string;
   title: string;
   description: string;
@@ -17,83 +27,73 @@ type Event = {
   venue_name: string;
   image_url?: string;
   isFree: boolean;
-  isKidFriendly: boolean;
-  isSober: boolean;
-  location: string;
+  isKidFriendly?: boolean;
+  isSober?: boolean;
   vendor?: {
     id: string;
     businessName: string;
-    averageRating?: number;
   };
   Categories?: { name: string }[];
-};
+}
+
+interface Preference {
+  name: string;
+}
 
 interface Props {
   events: Event[];
-  userId: string;
+  preferences: Preference[];
 }
 
-const Bookmarks: React.FC<Props> = ({ events }) => {
-  if (!events || !Array.isArray(events) || events.length === 0) return null;
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case "Food & Drink":
+      return <RestaurantIcon fontSize="small" />;
+    case "Art":
+      return <BrushIcon fontSize="small" />;
+    case "Music":
+      return <MusicNoteIcon fontSize="small" />;
+    case "Sports & Fitness":
+      return <SportsHandballIcon fontSize="small" />;
+    case "Hobbies":
+      return <EmojiEmotionsIcon fontSize="small" />;
+    default:
+      return <PlaceIcon fontSize="small" />;
+  }
+};
+
+const categoryColors: { [key: string]: string } = {
+  "Food & Drink": "#FB8C00",
+  Art: "#8E24AA",
+  Music: "#E53935",
+  "Sports & Fitness": "#43A047",
+  Hobbies: "#FDD835",
+};
+
+const RecommendedEvents: React.FC<Props> = ({ events, preferences }) => {
+  if (!events || events.length === 0 || !preferences || preferences.length === 0) return null;
 
   const now = new Date();
+  const preferredNames = preferences.map((p) => p.name.toLowerCase());
 
-  const upcomingEvents = events
-    .filter((event) => new Date(event.endDate) >= now)
-    .sort(
-      (a, b) =>
-        new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
-    );
-
-  const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case "Food & Drink":
-        return <RestaurantIcon sx={{ fontSize: 14 }} />;
-      case "Art":
-        return <BrushIcon sx={{ fontSize: 14 }} />;
-      case "Music":
-        return <MusicNoteIcon sx={{ fontSize: 14 }} />;
-      case "Sports & Fitness":
-        return <SportsHandballIcon sx={{ fontSize: 14 }} />;
-      case "Hobbies":
-        return <EmojiEmotionsIcon sx={{ fontSize: 14 }} />;
-      default:
-        return null;
-    }
-  };
-
-  const getCategoryStyles = (category: string) => {
-    switch (category) {
-      case "Food & Drink":
-        return { backgroundColor: "#FB8C00", color: "white" };
-      case "Art":
-        return { backgroundColor: "#8E24AA", color: "white" };
-      case "Music":
-        return { backgroundColor: "#E53935", color: "white" };
-      case "Sports & Fitness":
-        return { backgroundColor: "#43A047", color: "white" };
-      case "Hobbies":
-        return { backgroundColor: "#FDD835", color: "white" };
-      default:
-        return {};
-    }
-  };
+  const upcomingEvents = events.filter(
+    (event) =>
+      new Date(event.endDate) >= now &&
+      event.vendor?.id &&
+      event.Categories?.some((cat) =>
+        preferredNames.includes(cat.name.toLowerCase())
+      )
+  );
 
   if (upcomingEvents.length === 0) return null;
 
   return (
     <Box mt={6}>
       <Typography variant="h5" gutterBottom>
-        Bookmarks:
+        Recommended Popups:
       </Typography>
 
-      <Box
-        sx={{
-          display: "flex",
-          gap: 2,
-          flexWrap: "wrap",
-        }}
-      >
+      <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
         {upcomingEvents.map((event) => (
           <Card
             key={event.id}
@@ -102,6 +102,11 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
               boxShadow: 2,
               borderRadius: 2,
               flex: "0 0 auto",
+              transition: "transform 0.2s",
+              "&:hover": {
+                transform: "scale(1.02)",
+                boxShadow: 4,
+              },
             }}
           >
             {event.image_url && (
@@ -119,15 +124,11 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
                 />
               </Box>
             )}
+
             <CardContent sx={{ p: 1.5 }}>
-              <Typography
-                variant="subtitle2"
-                fontWeight="bold"
-                noWrap
-                title={event.title}
-              >
+              <Typography variant="subtitle2" fontWeight="bold" noWrap title={event.title}>
                 {event.title}{" "}
-                {event.vendor?.id && event.vendor?.businessName && (
+                {event.vendor && (
                   <Typography
                     component="span"
                     variant="caption"
@@ -135,12 +136,12 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
                     sx={{ fontWeight: 400 }}
                   >
                     by{" "}
-                    <Link
+                    <RouterLink
                       to={`/vendor/${event.vendor.id}`}
                       style={{ color: "#1976d2", textDecoration: "none" }}
                     >
                       {event.vendor.businessName}
-                    </Link>
+                    </RouterLink>
                   </Typography>
                 )}
               </Typography>
@@ -157,14 +158,12 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
                 event.isFree ||
                 event.isKidFriendly ||
                 event.isSober) && (
-                <Stack direction="row" spacing={0.5} flexWrap="wrap" mt={1}>
+                <Stack direction="row" spacing={0.5} flexWrap="wrap" mt={1} alignItems="center">
                   {event.Categories?.map((cat) => (
                     <Box
                       key={cat.name}
                       sx={{
-                        backgroundColor:
-                          getCategoryStyles(cat.name).backgroundColor ||
-                          "#9e9e9e",
+                        backgroundColor: categoryColors[cat.name] || "#9e9e9e",
                         borderRadius: "50%",
                         width: 24,
                         height: 24,
@@ -173,33 +172,19 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
                         justifyContent: "center",
                       }}
                     >
-                      {getCategoryIcon(cat.name) &&
-                        React.cloneElement(getCategoryIcon(cat.name) as React.ReactElement, {
-                          sx: { color: "#fff", fontSize: 16 },
-                        })}
+                      {React.cloneElement(getCategoryIcon(cat.name), {
+                        sx: { color: "#fff", fontSize: 16 },
+                      })}
                     </Box>
                   ))}
-
                   {event.isFree && (
-                    <Chip
-                      label="Free"
-                      size="small"
-                      sx={{ fontSize: "0.65rem", height: 20 }}
-                    />
+                    <Chip label="Free" size="small" sx={{ fontSize: "0.65rem", height: 20 }} />
                   )}
                   {event.isKidFriendly && (
-                    <Chip
-                      label="Kid-Friendly"
-                      size="small"
-                      sx={{ fontSize: "0.65rem", height: 20 }}
-                    />
+                    <Chip label="Kid-Friendly" size="small" sx={{ fontSize: "0.65rem", height: 20 }} />
                   )}
                   {event.isSober && (
-                    <Chip
-                      label="Sober"
-                      size="small"
-                      sx={{ fontSize: "0.65rem", height: 20 }}
-                    />
+                    <Chip label="Sober" size="small" sx={{ fontSize: "0.65rem", height: 20 }} />
                   )}
                 </Stack>
               )}
@@ -211,4 +196,4 @@ const Bookmarks: React.FC<Props> = ({ events }) => {
   );
 };
 
-export default Bookmarks;
+export default RecommendedEvents;
