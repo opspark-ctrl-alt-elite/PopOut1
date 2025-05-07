@@ -16,7 +16,6 @@ import {
   Modal,
 } from "@mui/material";
 
-// ICONS
 import RestaurantIcon from "@mui/icons-material/Restaurant";
 import BrushIcon from "@mui/icons-material/Brush";
 import MusicNoteIcon from "@mui/icons-material/MusicNote";
@@ -49,7 +48,6 @@ const categoryColors: { [key: string]: string } = {
   Hobbies: "#FDD835",
 };
 
-// TYPES
 type Category = { id: number; name: string };
 type Event = {
   id: string;
@@ -141,18 +139,15 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
 
   useEffect(() => {
     const fetchRecommended = async () => {
-      if (!preferences.length) return;
-
       try {
         const res = await axios.get("/api/events");
         const allEvents: Event[] = res.data;
 
-        const preferredNames = preferences.map((c) => c.name);
-        const matchingEvents = allEvents.filter((event) =>
-          event.Categories?.some((cat) => preferredNames.includes(cat.name))
+        const upcomingEvents = allEvents.filter(
+          (event) => new Date(event.endDate) >= new Date()
         );
 
-        setRecommendedEvents(matchingEvents.slice(0, 3));
+        setRecommendedEvents(upcomingEvents);
       } catch (err) {
         console.error("Error fetching recommended events:", err);
       }
@@ -289,7 +284,10 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
             )}
 
             {recommendedEvents.length > 0 && (
-              <RecommendedEvents events={recommendedEvents} />
+              <RecommendedEvents
+                events={recommendedEvents}
+                preferences={preferences}
+              />
             )}
 
             <Box display="flex" justifyContent="flex-end" mt={6}>

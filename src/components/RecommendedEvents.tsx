@@ -18,7 +18,6 @@ import PlaceIcon from "@mui/icons-material/Place";
 
 import formatDate from "../utils/formatDate";
 
-// TYPES
 interface Event {
   id: string;
   title: string;
@@ -37,8 +36,13 @@ interface Event {
   Categories?: { name: string }[];
 }
 
+interface Preference {
+  name: string;
+}
+
 interface Props {
   events: Event[];
+  preferences: Preference[];
 }
 
 const getCategoryIcon = (category: string) => {
@@ -66,12 +70,19 @@ const categoryColors: { [key: string]: string } = {
   Hobbies: "#FDD835",
 };
 
-const RecommendedEvents: React.FC<Props> = ({ events }) => {
-  if (!events || events.length === 0) return null;
+const RecommendedEvents: React.FC<Props> = ({ events, preferences }) => {
+  if (!events || events.length === 0 || !preferences || preferences.length === 0) return null;
 
   const now = new Date();
+  const preferredNames = preferences.map((p) => p.name.toLowerCase());
+
   const upcomingEvents = events.filter(
-    (event) => new Date(event.endDate) >= now && event.vendor?.id
+    (event) =>
+      new Date(event.endDate) >= now &&
+      event.vendor?.id &&
+      event.Categories?.some((cat) =>
+        preferredNames.includes(cat.name.toLowerCase())
+      )
   );
 
   if (upcomingEvents.length === 0) return null;
@@ -143,7 +154,10 @@ const RecommendedEvents: React.FC<Props> = ({ events }) => {
                 {event.venue_name}
               </Typography>
 
-              {(event.Categories?.length || event.isFree || event.isKidFriendly || event.isSober) && (
+              {(event.Categories?.length ||
+                event.isFree ||
+                event.isKidFriendly ||
+                event.isSober) && (
                 <Stack direction="row" spacing={0.5} flexWrap="wrap" mt={1} alignItems="center">
                   {event.Categories?.map((cat) => (
                     <Box
