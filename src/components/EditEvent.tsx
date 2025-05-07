@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import axios from 'axios';
 import {
   Container,
@@ -40,6 +40,12 @@ import {
   Paid as PaidIcon
 } from '@mui/icons-material';
 
+
+// -----------------------------------------------------------------------------
+// constants & styling helpers
+// -----------------------------------------------------------------------------
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
 const libraries: 'places'[] = ['places'];
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -80,10 +86,45 @@ interface EventForm {
   isSober: boolean;
   categories: string[];
   image_url: string;
-  image_publicId: string;
+  // image_publicId: string;
 }
 
-const EditEvent = () => {
+type UploadedImage = {
+  id: string;
+  publicId: string;
+  referenceURL: string;
+  userId: string;
+  vendorId: string;
+  eventId: string;
+};
+
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  profile_picture?: string;
+};
+
+type Vendor = {
+  id: string;
+  businessName: string;
+  email: string;
+  description: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  profilePicture?: string;
+  userId: string;
+  createdAt: any;
+  updatedAt: any;
+};
+
+type Props = {
+  user: User | null;
+  vendor: Vendor | null;
+}
+
+const EditEvent: React.FC<Props> = ({ user, vendor }) => {
   const { id } = useParams();
   const navigate = useNavigate();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
@@ -95,7 +136,7 @@ const EditEvent = () => {
   const [form, setForm] = useState<EventForm | null>(null);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState({ isUploading: false, progress: 0 });
   const [loading, setLoading] = useState(true);
   const [modal, setModal] = useState({
     open: false,
@@ -104,8 +145,18 @@ const EditEvent = () => {
     success: false,
     onConfirm: null as (() => void) | null
   });
+  const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
+    null
+  );
+  // holds onto file until ready to upload it
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  // preview URL
+  const previewURL = useMemo(() => (selectedFile ? URL.createObjectURL(selectedFile) : (form ? form.image_url : "")), [selectedFile, (form ? form.image_url : "")]);
+  useEffect(() => () => { if (selectedFile) URL.revokeObjectURL(previewURL); }, [previewURL, selectedFile]);
 
   useEffect(() => {
+    getUploadedImage();
     const fetchEvent = async () => {
       try {
         const [eventRes, categoriesRes] = await Promise.all([
@@ -118,7 +169,8 @@ const EditEvent = () => {
             open: true,
             title: 'Error',
             message: 'Event not found',
-            success: false
+            success: false,
+            onConfirm: null as (() => void) | null
           });
           return;
         }
@@ -130,7 +182,7 @@ const EditEvent = () => {
           ...event,
           location: event.location || '',
           categories: catNames,
-          image_publicId: event.image_publicId || '',
+          // image_publicId: event.image_publicId || '',
           image_url: event.image_url || ''
         });
         setAvailableCategories(categoriesRes.data.map((cat: any) => cat.name));
@@ -140,7 +192,8 @@ const EditEvent = () => {
           open: true,
           title: 'Error',
           message: 'Failed to load event data',
-          success: false
+          success: false,
+          onConfirm: null as (() => void) | null
         });
       } finally {
         setLoading(false);
@@ -202,48 +255,111 @@ const EditEvent = () => {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file || !form) return;
-
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      setModal({
-        open: true,
-        title: 'Upload Failed',
-        message: 'File size exceeds 5MB limit',
-        success: false
+  const getUploadedImage = async () => {
+    try {
+      const res = await axios.get(`/api/images/eventId/${id}`, {
+        withCredentials: true,
       });
-      return;
+      setUploadedImage(res.data[0]);
+    } catch (err) {
+      setUploadedImage(null);
+      console.error("Error retrieving uploaded image record for event: ", err);
     }
+  };
 
+  // ---------------------------------------------------------------------------
+  // image selection (validate only)
+  // ---------------------------------------------------------------------------
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!ALLOWED_FILE_TYPES.includes(file.type))
+      return setModal({ open: true, title: 'Invalid File', message: 'JPEG, PNG or GIF only.', success: false, onConfirm: null as (() => void) | null });
+    if (file.size > MAX_FILE_SIZE)
+      return setModal({ open: true, title: 'File Too Large', message: 'Maximum file size is 5 MB.', success: false, onConfirm: null as (() => void) | null });
+
+    setSelectedFile(file);
+  };
+
+  const removeImage = () => {
+    setSelectedFile(null);
+    setForm((p: any) => ({ ...p, image_url: '' }));
+  };
+
+  // ---------------------------------------------------------------------------
+  // helper: upload after event created
+  // ---------------------------------------------------------------------------
+  const uploadImageForEvent = async (eventId: string, formData: FormData) => {
     const formData = new FormData();
     formData.append('file', file);
+    const { data } = await axios.post(`/api/images/${user ? user.id : "error"}/${vendor ? vendor.id : "error"}/${eventId}`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      onUploadProgress: (e) => {
+        if (e.total)
+          setUploading({ isUploading: true, progress: Math.round((e.loaded * 100) / e.total) });
+      },
+      withCredentials: true,
+    });
+    return data[0]?.secure_url || data[0]?.url || '';
+  };
+
+  const handleImageUpload = async (file: File) => {
+
+    // // Validate file size (5MB max)
+    // if (file.size > 5 * 1024 * 1024) {
+    //   setModal({
+    //     open: true,
+    //     title: 'Upload Failed',
+    //     message: 'File size exceeds 5MB limit',
+    //     success: false,
+    //     onConfirm: null as (() => void) | null
+    //   });
+    //   return;
+    // }
 
     try {
-      setUploading(true);
+      //setUploading(true);
+
+      if (!file || !form) throw new Error("can't upload image, form or file is missing");
       
-      // First get a signed URL from your backend
-      const { data: { signedUrl, publicId } } = await axios.post('/api/images/generate-signed-url', {
-        fileName: file.name,
-        fileType: file.type,
-        existingPublicId: form.image_publicId || undefined
+      const uploadUrl = uploadedImage?.publicId
+        ? `/api/images/${uploadedImage.publicId}`
+        : `/api/images/${user ? user.id : "error"}/${vendor ? vendor.id : "error"}/${id}`;
+
+      const formData = new FormData();
+      formData.append('file', file);
+      const { data } = await axios.post(`/api/images/${user ? user.id : "error"}/${vendor ? vendor.id : "error"}/${eventId}`, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (e) => {
+          if (e.total)
+            setUploading({ isUploading: true, progress: Math.round((e.loaded * 100) / e.total) });
+        },
+        withCredentials: true,
       });
 
-      // Then upload directly to S3 using the signed URL
-      await axios.put(signedUrl, file, {
-        headers: {
-          'Content-Type': file.type,
-          'x-amz-acl': 'public-read'
-        }
-      });
+      
+      // // First get a signed URL from your backend
+      // const { data: { signedUrl, publicId } } = await axios.post(uploadUrl, {
+      //   fileName: file.name,
+      //   fileType: file.type,
+      //   existingPublicId: form.image_publicId || undefined
+      // });
+
+      // // Then upload directly to S3 using the signed URL
+      // await axios.put(signedUrl, file, {
+      //   headers: {
+      //     'Content-Type': file.type,
+      //     'x-amz-acl': 'public-read'
+      //   }
+      // });
 
       // Update the form with the new image URL and public ID
       const imageUrl = signedUrl.split('?')[0]; // Remove query params from signed URL
       setForm(prev => ({
         ...prev!,
         image_url: imageUrl,
-        image_publicId: publicId
+        // image_publicId: publicId
       }));
 
     } catch (err) {
@@ -252,7 +368,8 @@ const EditEvent = () => {
         open: true,
         title: 'Upload Failed',
         message: 'There was an error uploading your image. Please try again.',
-        success: false
+        success: false,
+        onConfirm: null as (() => void) | null
       });
     } finally {
       setUploading(false);
@@ -260,15 +377,15 @@ const EditEvent = () => {
   };
 
   const handleDeleteImage = async () => {
-    if (!form?.image_publicId) return;
+    if (!uploadedImage) return;
     try {
       await axios.delete('/api/images/', {
-        data: { publicId: form.image_publicId }
+        data: { publicId: uploadedImage.publicId }
       });
       setForm(prev => ({
         ...prev!,
         image_url: '',
-        image_publicId: ''
+        // image_publicId: ''
       }));
     } catch (err) {
       console.error('Error deleting image:', err);
@@ -276,7 +393,8 @@ const EditEvent = () => {
         open: true,
         title: 'Delete Failed',
         message: 'Failed to delete image. Please try again.',
-        success: false
+        success: false,
+        onConfirm: null as (() => void) | null
       });
     }
   };
@@ -287,11 +405,17 @@ const EditEvent = () => {
         open: true,
         title: 'Form Errors',
         message: 'Please fix the errors in the form before submitting.',
-        success: false
+        success: false,
+        onConfirm: null as (() => void) | null
       });
       return;
     }
     try {
+      if (selectedFile === null) {
+        await handleDeleteImage();
+      } else if (id) {
+        await handleImageUpload(selectedFile);
+      }
       const payload = {
         ...form,
         latitude: parseFloat(form.latitude),
@@ -302,7 +426,8 @@ const EditEvent = () => {
         open: true,
         title: 'Success',
         message: 'Event updated!',
-        success: true
+        success: true,
+        onConfirm: null as (() => void) | null
       });
     } catch (err) {
       console.error('Error updating event:', err);
@@ -310,7 +435,8 @@ const EditEvent = () => {
         open: true,
         title: 'Error',
         message: 'Error updating event.',
-        success: false
+        success: false,
+        onConfirm: null as (() => void) | null
       });
     }
   };
@@ -320,7 +446,7 @@ const EditEvent = () => {
   };
 
   const handleModalClose = () => {
-    setModal(prev => ({ ...prev, open: false }));
+    setModal(prev => ({ ...prev, open: false, onConfirm: null as (() => void) | null }));
     if (modal.success) navigate('/active-events');
   };
 
@@ -401,7 +527,7 @@ const EditEvent = () => {
                       <CircularProgress size={20} sx={{ mr: 1 }} />
                       Uploading...
                     </>
-                  ) : form.image_url ? (
+                  ) : (selectedFile || form.image_url) ? (
                     'Replace Image'
                   ) : (
                     'Upload Image'
@@ -410,14 +536,14 @@ const EditEvent = () => {
                     type='file'
                     hidden
                     accept='image/jpeg,image/png'
-                    onChange={handleImageUpload}
+                    onChange={handleFileSelect}
                   />
                 </StyledButton>
 
-                {form.image_url && (
+                {(selectedFile || form.image_url) && (
                   <Box sx={{ position: 'relative', mt: 2 }}>
                     <img
-                      src={form.image_url}
+                      src={previewURL ? previewURL : form.image_url}
                       alt='Event preview'
                       style={{
                         width: '100%',
@@ -434,7 +560,7 @@ const EditEvent = () => {
                           message:
                             'Are you sure you want to delete this image?',
                           success: false,
-                          onConfirm: handleDeleteImage
+                          onConfirm: removeImage
                         });
                       }}
                       sx={{
@@ -847,7 +973,7 @@ const EditEvent = () => {
                   onClick={handleModalClose}
                   sx={{
                     borderColor: 'grey.300',
-                    color: 'text.primary'
+                    color: 'primary'
                   }}
                 >
                   Cancel

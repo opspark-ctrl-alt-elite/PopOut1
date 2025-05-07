@@ -57,6 +57,7 @@ type Captcha = {
 const App: React.FC = () => {
   const [user, setUser] = useState<User | null>(null);
   const [vendors, setVendors] = useState<Vendor[] | null>(null);
+  const [vendor, setVendor] = useState<Vendor | null>(null);
   const [categories, setCategories] = useState<Category[] | null>(null);
   const [captcha, setCaptcha] = useState<Captcha>({
     beatCaptcha: false,
@@ -84,6 +85,18 @@ const App: React.FC = () => {
     } catch (err) {
       setUser(null);
       console.error('Error retrieving user:', err);
+    }
+  };
+
+  const getVendor = async () => {
+    try {
+      const res = await axios.get(`/api/vendor/${user?.id}`, {
+        withCredentials: true,
+      });
+      setVendor(res.data);
+    } catch (err) {
+      setVendor(null);
+      console.error("Error retrieving vendor record:", err);
     }
   };
 
@@ -115,6 +128,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     if (user?.id) requestNotificationPermission(user.id);
+    if (user?.is_vendor) getVendor();
   }, [user]);
 
   useEffect(() => {
@@ -178,7 +192,7 @@ const App: React.FC = () => {
             />
             <Route
               path='/vendorprofile'
-              element={<VendorProfile user={user} getUser={getUser} />}
+              element={<VendorProfile user={user} getUser={getUser} vendor={vendor} getVendor={getVendor} />}
             />
             <Route
               path='/vendor-signup'
@@ -195,8 +209,8 @@ const App: React.FC = () => {
               path='/preferences'
               element={<Preferences setUser={setUser} />}
             />
-            <Route path='/create-event' element={<CreateEvent user={user} />} />
-            <Route path='/edit-event/:id' element={<EditEvent />} />
+            <Route path='/create-event' element={<CreateEvent user={user} vendor={vendor} />} />
+            <Route path='/edit-event/:id' element={<EditEvent user={user} vendor={vendor} />} />
             <Route
               path='/active-events'
               element={<ActiveEvents user={user} />}

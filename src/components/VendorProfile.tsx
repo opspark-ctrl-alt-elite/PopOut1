@@ -83,13 +83,16 @@ type UploadedImage = {
   id: string;
   publicId: string;
   referenceURL: string;
-  vendorId?: string | null;
+  userId: string;
+  vendorId: string;
   eventId?: string | null;
 };
 
 type Props = {
   user: User | null;
   getUser: Function;
+  vendor: Vendor | null;
+  getVendor: Function;
 };
 
 type ModalType = {
@@ -99,8 +102,7 @@ type ModalType = {
   success: boolean;
 }
 
-const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
-  const [vendor, setVendor] = useState<Vendor | null>(null);
+const VendorProfile: React.FC<Props> = ({ user, getUser, vendor, getVendor }) => {
   const [fields, setFields] = useState<Fields>({
     businessName: "",
     email: "",
@@ -151,18 +153,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
       });
     }
   }, [vendor]);
-
-  const getVendor = async () => {
-    try {
-      const res = await axios.get(`/api/vendor/${user?.id}`, {
-        withCredentials: true,
-      });
-      setVendor(res.data);
-    } catch (err) {
-      setVendor(null);
-      console.error("Error retrieving vendor record:", err);
-    }
-  };
 
   const getUploadedImage = async () => {
     try {
