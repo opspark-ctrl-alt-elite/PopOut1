@@ -144,6 +144,8 @@ const ActiveEvents: React.FC = () => {
 
   const deleteEvent = async (id: string) => {
     try {
+      // delete all uploaded images associated with event
+      await axios.delete(`/api/images/eventId/${id}`, { withCredentials: true });
       await axios.delete(`/api/events/${id}`);
       fetchEvents();
     } catch (err) {

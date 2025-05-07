@@ -361,13 +361,24 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   };
 
   const deleteVendor = async () => {
-    try {
-      await deleteUploadedImage();
-      await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
-      await getUser();
-      setOpenDelete(false);
-    } catch (err) {
-      console.error("Error deleting vendor record: ", err);
+    if (vendor) {
+      try {
+        //possible TODO: make more efficient if possible
+        // delete associated image
+        await deleteUploadedImage();
+        // delete all uploaded images associated with vendor
+        await axios.delete(`/api/images/vendorId/${vendor.id}`, { withCredentials: true });
+        // delete vendor
+        await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
+        // update vendor status in user state
+        await getUser();
+        // close modal
+        setOpenDelete(false);
+      } catch (err) {
+        console.error("Error deleting vendor record: ", err);
+      }
+    } else {
+      console.error("No vendor to delete");
     }
   };
 

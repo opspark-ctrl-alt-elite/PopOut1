@@ -159,6 +159,8 @@ const UserProfile: React.FC<Props> = ({ user, setUser, categories }) => {
   const handleDeleteUser = async () => {
     if (!user) return;
     try {
+      // delete all uploaded images associated with user
+      await axios.delete(`/api/images/userId/${user.id}`, { withCredentials: true });
       await fetch(`/user/me`, { method: "DELETE", credentials: "include" });
       window.location.href = "/";
     } catch (err) {

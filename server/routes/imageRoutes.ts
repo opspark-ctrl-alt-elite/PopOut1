@@ -276,6 +276,13 @@ imageRouter.delete("/:foreignKeyName/:foreignKey", async (req, res) => {
     // get the publicIds out of the images
     let publicIds = images.map(image => image.dataValues.publicId);
 
+    // return early if no publicIds were found
+    if (publicIds.length === 0) {
+      // return 200 message if no public ids were found in the database
+      res.status(200).send("no image public ids were found in the database");
+      return;
+    }
+
     // delete the images from the cloudinary asset storage
     let deletedCloudImages = await cloudinary.api.delete_resources(publicIds);
 
