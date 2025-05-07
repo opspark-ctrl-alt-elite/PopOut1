@@ -182,7 +182,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     const formData = new FormData();
     Array.from(e.target.files).forEach((file) => {
       formData.append("file", file);
-      formData.append('upload_preset', process.env.REACT_APP_CLOUDINARY_UPLOAD_PRESET as string);
     });
 
     const uploadUrl = uploadedImage?.publicId
@@ -663,7 +662,15 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                 <Stack direction="row" spacing={2} justifyContent="center">
                   <Button
                     variant="contained"
-                    color="error"
+                    sx={{
+                      backgroundColor: "#b71c1c",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "#fbe9e7",
+                        borderColor: "#b71c1c",
+                        color: "#b71c1c",
+                      },
+                    }}
                     onClick={() => {
                       deleteVendor();
                     }}

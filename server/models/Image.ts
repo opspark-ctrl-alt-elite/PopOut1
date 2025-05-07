@@ -2,7 +2,7 @@ import sequelize from "./index";
 import { DataTypes, Model, CreationOptional } from "sequelize";
 import Event from "./EventModel";
 import Vendor from "./Vendor";
-// import User from "./User";
+import User from "./User";
 
 // Define Image model
 export class Image extends Model {
@@ -36,14 +36,14 @@ Image.init(
       unique: true,
     },
     // Establish foreign keys
-    // userId: {
-    //   type: DataTypes.UUID,
-    //   allowNull: true,
-    //   references: {
-    //     model: "users",
-    //     key: "id",
-    //   },
-    // },
+    userId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+      references: {
+        model: "users",
+        key: "id",
+      },
+    },
     vendorId: {
       type: DataTypes.UUID,
       allowNull: true,
@@ -69,9 +69,9 @@ Image.init(
   }
 );
 
-// // Create a one-to-many relationship between User and Image
-// User.hasMany(Image, { foreignKey: "userId", onDelete: "CASCADE" });
-// Image.belongsTo(User, { foreignKey: "userId" });
+// Create a one-to-many relationship between User and Image
+User.hasMany(Image, { foreignKey: "userId", onDelete: "CASCADE" });
+Image.belongsTo(User, { foreignKey: "userId" });
 
 // Create a one-to-many relationship between Vendor and Image
 Vendor.hasMany(Image, { foreignKey: "vendorId", onDelete: "CASCADE" });

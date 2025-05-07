@@ -4,6 +4,12 @@ import { Router } from "express";
 import Image from '../models/Image';
 import { Op } from "sequelize";
 
+type WhereFilter = {
+  userId?: string | null;
+  vendorId?: string | null;
+  eventId?: string | null;
+}
+
 // configure how multer should temporarily store files on the server side
 const storage = multer.diskStorage({
   filename: function (req, file, cb) {
@@ -19,6 +25,17 @@ const upload = multer({
   limits: { fileSize: 5000000 /* measured in bytes (5MB) */ }
 });
 
+// export async function createImageUpload() {
+//   const timestamp = new Date().getTime()
+//   const signature = await cloudinary.utils.api_sign_request(
+//     {
+//       timestamp,
+//     },
+//     process.env.CLOUDINARY_API_SECRET
+//   )
+//   return { timestamp, signature }
+// }
+
 // create router
 const imageRouter = Router();
 
@@ -27,9 +44,20 @@ imageRouter.get("/:foreignKeyName/:foreignKey", async (req, res) => {
   // extract foreignKeyName and foreignKey from the request parameters
   const { foreignKeyName, foreignKey } = req.params;
 
+  // set up the object used to filter through the Image database table
+  const whereFilter: WhereFilter = { [foreignKeyName]: foreignKey };
+
+  // // add null for the other ids to prevent getting images belonging to vendors and/or events that themselves belong to the user and/or vendor associated with the foreignKey
+  // if (foreignKeyName === "userId") {
+  //   whereFilter.vendorId = null;
+  //   whereFilter.eventId = null;
+  // } else if (foreignKeyName === "vendorId") {
+  //   whereFilter.eventId = null;
+  // }
+
   try {
     // find the images associated with the foreign key
-    const images = await Image.findAll({ where: { [foreignKeyName]: foreignKey }});
+    const images = await Image.findAll({ where: whereFilter});
     if (images === null) {
       // if no images were found, set the status code to 404
       res.status(404);
@@ -52,6 +80,9 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("file"), async (re
 
   // extract foreignKeyName and foreignKey from the request parameters
   const { foreignKeyName, foreignKey } = req.params;
+
+  console.log(req);
+  console.log(req.files);
 
   try {
 
@@ -80,6 +111,8 @@ imageRouter.post("/:foreignKeyName/:foreignKey", upload.array("file"), async (re
 
     // wait for the image uploads to complete and return the links
     const uploadResults = await Promise.all(imgUploadPromises);
+
+    console.log(uploadResults)
 
     // create an array of image objects to bulkCreate image records with
     const imgObjs = uploadResults.map((result: any) => {
