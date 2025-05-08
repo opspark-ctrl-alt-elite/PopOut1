@@ -84,10 +84,36 @@ interface EventForm {
   categories: string[];
 }
 
+type User = {
+  id: string;
+  name: string;
+  email: string;
+  profile_picture?: string;
+}
+
+type Vendor = {
+  id: string;
+  businessName: string;
+  email: string;
+  description: string;
+  website?: string;
+  instagram?: string;
+  facebook?: string;
+  profilePicture?: string;
+  userId: string;
+  createdAt: any;
+  updatedAt: any;
+};
+
+type Props = {
+  user: User | null;
+  vendor: Vendor | null;
+}
+
 // -----------------------------------------------------------------------------
 // component
 // -----------------------------------------------------------------------------
-const CreateEvent: React.FC = () => {
+const CreateEvent: React.FC<Props> = ({ user, vendor }) => {
   const navigate = useNavigate();
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null);
   const { isLoaded, loadError } = useLoadScript({
@@ -209,8 +235,8 @@ const CreateEvent: React.FC = () => {
   // ---------------------------------------------------------------------------
   const uploadImageForEvent = async (eventId: string, file: File) => {
     const formData = new FormData();
-    formData.append('imageUpload', file);
-    const { data } = await axios.post(`/api/images/eventId/${eventId}`, formData, {
+    formData.append('file', file);
+    const { data } = await axios.post(`/api/images/${user ? user.id : "error"}/${vendor ? vendor.id : "error"}/${eventId}`, formData, {
       headers: { 'Content-Type': 'multipart/form-data' },
       onUploadProgress: (e) => {
         if (e.total)

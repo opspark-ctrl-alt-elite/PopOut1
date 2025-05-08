@@ -53,6 +53,12 @@ const Home: React.FC<Props> = ({ user, vendors, captcha, setCaptcha }) => {
   const [spotlight, setSpotlight] = useState<SpotlightVendor[]>([]);
 
   useEffect(() => {
+    // set captcha.wantsToBeVendor to false
+    setCaptcha((prev: Captcha) => ({
+      ...prev,
+      wantsToBeVendor: false
+    }));
+    
     (async () => {
       try {
         const res = await axios.get("/vendors/spotlight/top5", {

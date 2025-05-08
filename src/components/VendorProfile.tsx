@@ -83,13 +83,16 @@ type UploadedImage = {
   id: string;
   publicId: string;
   referenceURL: string;
-  vendorId?: string | null;
+  userId: string;
+  vendorId: string;
   eventId?: string | null;
 };
 
 type Props = {
   user: User | null;
   getUser: Function;
+  vendor: Vendor | null;
+  getVendor: Function;
 };
 
 type ModalType = {
@@ -99,8 +102,7 @@ type ModalType = {
   success: boolean;
 }
 
-const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
-  const [vendor, setVendor] = useState<Vendor | null>(null);
+const VendorProfile: React.FC<Props> = ({ user, getUser, vendor, getVendor }) => {
   const [fields, setFields] = useState<Fields>({
     businessName: "",
     email: "",
@@ -152,18 +154,6 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     }
   }, [vendor]);
 
-  const getVendor = async () => {
-    try {
-      const res = await axios.get(`/api/vendor/${user?.id}`, {
-        withCredentials: true,
-      });
-      setVendor(res.data);
-    } catch (err) {
-      setVendor(null);
-      console.error("Error retrieving vendor record:", err);
-    }
-  };
-
   const getUploadedImage = async () => {
     try {
       const res = await axios.get(`/api/images/vendorId/${vendor?.id}`, {
@@ -180,13 +170,13 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     if (!e.target.files || !vendor) return;
 
     const formData = new FormData();
-    Array.from(e.target.files).forEach((file) =>
-      formData.append("imageUpload", file)
-    );
+    Array.from(e.target.files).forEach((file) => {
+      formData.append("file", file);
+    });
 
     const uploadUrl = uploadedImage?.publicId
       ? `/api/images/${uploadedImage.publicId}`
-      : `/api/images/vendorId/${vendor.id}`;
+      : `/api/images/${user ? user.id : "null"}/${vendor.id}/null`;
 
     try {
       const res = await axios.post(uploadUrl, formData, {
@@ -199,7 +189,9 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
         { profilePicture: res.data[0].url },
         { withCredentials: true }
       );
+      // update image and vendor states
       await getUploadedImage();
+      getVendor();
     } catch (err) {
       console.error("err uploading image", err);
     }
@@ -215,10 +207,12 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
       // delete the quick-access vendor image url on the vendor record and replace the column's value with null
       await axios.patch(
         `/api/vendor/${user?.id}`,
-        { profilePicture: null },
+        { profilePicture: "" },
         { withCredentials: true }
       );
-      getUploadedImage();
+      // update image and vendor states
+      await getVendor();
+      setUploadedImage(null);
     } catch (err) {
       console.error("err deleting image", err);
     }
@@ -242,7 +236,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
     if (!fields.businessName) newErrors.businessName = 'Business name is required';
     else if (fields.businessName.length > 50) newErrors.businessName = 'Business name must be 50 characters or less';
     if (!fields.description) newErrors.description = 'Description is required';
-    else if (fields.description.length > 300) newErrors.description = 'Description must be 300 characters or less';
+    else if (fields.description.length > 100) newErrors.description = 'Description must be 100 characters or less';
     if (!fields.email) newErrors.email = 'Email is required';
     else if (fields.email.length > 255) newErrors.email = 'Email length must be at or below the default limit (255 characters)';
 
@@ -357,13 +351,24 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
   };
 
   const deleteVendor = async () => {
-    try {
-      await deleteUploadedImage();
-      await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
-      await getUser();
-      setOpenDelete(false);
-    } catch (err) {
-      console.error("Error deleting vendor record: ", err);
+    if (vendor) {
+      try {
+        //possible TODO: make more efficient if possible
+        // delete associated image
+        await deleteUploadedImage();
+        // delete all uploaded images associated with vendor
+        await axios.delete(`/api/images/vendorId/${vendor.id}`, { withCredentials: true });
+        // delete vendor
+        await axios.delete(`/api/vendor/${user?.id}`, { withCredentials: true });
+        // update vendor status in user state
+        await getUser();
+        // close modal
+        setOpenDelete(false);
+      } catch (err) {
+        console.error("Error deleting vendor record: ", err);
+      }
+    } else {
+      console.error("No vendor to delete");
     }
   };
 
@@ -396,7 +401,7 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                     onChange={handleImageUpload}
                   />
                   <label htmlFor="profile-upload">
-                    <Tooltip title="Change Profile Image">
+                    <Tooltip title="Change Profile Image (max size 5MB)">
                       <IconButton
                         component="span"
                         size="small"
@@ -658,7 +663,15 @@ const VendorProfile: React.FC<Props> = ({ user, getUser }) => {
                 <Stack direction="row" spacing={2} justifyContent="center">
                   <Button
                     variant="contained"
-                    color="error"
+                    sx={{
+                      backgroundColor: "#b71c1c",
+                      color: "#fff",
+                      "&:hover": {
+                        backgroundColor: "#fbe9e7",
+                        borderColor: "#b71c1c",
+                        color: "#b71c1c",
+                      },
+                    }}
                     onClick={() => {
                       deleteVendor();
                     }}

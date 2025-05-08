@@ -46,7 +46,7 @@ Vendor.init(
       allowNull: true,
     },
     description: {
-      type: DataTypes.STRING(300),
+      type: DataTypes.STRING(100),
       allowNull: false,
     },
     website: {
