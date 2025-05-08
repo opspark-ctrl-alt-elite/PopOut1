@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import axios from 'axios';
 import {
   Container,
@@ -40,6 +40,12 @@ import {
   Paid as PaidIcon
 } from '@mui/icons-material';
 
+
+// -----------------------------------------------------------------------------
+// constants & styling helpers
+// -----------------------------------------------------------------------------
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
+const ALLOWED_FILE_TYPES = ['image/jpeg', 'image/png', 'image/gif'];
 const libraries: 'places'[] = ['places'];
 
 const StyledTextField = styled(TextField)(({ theme }) => ({
@@ -79,8 +85,6 @@ interface EventForm {
   isKidFriendly: boolean;
   isSober: boolean;
   categories: string[];
-  image_url: string;
-  image_publicId: string;
 }
 
 type UploadedImage = {
@@ -137,11 +141,22 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
     title: '',
     message: '',
     success: false,
-    onConfirm: null as (() => void) | null
+    onConfirm: false
   });
   const [uploadedImage, setUploadedImage] = useState<UploadedImage | null>(
     null
   );
+  // holds onto file until ready to upload it
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [deleteOrChange, setDeleteOrChange] = useState<string | null>(null);
+
+  // helps to remove visual image when deleted
+  const [isDeleted, setIsDeleted] = useState<boolean>(false);
+
+
+  // preview URL
+  const previewURL = useMemo(() => (selectedFile ? URL.createObjectURL(selectedFile) : (isDeleted ? null : (uploadedImage ? uploadedImage.referenceURL : null))), [selectedFile, uploadedImage, isDeleted]);
+  useEffect(() => () => { if (selectedFile && previewURL) URL.revokeObjectURL(previewURL); }, [previewURL, uploadedImage]);
 
   useEffect(() => {
     getUploadedImage();
@@ -157,7 +172,8 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
             open: true,
             title: 'Error',
             message: 'Event not found',
-            success: false
+            success: false,
+            onConfirm: false
           });
           return;
         }
@@ -169,8 +185,6 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
           ...event,
           location: event.location || '',
           categories: catNames,
-          image_publicId: event.image_publicId || '',
-          image_url: event.image_url || ''
         });
         setAvailableCategories(categoriesRes.data.map((cat: any) => cat.name));
       } catch (err) {
@@ -179,7 +193,8 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
           open: true,
           title: 'Error',
           message: 'Failed to load event data',
-          success: false
+          success: false,
+          onConfirm: false
         });
       } finally {
         setLoading(false);
@@ -253,62 +268,59 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
     }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ---------------------------------------------------------------------------
+  // image selection (validate only)
+  // ---------------------------------------------------------------------------
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !form) return;
+    if (!file) return;
 
-    // Validate file size (5MB max)
-    if (file.size > 5 * 1024 * 1024) {
-      setModal({
-        open: true,
-        title: 'Upload Failed',
-        message: 'File size exceeds 5MB limit',
-        success: false
-      });
-      return;
-    }
+    if (!ALLOWED_FILE_TYPES.includes(file.type))
+      return setModal({ open: true, title: 'Invalid File', message: 'JPEG, PNG or GIF only.', success: false, onConfirm: false });
+    if (file.size > MAX_FILE_SIZE)
+      return setModal({ open: true, title: 'File Too Large', message: 'Maximum file size is 5 MB.', success: false, onConfirm: false });
 
-    const formData = new FormData();
-    formData.append('file', file);
+    setSelectedFile(file);
+    setIsDeleted(false);
+  };
 
-    // determine whether to replace or create an uploaded image
-    const uploadUrl = uploadedImage?.publicId
-      ? `/api/images/${uploadedImage.publicId}`
-      : `/api/images/${user ? user.id : "error"}/${vendor ? vendor.id : "error"}/${id}`;
+  const removeImage = () => {
+    setSelectedFile(null);
+    setIsDeleted(true);
+  };
+
+  const handleImageUpload = async (file: File) => {
 
     try {
       setUploading(true);
+
+      if (!file || !form) throw new Error("can't upload image, form or file is missing");
       
-      // First get a signed URL from your backend
-      const { data: { signedUrl, publicId } } = await axios.post('/api/images/generate-signed-url', {
-        fileName: file.name,
-        fileType: file.type,
-        existingPublicId: form.image_publicId || undefined
+      const uploadUrl = uploadedImage?.publicId
+        ? `/api/images/${uploadedImage.publicId}`
+        : `/api/images/${user ? user.id : "error"}/${vendor ? vendor.id : "error"}/${id}`;
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const { data } = await axios.post(uploadUrl, formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+        onUploadProgress: (e) => {
+          if (e.total)
+            setUploading(true);
+        },
+        withCredentials: true,
       });
 
-      // Then upload directly to S3 using the signed URL
-      await axios.put(signedUrl, file, {
-        headers: {
-          'Content-Type': file.type,
-          'x-amz-acl': 'public-read'
-        }
-      });
-
-      // Update the form with the new image URL and public ID
-      const imageUrl = signedUrl.split('?')[0]; // Remove query params from signed URL
-      setForm(prev => ({
-        ...prev!,
-        image_url: imageUrl,
-        image_publicId: publicId
-      }));
-
+      return data[0].secure_url;
     } catch (err) {
       console.error('Error uploading image:', err);
       setModal({
         open: true,
         title: 'Upload Failed',
         message: 'There was an error uploading your image. Please try again.',
-        success: false
+        success: false,
+        onConfirm: false
       });
     } finally {
       setUploading(false);
@@ -316,23 +328,20 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
   };
 
   const handleDeleteImage = async () => {
-    if (!form?.image_publicId) return;
+    if (!uploadedImage) return;
     try {
       await axios.delete('/api/images/', {
-        data: { publicId: form.image_publicId }
+        data: { publicIds: [uploadedImage.publicId] }
       });
-      setForm(prev => ({
-        ...prev!,
-        image_url: '',
-        image_publicId: ''
-      }));
+      return null;
     } catch (err) {
       console.error('Error deleting image:', err);
       setModal({
         open: true,
         title: 'Delete Failed',
         message: 'Failed to delete image. Please try again.',
-        success: false
+        success: false,
+        onConfirm: false
       });
     }
   };
@@ -343,13 +352,21 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
         open: true,
         title: 'Form Errors',
         message: 'Please fix the errors in the form before submitting.',
-        success: false
+        success: false,
+        onConfirm: false
       });
       return;
     }
     try {
+      let image_url: string | null = uploadedImage?.referenceURL;
+      if (selectedFile === null && (uploadedImage && isDeleted)) {
+        image_url = await handleDeleteImage();
+      } else if (id && selectedFile !== null) {
+        image_url = await handleImageUpload(selectedFile);
+      }
       const payload = {
         ...form,
+        image_url,
         latitude: parseFloat(form.latitude),
         longitude: parseFloat(form.longitude)
       };
@@ -358,7 +375,8 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
         open: true,
         title: 'Success',
         message: 'Event updated!',
-        success: true
+        success: true,
+        onConfirm: false
       });
     } catch (err) {
       console.error('Error updating event:', err);
@@ -366,7 +384,8 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
         open: true,
         title: 'Error',
         message: 'Error updating event.',
-        success: false
+        success: false,
+        onConfirm: false
       });
     }
   };
@@ -376,7 +395,7 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
   };
 
   const handleModalClose = () => {
-    setModal(prev => ({ ...prev, open: false }));
+    setModal(prev => ({ ...prev, open: false, onConfirm: false }));
     if (modal.success) navigate('/active-events');
   };
 
@@ -457,7 +476,7 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
                       <CircularProgress size={20} sx={{ mr: 1 }} />
                       Uploading...
                     </>
-                  ) : form.image_url ? (
+                  ) : ((selectedFile || uploadedImage?.referenceURL) && !isDeleted) ? (
                     'Replace Image'
                   ) : (
                     'Upload Image'
@@ -466,14 +485,14 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
                     type='file'
                     hidden
                     accept='image/jpeg,image/png'
-                    onChange={handleImageUpload}
+                    onChange={handleFileSelect}
                   />
                 </StyledButton>
 
-                {form.image_url && (
+                {((selectedFile || uploadedImage?.referenceURL) && !isDeleted) && (
                   <Box sx={{ position: 'relative', mt: 2 }}>
                     <img
-                      src={form.image_url}
+                      src={previewURL ? previewURL : (isDeleted ? null : uploadedImage?.referenceURL)}
                       alt='Event preview'
                       style={{
                         width: '100%',
@@ -490,7 +509,7 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
                           message:
                             'Are you sure you want to delete this image?',
                           success: false,
-                          onConfirm: handleDeleteImage
+                          onConfirm: true
                         });
                       }}
                       sx={{
@@ -903,7 +922,7 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
                   onClick={handleModalClose}
                   sx={{
                     borderColor: 'grey.300',
-                    color: 'text.primary'
+                    color: 'primary'
                   }}
                 >
                   Cancel
@@ -911,7 +930,7 @@ const EditEvent: React.FC<Props> = ({ user, vendor }) => {
                 <StyledButton
                   variant='contained'
                   onClick={() => {
-                    modal.onConfirm?.();
+                    removeImage();
                     handleModalClose();
                   }}
                   sx={{

@@ -86,6 +86,15 @@ imageRouter.post("/:userId/:vendorId/:eventId", upload.array("file"), async (req
 
   try {
 
+    // check for explicit "error" strings that indicate missing foreign keys that should have been present
+    if (userId === "error") {
+      throw new Error("userId was expected to be given but was not given");
+    } else if(vendorId === "error") {
+      throw new Error("vendorId was expected to be given but was not given");
+    } else if (eventId === "error") {
+      throw new Error("eventId was expected to be given but was not given");
+    }
+
     // replace each possible "null" in the foreign keys with a real null (userId should NEVER be null)
     if (userId === "null") {
       throw new Error("userId cannot be null");
@@ -135,8 +144,6 @@ imageRouter.post("/:userId/:vendorId/:eventId", upload.array("file"), async (req
 
     // wait for the image uploads to complete and return the links
     const uploadResults = await Promise.all(imgUploadPromises);
-
-    console.log(uploadResults)
 
     // create an array of image objects to bulkCreate image records with
     const imgObjs = uploadResults.map((result: any) => {

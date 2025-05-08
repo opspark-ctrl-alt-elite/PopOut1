@@ -94,7 +94,7 @@ INSERT INTO categories (name) VALUES ('Food & Drink'), ('Music'), ('Art'), ('Spo
 - The map marker begins moving after reaching a score of 6 (after beating "round 5").
 
 ## Contributors
-- Peyton Strahan: Vendors and Game [Github](https://github.com/PeytonStrahan)
+- Peyton Strahan: Vendors and Game and Image Uploading [Github](https://github.com/PeytonStrahan)
 
 - Katherine Hebbler: Map and Styling [Github](https://github.com/khebbler)
 
@@ -122,4 +122,4 @@ INSERT INTO categories (name) VALUES ('Food & Drink'), ('Music'), ('Art'), ('Spo
   - Linting: [ESLint](https://eslint.org/docs/latest/)
 
 ## Known Bugs
-  - Only vendor images are deleted from Cloudinary when they are deleted from the database. All other images stay in cloudinary after their database record is deleted.
+  - When creating or editing an event: trying to add, then delete, and then add back the same image file from your computer results in the image not being added until you add a different image first and then add the original image file.
